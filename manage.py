@@ -2,6 +2,7 @@ from app import create_app
 import os
 from flask_script import Manager
 from app import db
+from flask_jwt_extended.jwt_manager import JWTManager
 
 app = create_app(os.environ['CONFIG_TYPE'])
 manager = Manager(app)
@@ -10,7 +11,7 @@ manager = Manager(app)
 @manager.command
 def run():
     """Like a 'runserver' command but shorter, lol."""
-    app.run()
+    app.run('0.0.0.0', 8084)
 
 
 @manager.command
