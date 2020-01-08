@@ -3,10 +3,10 @@ Created on 17 dic. 2019
 
 @author: ramon
 '''
-from app.v1.repository.auth import SecurityElementRepository
+from app.v1.repository.base import SecurityElementRepository
+from app.v1.repository.cryptopos import MemberRepository
 
 class AuthenticateUseCase(object):
-    
     securityElementRepository = SecurityElementRepository()
     
     def execute(self,username_or_token,password):
@@ -19,3 +19,15 @@ class AuthenticateUseCase(object):
                 return security_element
         else:
             return security_element        
+
+
+class MemberInitSignUpUseCase(object):
+    def execute(self,data):
+        return MemberRepository().create(data)
+
+
+class MemberFinishRegisterUseCase(object):
+    def execute(self,security_credentials,data):
+        data['user_id'] = security_credentials['id']
+        return MemberRepository(username=security_credentials['username'],password=security_credentials['password']).update(data)
+    

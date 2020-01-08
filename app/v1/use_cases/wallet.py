@@ -3,7 +3,7 @@ Created on 17 dic. 2019
 
 @author: ramon
 '''
-from app.v1.repository.auth import WalletRepository
+from app.v1.repository.cryptopos import WalletRepository
 
 class DashboardUseCase(object):
     

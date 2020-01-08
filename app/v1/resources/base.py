@@ -20,6 +20,8 @@ from requests.auth import HTTPBasicAuth
 from ..repository.base import CacheRepository
 from ..use_cases.wallet import DashboardUseCase
 from app.exceptions.base import SinergiaException, ProxyCredentialsNotFound
+from app.v1.use_cases.security import   MemberInitSignUpUseCase,\
+    MemberFinishRegisterUseCase
 
 
 member_ns = v1_api.namespace('member', description='Member Services')
@@ -27,6 +29,24 @@ member_ns = v1_api.namespace('member', description='Member Services')
 mLogin = v1_api.model('Login', {
     'username': fields.String(required=True, description='User Name '),
     'password': fields.String(required=True, description='Password User')
+})
+
+mMemberInitRegister = v1_api.model('MemberInitRegister', {
+    'email': fields.String(required=True, description='Email'),
+    'first_name': fields.String(required=True, description='First Name'),
+    'last_name': fields.String(required=True, description='Last Name')
+})
+
+
+mMemberFinishRegister = v1_api.model('MemberFinishRegister', {
+    'email': fields.String(required=True, description='Email'),
+    'first_name': fields.String(required=True, description='First Name'),
+    'last_name': fields.String(required=True, description='Last Name'),
+    'phone_number': fields.String(required=True, description='Phone Number'),
+    'gender': fields.String(required=True, description='Gender'),
+    'secondary_email': fields.String(required=True, description='Secondary email'),
+    'birth_date': fields.String(required=True, description='Birth Date'),
+    'password': fields.String(required=True, description='New Password')
 })
 
 mTokenPair = v1_api.model('TokenPair', {
@@ -49,9 +69,14 @@ mAccessToken = v1_api.model('AccessToken', {
 #     'end_date': fields.String(description='End Date - fmt(YYYY-MM-DD)')
 # }) 
 
-mMessage = v1_api.model('Message', {
+mMessage = v1_api.model('Message', { 
     'code': fields.String(description='Message Code'),
-    'text': fields.String(description='Message Text')
+    'text': fields.String(description='Message Text') 
+})
+
+mResult = v1_api.model('Result', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'message' : fields.Nested(mMessage)
 }) 
 
 secureHeader = v1_api.parser()
@@ -97,7 +122,7 @@ class MemberLoginResource(Resource):
         access_jti = get_jti(encoded_token=access_token)
         refresh_jti = get_jti(encoded_token=refresh_token)
         
-        payload = { "session_expired" : "false", "username" : username, "password": password }
+        payload = { "session_expired" : "false", "username" : username, "password": password, "id" : securityElement.id }
         
         redis_client.set(access_jti, json.dumps(payload), int(ACCESS_EXPIRES * 1.2))
         redis_client.set(refresh_jti, json.dumps(payload), int(REFRESH_EXPIRES * 1.2))
@@ -179,13 +204,33 @@ class ProxySecureResource(Resource):
         return security_credentials
 
 
-@member_ns.route('/test')
+@member_ns.route('/signup')
 @v1_api.expect(publicHeader)
-class TestResource(Resource):
+class MemberInitSignupResource(Resource):
      
-    @member_ns.doc('Test')
-    def get(self):
-        raise SinergiaException()
+    @member_ns.doc('Member Register (Step-1)')
+    @member_ns.expect(mMemberInitRegister)
+    @member_ns.marshal_with(mResult, code=200)
+    def post(self):
+        payload = request.json
+        data = MemberInitSignUpUseCase().execute(payload)
+        return  data, 200
+        
+
+@member_ns.route('/signup/finish')
+@v1_api.expect(secureHeader)
+class MemberFinishSignupResource(ProxySecureResource):
+     
+    @member_ns.doc('Member Register (Step-2)')
+    @member_ns.expect(mMemberFinishRegister)
+    @member_ns.marshal_with(mResult, code=200)
+    @jwt_required    
+    def put(self):
+        security_credentials = self.check_credentials()
+        payload = request.json
+        data = MemberFinishRegisterUseCase().execute(security_credentials, payload)
+        return  data, 200
+
 
 from .wallet import *  
 
