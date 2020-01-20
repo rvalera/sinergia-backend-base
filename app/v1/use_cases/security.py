@@ -18,16 +18,34 @@ class AuthenticateUseCase(object):
             else:
                 return security_element
         else:
-            return security_element        
+            return security_element
 
+class GetMemberProfileUseCase(object):
+    def execute(self,security_credentials,payload):
+        return MemberRepository(username=security_credentials['username'],password=security_credentials['password']).get(payload)
+
+class GetAnyMemberProfileUseCase(object):
+    def execute(self,security_credentials,payload):
+        return MemberRepository(username=security_credentials['username'],password=security_credentials['password']).getByEmail(payload)
+
+
+class UpdateMemberProfileUseCase(object):
+    def execute(self,security_credentials,payload):
+        return MemberRepository(username=security_credentials['username'],password=security_credentials['password']).save(payload)
 
 class MemberInitSignUpUseCase(object):
-    def execute(self,data):
-        return MemberRepository().create(data)
-
+    def execute(self,payload):
+        return MemberRepository().initCreate(payload)
 
 class MemberFinishRegisterUseCase(object):
-    def execute(self,security_credentials,data):
-        data['user_id'] = security_credentials['id']
-        return MemberRepository(username=security_credentials['username'],password=security_credentials['password']).update(data)
-    
+    def execute(self,security_credentials,payload):
+        return MemberRepository(username=security_credentials['username'],password=security_credentials['password']).finishCreate(payload)
+
+class ChangePasswordMemberUseCase(object):
+    def execute(self,security_credentials,payload):
+        return MemberRepository(username=security_credentials['username'],password=security_credentials['password']).changePassword(payload)
+
+class ResetPasswordMemberUseCase(object):
+    def execute(self,payload):
+        return MemberRepository().resetPassword(payload)
+

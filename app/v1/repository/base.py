@@ -68,11 +68,15 @@ class CryptoPOSClient(object):
                 response = requests.post(final_url ,\
                                          data=json_payload,\
                                          headers=headers)
-
+            
             response.raise_for_status()
             
-        except HTTPError as http_err:
-            raise ConnectionException(text='HTTP error occurred: %s' % http_err)
+        except HTTPError as http_err:           
+            if response.status_code == 400:
+                response_json = response.json()
+                raise CryptoPOSException(text=response_json['message']['text'])
+            else:
+                raise ConnectionException(text='HTTP error occurred: %s' % http_err)
         except Exception as err:
             raise CryptoPOSException(text='Other error occurred: %s' % err)
         else:
@@ -105,10 +109,94 @@ class CryptoPOSClient(object):
                                          data=json_payload,\
                                          headers=headers)
 
+
             response.raise_for_status()
             
         except HTTPError as http_err:
-            raise ConnectionException(text='HTTP error occurred: %s' % http_err)
+            if response.status_code == 400:
+                response_json = response.json()
+                raise CryptoPOSException(text=response_json['message']['text'])
+            else:
+                raise ConnectionException(text='HTTP error occurred: %s' % http_err)
+        except Exception as err:
+            raise CryptoPOSException(text='Other error occurred: %s' % err)
+        else:
+            json_response = json.loads(response.text)
+        
+        return json_response
+
+
+    def executeGet(self, end_point, params, authenticate = True):
+        
+        json_response = None
+
+        try:
+
+            headers = {
+                'content-type': "application/json",
+                'cache-control': "no-cache"
+            }
+    
+            final_url = urllib.parse.urljoin(self.url_base,end_point)
+    
+            if authenticate  and (self.username != None and self.password != None):
+                response = requests.get(final_url ,\
+                                         params=params,\
+                                         auth=HTTPBasicAuth(self.username,self.password ),\
+                                         headers=headers)
+            else:
+                response = requests.get(final_url ,\
+                                         params=params,\
+                                         headers=headers)
+
+            response.raise_for_status()
+            
+        except HTTPError as http_err:
+            if response.status_code == 400:
+                response_json = response.json()
+                raise CryptoPOSException(text=response_json['message']['text'])
+            else:
+                raise ConnectionException(text='HTTP error occurred: %s' % http_err)
+        except Exception as err:
+            raise CryptoPOSException(text='Other error occurred: %s' % err)
+        else:
+            json_response = json.loads(response.text)
+        
+        return json_response
+
+    def executeDelete(self, end_point, payload, authenticate = True):
+        
+        json_response = None
+
+        try:
+
+            headers = {
+                'content-type': "application/json",
+                'cache-control': "no-cache"
+            }
+    
+            json_payload = json.dumps(payload)
+    
+            final_url = urllib.parse.urljoin(self.url_base,end_point)
+    
+            if authenticate  and (self.username != None and self.password != None):
+                response = requests.delete(final_url ,\
+                                         data=json_payload,\
+                                         auth=HTTPBasicAuth(self.username,self.password ),\
+                                         headers=headers)
+            else:
+                response = requests.delete(final_url ,\
+                                         data=json_payload,\
+                                         headers=headers)
+
+            response.raise_for_status()
+            
+        except HTTPError as http_err:
+            if response.status_code == 400:
+                response_json = response.json()
+                raise CryptoPOSException(text=response_json['message']['text'])
+            else:
+                raise ConnectionException(text='HTTP error occurred: %s' % http_err)
         except Exception as err:
             raise CryptoPOSException(text='Other error occurred: %s' % err)
         else:
@@ -118,4 +206,3 @@ class CryptoPOSClient(object):
 
 
 from .cryptopos import *
-

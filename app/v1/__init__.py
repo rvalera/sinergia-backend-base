@@ -14,6 +14,11 @@ v1_api = Api(v1_blueprint,
              description='OpenAPI to CryptoPOS Service')
 
 from app.v1.resources.base import member_ns
+from app.v1.resources.application import application_ns
+from app.v1.resources.transaction import transaction_ns
+from app.v1.resources.affiliate import affiliate_ns 
+
+
 
 # pybabel extract -o locale/base.pot  .
 # pybabel init -i base.pot -d translations -l en
@@ -56,19 +61,21 @@ def check_if_token_is_revoked(decrypted_token):
     return 'session_expired' in json_entry  and json_entry['session_expired'] == 'true'
 
 v1_api.add_namespace(member_ns)
+v1_api.add_namespace(application_ns)
+v1_api.add_namespace(transaction_ns)
+v1_api.add_namespace(affiliate_ns)
 
 # v1_api.add_namespace(todo_ns)
 # v1_api.add_namespace(user_ns)
 
-# @app.errorhandler(500)
-# def error_handler_500(error):
-#     parameters = {}
-#     parameters['response_code'] = 500
-#     parameters['STATIC_URL'] = '../'+ STATIC_URL
-#     return render_application_template('html/500.html',parameters = parameters)
+@v1_blueprint.errorhandler(500)
+def error_handler_500(error):
+    return {'ok': 0, 'message': {'code': 'E500', 'text': str(error) } }, 500
 
-# @app.errorhandler(404)
-# def error_handler_404(error):
+@v1_blueprint.errorhandler(404)
+def error_handler_404(error):
+    return {'ok': 0, 'message': {'code': 'E404', 'text': str(error) } }, 500
+    
 #     parameters = {}
 #     parameters['response_code'] = 404 
 #     return render_application_template('html/404.html',parameters = parameters)
