@@ -8,6 +8,7 @@ from app.v1.repository.cryptopos import TransactionRepository,\
 from app.v1.use_cases.security import GetAnyMemberProfileUseCase
 import json
 from app.exceptions.base import CryptoPOSException
+from app.v1.use_cases.application import GetCoinBySymbolUseCase
 
 class MakePaymentQRUseCase(object):
     def execute(self,security_credentials,payload):
@@ -17,6 +18,13 @@ class MakeTransferenceUseCase(object):
     def execute(self,security_credentials,payload):
         target_person = GetAnyMemberProfileUseCase().execute(security_credentials, {'email' : payload['target'] })
         payload['target_id'] = target_person['data']['id']
+        
+        coin = GetCoinBySymbolUseCase().execute(security_credentials, { 'symbol' : payload['coin_symbol']})
+        if coin is None:
+            raise CryptoPOSException()
+
+        payload['coin_id'] = coin['data']['id']
+        
         return TransactionRepository(username=security_credentials['username'],password=security_credentials['password']).makeTransference(payload)
     
 class MakeReloadUseCase(object):

@@ -82,8 +82,8 @@ class MemberCardRepository(CryptoPOSClient):
 
     def get(self,query_params):
         request_params = {}
-        data = self.executeGet('/api/v2/affiliate/%s' % query_params['person_id'], request_params)
-#         data = self.executeGet('/api/v2/card/person_id/%s' % query_params['person_id'], request_params)
+#         data = self.executeGet('/api/v2/affiliate/%s' % query_params['person_id'], request_params)
+        data = self.executeGet('/api/v2/card/person_id/%s' % query_params['person_id'], request_params)
         return data
 
     def setPin(self,payload):
