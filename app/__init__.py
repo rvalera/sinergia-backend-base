@@ -3,6 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_redis.client import FlaskRedis
 from flask_jwt_extended.jwt_manager import JWTManager
 from flask_babel import Babel, get_locale
+from werkzeug.middleware.proxy_fix import ProxyFix
+
 
 db = SQLAlchemy()
 redis_client = FlaskRedis(strict=True)
@@ -21,6 +23,8 @@ def create_app(config_type='dev'):
     jwt.init_app(app)
 
     babel.init_app(app)
+
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
     from .v1 import v1_blueprint
     app.register_blueprint(v1_blueprint, url_prefix='/api/v1')
