@@ -12,6 +12,12 @@ from app.v1.use_cases.application import GetCoinBySymbolUseCase
 
 class MakePaymentQRUseCase(object):
     def execute(self,security_credentials,payload):
+        coin = GetCoinBySymbolUseCase().execute(security_credentials, { 'symbol' : payload['coin_symbol']})
+        if coin is None:
+            raise CryptoPOSException()
+
+        payload['coin_id'] = coin['data']['id']
+        
         return TransactionRepository(username=security_credentials['username'],password=security_credentials['password']).makePaymentQR(payload)
 
 class MakeTransferenceUseCase(object):

@@ -34,7 +34,12 @@ transaction_ns = v1_api.namespace('transaction', description='Transaction Servic
 
 
 mQRPaymentTransaction = v1_api.model('QRPaymentTransaction', {
-    'QR': fields.String(required=True, description='QR Encrypted String'),
+    'terminal_code' : fields.String(required=True, description='Terminal Code'),
+    'type': fields.String(required=True, description='Payment Type - (P) Post, (S) Sticker'),
+    'amount': fields.Float(required=True, description='Amount Transaction'),
+    'coin_symbol': fields.String(required=True, description='Coin Symbol'),
+    'concept': fields.String(required=True, description='Transference Concept'),
+    'datetime': fields.String(required=True, description='Datetime Transaction'),
 })
 
 '''
