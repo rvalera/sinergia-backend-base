@@ -14,6 +14,8 @@ babel = Babel()
 def create_app(config_type='dev'):
     from config import config
     app = Flask(__name__)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+    
     app.config.from_object(config[config_type])
 
     db.init_app(app)
@@ -23,8 +25,6 @@ def create_app(config_type='dev'):
     jwt.init_app(app)
 
     babel.init_app(app)
-
-    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
     from .v1 import v1_blueprint
     app.register_blueprint(v1_blueprint, url_prefix='/api/v1')

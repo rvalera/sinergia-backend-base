@@ -18,8 +18,6 @@ from app.v1.resources.application import application_ns
 from app.v1.resources.transaction import transaction_ns
 from app.v1.resources.affiliate import affiliate_ns 
 
-
-
 # pybabel extract -o locale/base.pot  .
 # pybabel init -i base.pot -d translations -l en
 # pybabel compile -d app/translations
