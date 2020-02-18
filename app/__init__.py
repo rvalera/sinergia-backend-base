@@ -17,8 +17,6 @@ def create_app(config_type='dev'):
     from config import config
     app = Flask(__name__)
     
-    CORS(app, resources={r'/*': {'origins': '*'}})        
-
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
     
     app.config.from_object(config[config_type])
@@ -34,5 +32,6 @@ def create_app(config_type='dev'):
     from .v1 import v1_blueprint
     app.register_blueprint(v1_blueprint, url_prefix='/api/v1')
             
+    CORS(app, resources={r'/*': {'origins': '*'}})        
 
     return app
