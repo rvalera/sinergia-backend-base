@@ -17,9 +17,9 @@ def create_app(config_type='dev'):
     from config import config
     app = Flask(__name__)
     
-    CORS(app, resources={r'/*': {'origins': '*'}})        
-
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+    
+    CORS(app.wsgi_app, resources={r'/*': {'origins': '*'}})        
     
     app.config.from_object(config[config_type])
 
