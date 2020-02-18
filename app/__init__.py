@@ -20,7 +20,7 @@ def create_app(config_type='dev'):
     from config import config
     app = Flask(__name__)
     cors = CORS(app)
-    app.config['CORS_HEADERS'] = 'Content-Type'    
+    app.config['CORS_HEADERS'] = 'Content-Type'     
         
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
     
