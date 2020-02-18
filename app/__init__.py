@@ -4,7 +4,11 @@ from flask_redis.client import FlaskRedis
 from flask_jwt_extended.jwt_manager import JWTManager
 from flask_babel import Babel, get_locale
 from werkzeug.middleware.proxy_fix import ProxyFix
+<<<<<<< HEAD
 from flask_cors.extension import CORS
+=======
+import flask_cors
+>>>>>>> refs/remotes/origin/develop
 
 
 db = SQLAlchemy()
