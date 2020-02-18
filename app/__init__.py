@@ -4,11 +4,8 @@ from flask_redis.client import FlaskRedis
 from flask_jwt_extended.jwt_manager import JWTManager
 from flask_babel import Babel, get_locale
 from werkzeug.middleware.proxy_fix import ProxyFix
-<<<<<<< HEAD
 from flask_cors.extension import CORS
-=======
 import flask_cors
->>>>>>> refs/remotes/origin/develop
 
 
 db = SQLAlchemy()
@@ -19,9 +16,9 @@ babel = Babel()
 def create_app(config_type='dev'):
     from config import config
     app = Flask(__name__)
-    cors = CORS(app)
-    app.config['CORS_HEADERS'] = 'Content-Type'    
-        
+    
+    CORS(app, resources={r'/*': {'origins': '*'}})        
+
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
     
     app.config.from_object(config[config_type])
@@ -36,5 +33,6 @@ def create_app(config_type='dev'):
 
     from .v1 import v1_blueprint
     app.register_blueprint(v1_blueprint, url_prefix='/api/v1')
+            
 
     return app
