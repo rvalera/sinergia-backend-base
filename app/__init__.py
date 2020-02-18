@@ -34,5 +34,6 @@ def create_app(config_type='dev'):
     from .v1 import v1_blueprint
     app.register_blueprint(v1_blueprint, url_prefix='/api/v1')
             
+    CORS(app, resources={r'/*': {'origins': '*'}})        
 
     return app
