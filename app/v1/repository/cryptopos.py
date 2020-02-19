@@ -14,10 +14,17 @@ class WalletRepository(CryptoPOSClient):
 
 class MemberRepository(CryptoPOSClient):
     
-    def get(self,query_params):
+    def get(self,query_params,full=False):
         request_params = {}
-        result = self.executeGet('/api/v2/person/%s/A' % self.username, request_params)
+        result = {}
+        
+        if full:
+            result = self.executeGet('/api/v2/user/detail', request_params)
+        else:
+            result = self.executeGet('/api/v2/person/%s/A' % self.username, request_params)
+
         return result
+
 
     def getByEmail(self,query_params):
         request_params = {}
