@@ -206,7 +206,7 @@ class MemberLogoutResource(Resource):
 class TokenRefreshResource(Resource):
 
     @member_ns.doc('Refresh Token')
-    @member_ns.marshal_with(mTokenPair, code=200)
+    @member_ns.marshal_with(mResultTokens, code=200)
     @jwt_refresh_token_required
     def post(self):
         username = get_jwt_identity()
