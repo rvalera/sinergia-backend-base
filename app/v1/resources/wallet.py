@@ -50,8 +50,7 @@ class MemberDashboardResource(ProxySecureResource):
         if 'filter' in  request.args and request.args['filter']:
             json_filter = eval(request.args['filter'])
             request_payload = json_filter.copy()
-
-        query_params['filter'] = request_payload
+            query_params['filter'] = request_payload
         
         data = DashboardUseCase().execute(security_credentials, query_params)
         
