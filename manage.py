@@ -11,7 +11,7 @@ manager = Manager(app)
 @manager.command
 def run():
     """Like a 'runserver' command but shorter, lol."""
-    app.run('0.0.0.0', 8084)
+    app.run('0.0.0.0', 8084,debug=True)
 
 
 @manager.command
