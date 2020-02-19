@@ -11,7 +11,7 @@ manager = Manager(app)
 @manager.command
 def run():
     """Like a 'runserver' command but shorter, lol."""
-    app.run('0.0.0.0', 8084)
+    app.run('0.0.0.0', 8084,debug=True)
 
 
 @manager.command
@@ -38,4 +38,4 @@ def db_init():
 
 
 if __name__ == '__main__':
-    manager.run()
+    manager.run('0.0.0.0', 8084,debug=True)
