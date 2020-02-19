@@ -38,4 +38,4 @@ def db_init():
 
 
 if __name__ == '__main__':
-    manager.run('0.0.0.0', 8084,debug=True)
+    manager.run(debug=True)
