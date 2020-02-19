@@ -16,7 +16,8 @@ class MemberRepository(CryptoPOSClient):
     
     def get(self,query_params):
         request_params = {}
-        result = self.executeGet('/api/v2/person/%s/A' % self.username, request_params)
+#         result = self.executeGet('/api/v2/person/%s/A' % self.username, request_params)
+        result = self.executeGet('/api/v2/user/detail', request_params)
         return result
 
     def getByEmail(self,query_params):
