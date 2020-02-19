@@ -224,7 +224,7 @@ class TokenRefreshResource(Resource):
         data = { 'ok': 1,
                 'data': { 
                     'access_token': access_token, 
-                    'refresh_token': None 
+                    'refresh_token': refresh_token_jti 
                     }
                 }
         return data, 200
