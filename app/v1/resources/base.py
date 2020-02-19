@@ -68,6 +68,13 @@ mTokenPair = v1_api.model('TokenPair', {
     'refresh_token': fields.String(description='Refresh Token')
 })
 
+mResultTokens = v1_api.model('Result Token', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'data' : fields.Nested(mTokenPair)
+}) 
+
+
+
 mRefreshToken = v1_api.model('RefreshToken', {
     'refresh_token': fields.String(required=True, description='Refresh Token')
 }) 
@@ -81,7 +88,7 @@ mMessage = v1_api.model('Message', {
     'text': fields.String(description='Message Text') 
 })
 
-mResult = v1_api.model('Result', { 
+mResult = v1_api.model('Generic Result', { 
     'ok' : fields.Integer(description='Ok Result'), 
     'message' : fields.Nested(mMessage)
 }) 
@@ -113,7 +120,7 @@ class MemberLoginResource(Resource):
 
     @member_ns.doc('Make Login in Application')
     @member_ns.expect(mLogin)
-    @member_ns.marshal_with(mTokenPair, code=200)
+    @member_ns.marshal_with(mResultTokens, code=200)
     def post(self):
         data = request.json
 
@@ -148,9 +155,11 @@ class MemberLoginResource(Resource):
 
         # Use create_access_token() and create_refresh_token() to create our
         # access and refresh tokens
-        ret = {
-            'access_token': access_token,
-            'refresh_token': refresh_token
+        ret = { "ok": 1,
+            "data": {
+                'access_token': access_token,
+                'refresh_token': refresh_token
+            }
         }
         return ret,200
 
@@ -160,7 +169,7 @@ class MemberLogoutResource(Resource):
 
     @member_ns.doc('Make Logout Application')
     @member_ns.expect(mRefreshToken)
-    @member_ns.marshal_with(mMessage, code=200)
+    @member_ns.marshal_with(mResultTokens, code=200)
     @jwt_required    
     def post(self):
         data = request.json
@@ -170,7 +179,7 @@ class MemberLogoutResource(Resource):
         refresh_token_jti = get_jti(refresh_token)
 
         if redis_client.get(access_token_jti):
-            payload = redis_client.get(access_token_jti)
+            payload = redis_client.get(access_token_jti)    
             json_payload = json.loads(payload)
             json_payload["session_expired"] = 'true' 
             redis_client.set(access_token_jti, json.dumps(json_payload), int(ACCESS_EXPIRES * 1.2))
@@ -185,7 +194,12 @@ class MemberLogoutResource(Resource):
         else:
             redis_client.set(refresh_token_jti, json.dumps({"session_expired" : 'true'}), int(ACCESS_EXPIRES * 1.2))            
 
-        return {'code' : 'I001','text': 'OK'},200
+        return { "ok" : 1, 
+                "message" : { 
+                    'code' : 'I001',
+                    'text': 'OK'
+                } 
+                },200
     
 
 @member_ns.route('/token/refresh')
@@ -208,8 +222,12 @@ class TokenRefreshResource(Resource):
         json_payload['session_expired'] = 'false'
         redis_client.set(access_jti, json.dumps(json_payload), int(ACCESS_EXPIRES * 1.2))
         
-        data = { 'access_token': access_token, 
-                 'refresh_token': None }
+        data = { "ok": 1,
+                "data": { 
+                    'access_token': access_token, 
+                    'refresh_token': None 
+                    }
+                }
         return data, 200
 
 
