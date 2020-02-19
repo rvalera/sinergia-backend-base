@@ -73,8 +73,6 @@ mResultTokens = v1_api.model('Result Token', {
     'data' : fields.Nested(mTokenPair)
 }) 
 
-
-
 mRefreshToken = v1_api.model('RefreshToken', {
     'refresh_token': fields.String(required=True, description='Refresh Token')
 }) 
@@ -155,8 +153,8 @@ class MemberLoginResource(Resource):
 
         # Use create_access_token() and create_refresh_token() to create our
         # access and refresh tokens
-        ret = { "ok": 1,
-            "data": {
+        ret = { 'ok': 1,
+            'data': {
                 'access_token': access_token,
                 'refresh_token': refresh_token
             }
@@ -194,8 +192,8 @@ class MemberLogoutResource(Resource):
         else:
             redis_client.set(refresh_token_jti, json.dumps({"session_expired" : 'true'}), int(ACCESS_EXPIRES * 1.2))            
 
-        return { "ok" : 1, 
-                "message" : { 
+        return { 'ok' : 1, 
+                'message' : { 
                     'code' : 'I001',
                     'text': 'OK'
                 } 
@@ -222,8 +220,8 @@ class TokenRefreshResource(Resource):
         json_payload['session_expired'] = 'false'
         redis_client.set(access_jti, json.dumps(json_payload), int(ACCESS_EXPIRES * 1.2))
         
-        data = { "ok": 1,
-                "data": { 
+        data = { 'ok': 1,
+                'data': { 
                     'access_token': access_token, 
                     'refresh_token': None 
                     }
