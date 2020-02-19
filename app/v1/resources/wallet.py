@@ -270,16 +270,17 @@ class MemberTransactionResource(ProxySecureResource):
         security_credentials = self.check_credentials()
  
         query_params = {}
-
+ 
         request_payload =  {}        
         if 'filter' in  request.args and request.args['filter']:
             filter = eval(request.args['filter'])
-            filter['blockchain_id'] = security_credentials['person_id']            
+            if not 'blockchain_id' in filter:
+                filter['blockchain_id'] = security_credentials['person_id'] 
             request_payload = filter
         else:
             request_payload['blockchain_id'] = security_credentials['person_id']
 
-        query_params['filter'] = json.dumps(request_payload) 
+        query_params['filter'] = json.dumps(request_payload)
 
         if 'sort' in  request.args and request.args['sort']:
             sort = eval(request.args['sort'])
