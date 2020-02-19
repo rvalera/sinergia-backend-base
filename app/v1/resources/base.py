@@ -20,7 +20,8 @@ from app.exceptions.base import SinergiaException, ProxyCredentialsNotFound
 from app.v1.use_cases.security import   MemberInitSignUpUseCase,\
     MemberFinishRegisterUseCase, GetMemberProfileUseCase,\
     UpdateMemberProfileUseCase, ChangePasswordMemberUseCase,\
-    ResetPasswordMemberUseCase, GetAnyMemberProfileUseCase
+    ResetPasswordMemberUseCase, GetAnyMemberProfileUseCase,\
+    GetDetailedMemberProfileUseCase
 from app.v1.use_cases.wallet import ChangeOperationKeyMemberUseCase
 
 
@@ -276,7 +277,7 @@ class MemberProfileResource(ProxySecureResource):
     def get(self):
         security_credentials = self.check_credentials()
         query_params = {}
-        data = GetMemberProfileUseCase().execute(security_credentials,query_params)
+        data = GetDetailedMemberProfileUseCase().execute(security_credentials,query_params)
         return  data, 200
 
     @member_ns.doc('Update Member Profile')

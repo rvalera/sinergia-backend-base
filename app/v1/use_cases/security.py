@@ -22,7 +22,12 @@ class AuthenticateUseCase(object):
 
 class GetMemberProfileUseCase(object):
     def execute(self,security_credentials,payload):
+        return MemberRepository(username=security_credentials['username'],password=security_credentials['password']).get(payload)
+
+class GetDetailedMemberProfileUseCase(object):
+    def execute(self,security_credentials,payload):
         return MemberRepository(username=security_credentials['username'],password=security_credentials['password']).get(payload,full=True)
+
 
 class GetAnyMemberProfileUseCase(object):
     def execute(self,security_credentials,payload):
