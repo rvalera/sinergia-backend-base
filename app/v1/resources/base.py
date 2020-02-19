@@ -143,11 +143,15 @@ class MemberLoginResource(Resource):
         
         
         payload = { "session_expired" : "false", "username" : username, "password": password, "id" : securityElement.id }
-
-        person = GetMemberProfileUseCase().execute(payload,{})
-        payload['person_id'] = person['data']['id']
-        payload['person_extension_id'] = person['data']['person_extension_id']
-        
+        try:
+            person = GetMemberProfileUseCase().execute(payload,{})
+            payload['person_id'] = person['data']['id']
+            payload['person_extension_id'] = person['data']['person_extension_id']
+        except Exception as e:
+            import traceback;traceback.print_exc(e)
+            payload['person_id'] = None
+            payload['person_extension_id'] = None
+            
         
         redis_client.set(access_jti, json.dumps(payload), int(ACCESS_EXPIRES * 1.2))
         redis_client.set(refresh_jti, json.dumps(payload), int(REFRESH_EXPIRES * 1.2))
