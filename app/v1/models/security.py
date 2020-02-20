@@ -132,10 +132,10 @@ class User(SecurityElement):
     register_mode = Column(String(1))
     register_date = Column(DateTime)
     type = Column(String(1))
-    
+
     def hash_operation_key(self, operation_key):
         self.operation_key = hashlib.md5(operation_key).hexdigest()
-        
+
     def verify_operation_key(self, operation_key):
         return hashlib.md5(operation_key).hexdigest() == self.operation_key
 

@@ -3,7 +3,7 @@ Created on 17 dic. 2019
 
 @author: ramon
 '''
-from app.v1.models.security import SecurityElement
+from app.v1.models.security import SecurityElement, User
 from app import redis_client
 import json
 import requests
@@ -20,6 +20,12 @@ class SecurityElementRepository(object):
     def getByName(self,name):
         security_element = SecurityElement.query.filter(SecurityElement.name==name.lower()).first()
         return security_element
+
+class UserRepository(object):
+    
+    def getByName(self,name):
+        user = User.query.filter(User.name==name.lower()).first()
+        return user
 
 
 class CacheRepository(object):

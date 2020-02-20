@@ -3,7 +3,7 @@ Created on 17 dic. 2019
 
 @author: ramon
 '''
-from app.v1.repository.base import SecurityElementRepository
+from app.v1.repository.base import SecurityElementRepository, UserRepository
 from app.v1.repository.cryptopos import MemberRepository
 
 class AuthenticateUseCase(object):
@@ -20,9 +20,15 @@ class AuthenticateUseCase(object):
         else:
             return security_element
 
+class GetUserByNameUseCase(object):
+    def execute(self,payload):
+        return UserRepository().getByName(payload['username'])
+
+
 class GetMemberProfileUseCase(object):
     def execute(self,security_credentials,payload):
         return MemberRepository(username=security_credentials['username'],password=security_credentials['password']).get(payload)
+
 
 class GetDetailedMemberProfileUseCase(object):
     def execute(self,security_credentials,payload):

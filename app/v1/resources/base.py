@@ -21,8 +21,10 @@ from app.v1.use_cases.security import   MemberInitSignUpUseCase,\
     MemberFinishRegisterUseCase, GetMemberProfileUseCase,\
     UpdateMemberProfileUseCase, ChangePasswordMemberUseCase,\
     ResetPasswordMemberUseCase, GetAnyMemberProfileUseCase,\
-    GetDetailedMemberProfileUseCase
+    GetDetailedMemberProfileUseCase, GetUserByNameUseCase
 from app.v1.use_cases.wallet import ChangeOperationKeyMemberUseCase
+from app.v1.models.constant import STATUS_ACTIVE, STATUS_GENERATED,\
+    STATUS_PENDING
 
 
 member_ns = v1_api.namespace('member', description='Member Services')
@@ -128,7 +130,22 @@ class MemberLoginResource(Resource):
         
         securityElement = AuthenticateUseCase().execute(username, password)
         if securityElement == None:
-            return jsonify({"msg": "Bad username or password"}), 401
+            error =  { 'ok' : 0, 
+                'message' : { 
+                    'code' : 'ESEC000',
+                    'text': "Bad username or password"
+                } 
+                }
+            return error, 401
+        
+        if not securityElement.status in (STATUS_ACTIVE,STATUS_PENDING) : 
+            error =  { 'ok' : 0, 
+                'message' : { 
+                    'code' : 'ESEC000',
+                    'text': "Locked User or Not Finished Register"
+                } 
+                }
+            return error, 401
 
         access_token = create_access_token(identity=username)
         refresh_token = create_refresh_token(identity=username)
@@ -143,14 +160,16 @@ class MemberLoginResource(Resource):
         
         
         payload = { "session_expired" : "false", "username" : username, "password": password, "id" : securityElement.id }
-        try:
+
+        payload = {'username' : username}
+        user = GetUserByNameUseCase().execute(payload)
+        if not user.status == STATUS_ACTIVE:
             person = GetMemberProfileUseCase().execute(payload,{})
             payload['person_id'] = person['data']['id']
             payload['person_extension_id'] = person['data']['person_extension_id']
-        except Exception as e:
-            import traceback;traceback.print_exc(e)
-            payload['person_id'] = None
-            payload['person_extension_id'] = None
+        else:
+            payload['person_id'] = None            
+            payload['person_extension_id'] = user.person_extension_id
             
         
         redis_client.set(access_jti, json.dumps(payload), int(ACCESS_EXPIRES * 1.2))
@@ -165,6 +184,9 @@ class MemberLoginResource(Resource):
             }
         }
         return ret,200
+
+
+
 
 @member_ns.route('/logout')
 @v1_api.expect(secureHeader)
@@ -236,11 +258,14 @@ class TokenRefreshResource(Resource):
 
 class ProxySecureResource(Resource):
 
+
     def check_credentials(self):
         access_token_jti = get_raw_jwt()['jti']
         security_credentials = CacheRepository().getByKey(access_token_jti)
         if security_credentials == None:
             raise ProxyCredentialsNotFound()
+        elif (not 'person_id' in security_credentials) or ('person_id' in security_credentials and security_credentials['person_id'] is None):  
+            raise ProxyCredentialsNotFound()            
         return security_credentials
 
 

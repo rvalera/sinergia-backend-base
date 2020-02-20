@@ -84,6 +84,7 @@ class MakePaymentResource(ProxySecureResource):
         payload = request.json        
         security_credentials = self.check_credentials()
         payload['source_id'] = security_credentials['person_extension_id'] 
+        
         data = MakePaymentQRUseCase().execute(security_credentials,payload)
         return  data, 200
 
