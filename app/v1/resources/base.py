@@ -71,7 +71,7 @@ mUserExtraInfo = v1_api.model('User Extra Info', {
     'status': fields.String(description='Status') 
 })
 
-mLoginInfo = v1_api.model('TokenPair', {
+mLoginInfo = v1_api.model('Login Info', {
     'access_token': fields.String(description='Access Token '),
     'refresh_token': fields.String(description='Refresh Token'),
     'extra_info' : fields.Nested(mUserExtraInfo)
@@ -137,7 +137,7 @@ class MemberLoginResource(Resource):
 
     @member_ns.doc('Make Login in Application')
     @member_ns.expect(mLogin)
-    @member_ns.marshal_with(mResultTokens, code=200)
+    @member_ns.marshal_with(mResultLogin, code=200)
     def post(self):
         data = request.json
 
