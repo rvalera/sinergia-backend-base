@@ -160,7 +160,6 @@ class MemberLoginResource(Resource):
         
         
         payload = { "session_expired" : "false", "username" : username, "password": password, "id" : securityElement.id }
-
         user = GetUserByNameUseCase().execute(payload)
         if not user.status == STATUS_ACTIVE:
             person = GetMemberProfileUseCase().execute(payload,{})
