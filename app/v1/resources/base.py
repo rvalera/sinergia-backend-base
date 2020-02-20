@@ -260,10 +260,8 @@ class ProxySecureResource(Resource):
     def check_credentials(self):
         access_token_jti = get_raw_jwt()['jti']
         security_credentials = CacheRepository().getByKey(access_token_jti)
-        if security_credentials == None:
+        if security_credentials == None or (not 'person_id' in security_credentials) or ('person_id' in security_credentials and security_credentials['person_id'] is None):
             raise ProxyCredentialsNotFound()
-        elif (not 'person_id' in security_credentials) or ('person_id' in security_credentials and security_credentials['person_id'] is None):  
-            raise ProxyCredentialsNotFound()            
         return security_credentials
 
 
