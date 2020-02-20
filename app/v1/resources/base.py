@@ -41,9 +41,9 @@ mMemberInitRegister = v1_api.model('MemberInitRegister', {
 })
 
 mMemberFinishRegister = v1_api.model('MemberFinishRegister', {
-    'email': fields.String(required=True, description='Email'),
-    'first_name': fields.String(required=True, description='First Name'),
-    'last_name': fields.String(required=True, description='Last Name'),
+#     'email': fields.String(required=True, description='Email'),
+#     'first_name': fields.String(required=True, description='First Name'),
+#     'last_name': fields.String(required=True, description='Last Name'),
     'phone_number': fields.String(required=True, description='Phone Number'),
     'gender': fields.String(required=True, description='Gender'),
     'secondary_email': fields.String(required=True, description='Secondary email'),
@@ -138,6 +138,7 @@ class MemberLoginResource(Resource):
     @member_ns.doc('Make Login in Application')
     @member_ns.expect(mLogin)
     @member_ns.marshal_with(mResultLogin, code=200)
+    @member_ns.marshal_with(mResult, code=401)
     def post(self):
         data = request.json
 
