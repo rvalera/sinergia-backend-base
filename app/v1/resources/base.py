@@ -66,6 +66,22 @@ mMemberEmail = v1_api.model('MemberEmail', {
 })
 
 
+mUserExtraInfo = v1_api.model('User Extra Info', { 
+    'username': fields.String(description='Username'),
+    'status': fields.String(description='Status') 
+})
+
+mLoginInfo = v1_api.model('TokenPair', {
+    'access_token': fields.String(description='Access Token '),
+    'refresh_token': fields.String(description='Refresh Token'),
+    'extra_info' : fields.Nested(mUserExtraInfo)
+})
+
+mResultLogin = v1_api.model('Result Login', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'data' : fields.Nested(mLoginInfo)
+}) 
+
 mTokenPair = v1_api.model('TokenPair', {
     'access_token': fields.String(description='Access Token '),
     'refresh_token': fields.String(description='Refresh Token')
@@ -177,6 +193,10 @@ class MemberLoginResource(Resource):
         # access and refresh tokens
         ret = { 'ok': 1,
             'data': {
+                'extra_info' : {
+                    'username' : username,
+                    'status' : securityElement.status 
+                },
                 'access_token': access_token,
                 'refresh_token': refresh_token
             }
@@ -192,7 +212,7 @@ class MemberLogoutResource(Resource):
 
     @member_ns.doc('Make Logout Application')
     @member_ns.expect(mRefreshToken)
-    @member_ns.marshal_with(mResultTokens, code=200)
+    @member_ns.marshal_with(mResult, code=200)
     @jwt_required    
     def post(self):
         data = request.json
@@ -256,14 +276,11 @@ class TokenRefreshResource(Resource):
 
 class ProxySecureResource(Resource):
 
-
     def check_credentials(self):
         access_token_jti = get_raw_jwt()['jti']
         security_credentials = CacheRepository().getByKey(access_token_jti)
-        if security_credentials == None:
+        if security_credentials == None or (not 'person_id' in security_credentials) or ('person_id' in security_credentials and security_credentials['person_id'] is None):
             raise ProxyCredentialsNotFound()
-        elif (not 'person_id' in security_credentials) or ('person_id' in security_credentials and security_credentials['person_id'] is None):  
-            raise ProxyCredentialsNotFound()            
         return security_credentials
 
 
