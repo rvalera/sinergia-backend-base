@@ -28,7 +28,7 @@ class AffiliateSignupResource(ProxySecureResource):
     @affiliate_ns.marshal_with(mResult, code=200)
     @jwt_required
     def post(self):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         query_params = {'person_id' : security_credentials['person_id']}
         data = AffiliateSignupUseCase().execute(security_credentials,query_params)
         return  data, 200
@@ -42,7 +42,7 @@ class AffiliateTerminalResource(ProxySecureResource):
     @v1_api.expect(queryParams)
     @jwt_required    
     def get(self):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         query_params = { 'filter': json.dumps({'person_id': str(security_credentials['person_id']) }) }
         
         if 'sort' in  request.args and request.args['sort']:
@@ -61,7 +61,7 @@ class AffiliateTerminalResource(ProxySecureResource):
     @jwt_required        
     def post(self):
         payload = request.json        
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         payload['person_id'] = security_credentials['person_id']
         payload['type'] = 'P' # Point of Sale
         data = CreateAffiliateTerminalUseCase().execute(security_credentials,payload)
@@ -77,7 +77,7 @@ class RemoveAffiliateTerminalResource(ProxySecureResource):
     @affiliate_ns.doc('Get Terminal')
     @jwt_required    
     def get(self,id):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         query_params = {'id': id}
         data = GetAffiliateTerminalUseCase().execute(security_credentials,query_params)
         return  data, 200
@@ -85,7 +85,7 @@ class RemoveAffiliateTerminalResource(ProxySecureResource):
     @affiliate_ns.doc('Remove Terminal')
     @jwt_required    
     def delete(self,id):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         query_params = {'id': id}
         data = DeleteAffiliateTerminalUseCase().execute(security_credentials,query_params)
         return  data, 200
@@ -100,7 +100,7 @@ class TerminalTransactionResource(ProxySecureResource):
     @v1_api.expect(queryParams)
     @jwt_required    
     def get(self,id):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
  
         query_params = {}
 
@@ -135,7 +135,7 @@ class LockAffiliateTerminalResource(ProxySecureResource):
     @affiliate_ns.doc('Lock Terminal')
     @jwt_required    
     def put(self,id):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         query_params = {'id': id}
         data = LockAffiliateTerminalUseCase().execute(security_credentials,query_params)
         return  data, 200
@@ -149,7 +149,7 @@ class UnLockAffiliateTerminalResource(ProxySecureResource):
     @affiliate_ns.doc('UnLock Terminal')
     @jwt_required    
     def put(self,id):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         query_params = {'id': id}
         data = UnlockAffiliateTerminalUseCase().execute(security_credentials,query_params)
         return  data, 200
@@ -162,7 +162,7 @@ class AffiliateWithdrawalResource(ProxySecureResource):
     @v1_api.expect(queryParams)
     @jwt_required    
     def get(self):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         query_params = { 'filter': json.dumps( {'person_id': security_credentials['person_id'] }) }
         
         if 'sort' in  request.args and request.args['sort']:

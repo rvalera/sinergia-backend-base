@@ -13,7 +13,7 @@ class AppSettingsResource(ProxySecureResource):
     @application_ns.doc('Application Settings')
     @jwt_required    
     def get(self):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         query_params = {  }
         data = GetApplicationUseCase().execute(security_credentials,query_params)
         return  data, 200
@@ -25,7 +25,7 @@ class CoinSettingsResource(ProxySecureResource):
     @application_ns.doc('Coin Settings')
     @jwt_required    
     def get(self):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         query_params = {  }
         data = GetDefaultCoinUseCase().execute(security_credentials,query_params)
         return  data, 200
@@ -39,7 +39,7 @@ class GetCoinResource(ProxySecureResource):
     @application_ns.doc('Get Coin By Symbol')
     @jwt_required    
     def get(self,symbol):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         query_params = { 'symbol':  symbol}
         data = GetCoinBySymbolUseCase().execute(security_credentials,query_params)
         return  data, 200

@@ -276,12 +276,19 @@ class TokenRefreshResource(Resource):
 
 class ProxySecureResource(Resource):
 
-    def check_credentials(self):
+    def checkCredentials(self):
         access_token_jti = get_raw_jwt()['jti']
         security_credentials = CacheRepository().getByKey(access_token_jti)
         if security_credentials == None or (not 'person_id' in security_credentials) or ('person_id' in security_credentials and security_credentials['person_id'] is None):
             raise ProxyCredentialsNotFound()
         return security_credentials
+
+    def checkForFinishSignup(self):
+        access_token_jti = get_raw_jwt()['jti']
+        security_credentials = CacheRepository().getByKey(access_token_jti)
+        if not ('person_id' in security_credentials and security_credentials['person_id'] is None):
+            raise ProxyCredentialsNotFound()
+        return security_credentials    
 
 
 @member_ns.route('/signup')
@@ -306,7 +313,7 @@ class MemberFinishSignupResource(ProxySecureResource):
     @member_ns.marshal_with(mResult, code=200)
     @jwt_required    
     def put(self):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkForFinishSignup()
         payload = request.json
         payload['id'] = security_credentials['id']        
         data = MemberFinishRegisterUseCase().execute(security_credentials, payload)
@@ -319,7 +326,7 @@ class MemberProfileResource(ProxySecureResource):
     @member_ns.doc('Member Profile')
     @jwt_required    
     def get(self):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         query_params = {}
         data = GetDetailedMemberProfileUseCase().execute(security_credentials,query_params)
         return  data, 200
@@ -329,7 +336,7 @@ class MemberProfileResource(ProxySecureResource):
     @jwt_required    
     def put(self):
         payload = request.json        
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         payload['id'] = security_credentials['id']
         data = UpdateMemberProfileUseCase().execute(security_credentials,payload)
         return  data, 200
@@ -342,7 +349,7 @@ class GetAnyMemberProfileResource(ProxySecureResource):
     @member_ns.doc('Get Any Member Profile')
     @jwt_required    
     def get(self,email):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         query_params = {'email': email}
         data = GetAnyMemberProfileUseCase().execute(security_credentials,query_params)
         return  data, 200
@@ -357,7 +364,7 @@ class ChangePasswordMemberResource(ProxySecureResource):
     @jwt_required    
     def put(self):
         user_payload = request.json
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
 
         request_payload = { 'id': security_credentials['id'] ,
                    'password': user_payload['new_password'],

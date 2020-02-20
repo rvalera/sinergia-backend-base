@@ -39,7 +39,7 @@ mQRPaymentTransaction = v1_api.model('QRPaymentTransaction', {
     'amount': fields.Float(required=True, description='Amount Transaction'),
     'coin_symbol': fields.String(required=True, description='Coin Symbol'),
     'concept': fields.String(required=True, description='Transference Concept'),
-    'datetime': fields.String(required=True, description='Datetime Transaction'),
+    'created_at': fields.String(required=True, description='Datetime Transaction'),
 })
 
 '''
@@ -62,7 +62,7 @@ mP2PTransferenceTransaction = v1_api.model('P2PTransferenceTransaction', {
     'amount': fields.Float(required=True, description='Amount Transaction'),
     'coin_symbol': fields.String(required=True, description='Coin Symbol'),
     'concept': fields.String(required=True, description='Transference Concept'),
-    'datetime': fields.String(required=True, description='Datetime Transaction'),
+    'created_at': fields.String(required=True, description='Datetime Transaction'),
 })
 
 mReloadTransaction = v1_api.model('ReloadTransaction', {
@@ -82,8 +82,9 @@ class MakePaymentResource(ProxySecureResource):
     @jwt_required    
     def post(self):
         payload = request.json        
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         payload['source_id'] = security_credentials['person_extension_id'] 
+        payload['datetime'] = payload['created_at'] 
         
         data = MakePaymentQRUseCase().execute(security_credentials,payload)
         return  data, 200
@@ -98,8 +99,10 @@ class MakeTransferenceResource(ProxySecureResource):
     @jwt_required    
     def post(self):
         payload = request.json        
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         payload['source_id'] = security_credentials['person_extension_id'] 
+        payload['datetime'] = payload['created_at'] 
+        
         data = MakeTransferenceUseCase().execute(security_credentials,payload)
         return  data, 200
 
@@ -113,7 +116,7 @@ class MakeReloadResource(ProxySecureResource):
     @jwt_required    
     def post(self):
         payload = request.json        
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         data = MakeReloadUseCase().execute(security_credentials,payload)
         return  data, 200
     

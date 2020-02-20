@@ -43,7 +43,7 @@ class MemberDashboardResource(ProxySecureResource):
     @jwt_required    
     def get(self):
 
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
  
         query_params = {}
         request_payload =  {"start_date" : None, "end_date" : None}        
@@ -65,7 +65,7 @@ class MemberPaymentInstrumentResource(ProxySecureResource):
     @v1_api.expect(queryParams)
     @jwt_required    
     def get(self):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         query_params = {}
         data = ListPaymentInstrumentUseCase().execute(security_credentials,query_params)
         return  data, 200
@@ -75,7 +75,7 @@ class MemberPaymentInstrumentResource(ProxySecureResource):
     @jwt_required    
     def post(self):
         payload = request.json        
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         data = CreatePaymentInstrumentUseCase().execute(security_credentials,payload)
         return  data, 200
 
@@ -87,7 +87,7 @@ class DeleteMemberPaymentInstrumentResource(ProxySecureResource):
     @member_ns.doc('Remove Payment Instrument')
     @jwt_required    
     def delete(self,id):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         query_params = {'id': id}
         data = DeletePaymentInstrumentUseCase().execute(security_credentials,query_params)
         return  data, 200
@@ -99,7 +99,7 @@ class MemberPaymentInstrumentDefaultResource(ProxySecureResource):
     @member_ns.doc('Current Default Payment Instrument')
     @jwt_required    
     def get(self):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         query_params = {}
         data = GetDefaultPaymentInstrumentUseCase().execute(security_credentials,query_params)
         return  data, 200
@@ -113,7 +113,7 @@ class SetMemberPaymentInstrumentDefaultResource(ProxySecureResource):
     @member_ns.doc('Set Default Payment Instrument')
     @jwt_required    
     def put(self,id):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         query_params = { 'id': id }
         data = SetDefaultPaymentInstrumentUseCase().execute(security_credentials,query_params)
         return  data, 200
@@ -127,7 +127,7 @@ class MemberCardListResource(ProxySecureResource):
     @v1_api.expect(queryParams)
     @jwt_required    
     def get(self):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         query_params = {'person_id' : security_credentials['person_id']}
         data = ListMemberCardUseCase().execute(security_credentials,query_params)
         return  data, 200
@@ -141,7 +141,7 @@ class MemberCardTransactionResource(ProxySecureResource):
     @v1_api.expect(queryParams)
     @jwt_required    
     def get(self,id):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
  
         query_params = {}
 
@@ -182,7 +182,7 @@ class SetPinMemberCardResource(ProxySecureResource):
                    'new_pin_card': user_payload['new_pin'],
                    'old_pin_card': user_payload['old_pin']}
         
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         data = SetPinMemberCardUseCase().execute(security_credentials,request_payload)
         return  data, 200
     
@@ -195,7 +195,7 @@ class ResetPinMemberCardResource(ProxySecureResource):
     @member_ns.doc('Reset PIN Member Card')
     @jwt_required    
     def post(self,id):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         request_payload = { 'password_type': 'P', 'id': id }
         data = ResetPinyMemberCardUseCase().execute(security_credentials,request_payload)
         return  data, 200
@@ -210,7 +210,7 @@ class LockMemberCardResource(ProxySecureResource):
     @member_ns.doc('Lock Member Card')
     @jwt_required    
     def put(self,id):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         query_params = { 'id': id }
         data = LockMemberCardUseCase().execute(security_credentials,query_params)
         return  data, 200
@@ -224,7 +224,7 @@ class UnLockMemberCardResource(ProxySecureResource):
     @member_ns.doc('UnLock Member Card')
     @jwt_required    
     def put(self,id):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         query_params = { 'id': id }
         data = UnLockMemberCardUseCase().execute(security_credentials,query_params)
         return  data, 200
@@ -238,7 +238,7 @@ class ChangeOperationKeyMemberResource(ProxySecureResource):
     @jwt_required    
     def put(self):
         user_payload = request.json
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
 
         request_payload = { 'id': security_credentials['id'] ,
                    'operation_key': user_payload['new_operation_key'],
@@ -254,7 +254,7 @@ class ResetOperationKeyMemberResource(ProxySecureResource):
     @member_ns.doc('Reset Operation Key')
     @jwt_required    
     def post(self):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
         request_payload = { 'password_type': 'O' }
         data = ResetOperationKeyMemberUseCase().execute(security_credentials,request_payload)
         return  data, 200
@@ -267,7 +267,7 @@ class MemberTransactionResource(ProxySecureResource):
     @v1_api.expect(queryParams)
     @jwt_required    
     def get(self):
-        security_credentials = self.check_credentials()
+        security_credentials = self.checkCredentials()
  
         query_params = {}
  
