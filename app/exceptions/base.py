@@ -22,4 +22,3 @@ class ProxyCredentialsNotFound(SinergiaException):
     def __init__(self,text=None):
         super(ConnectionException, self).__init__(code='ESIN002',text = text)    
 
-
