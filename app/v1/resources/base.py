@@ -267,8 +267,8 @@ class TokenRefreshResource(Resource):
         user = GetUserByNameUseCase().execute(json_payload)
         if user.status == STATUS_ACTIVE:
             person = GetMemberProfileUseCase().execute(json_payload,{})
-            payload['person_id'] = person['data']['id']
-            payload['person_extension_id'] = person['data']['person_extension_id']
+            json_payload['person_id'] = person['data']['id']
+            json_payload['person_extension_id'] = person['data']['person_extension_id']
         else:
             error =  { 'ok' : 0, 
                 'message' : { 
