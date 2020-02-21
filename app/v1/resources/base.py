@@ -279,6 +279,8 @@ class TokenRefreshResource(Resource):
             return error, 401            
                     
         json_payload['session_expired'] = 'false'
+        
+        redis_client.set(refresh_token_jti, json.dumps(json_payload), int(REFRESH_EXPIRES * 1.2))
         redis_client.set(access_jti, json.dumps(json_payload), int(ACCESS_EXPIRES * 1.2))
         
         data = { 'ok': 1,
