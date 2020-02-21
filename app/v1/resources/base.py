@@ -185,10 +185,12 @@ class MemberLoginResource(Resource):
         else:
             payload['person_id'] = None            
             payload['person_extension_id'] = user.person_extension_id
-            
-        
+
         redis_client.set(access_jti, json.dumps(payload), int(ACCESS_EXPIRES * 1.2))
         redis_client.set(refresh_jti, json.dumps(payload), int(REFRESH_EXPIRES * 1.2))
+
+        userTokens = {'access_token' : access_jti,'refresh_token': refresh_jti}
+        redis_client.set(username, json.dumps(userTokens), int(REFRESH_EXPIRES * 1.2))
 
         # Use create_access_token() and create_refresh_token() to create our
         # access and refresh tokens
@@ -203,8 +205,6 @@ class MemberLoginResource(Resource):
             }
         }
         return ret,200
-
-
 
 
 @member_ns.route('/logout')
@@ -254,22 +254,21 @@ class TokenRefreshResource(Resource):
     @member_ns.marshal_with(mResultTokens, code=200)
     @jwt_refresh_token_required
     def post(self):
-        username = get_jwt_identity()
-
         refresh_token_jti = get_raw_jwt()['jti']
-        
+
+        username = get_jwt_identity()
         access_token = create_access_token(identity=username)
         access_jti = get_jti(encoded_token=access_token)
 
-        payload = redis_client.get(refresh_token_jti)
-        json_payload = json.loads(payload)
+        cacheRepository = CacheRepository()
+        payload = cacheRepository.getByKey(refresh_token_jti)
 
-        user = GetUserByNameUseCase().execute(json_payload)
+        user = GetUserByNameUseCase().execute(payload)
         if user.status == STATUS_ACTIVE:
-            person = GetMemberProfileUseCase().execute(json_payload,{})
-            json_payload['person_id'] = person['data']['id']
-            json_payload['person_extension_id'] = person['data']['person_extension_id']
-        else:
+            person = GetMemberProfileUseCase().execute(payload,{})
+            payload['person_id'] = person['data']['id']
+            payload['person_extension_id'] = person['data']['person_extension_id']
+        else:           
             error =  { 
                 'ok' : 0, 
                 'message' : { 
@@ -278,12 +277,17 @@ class TokenRefreshResource(Resource):
                 } 
             }
             return error, 401            
-                    
-        json_payload['session_expired'] = 'false'
-        
-        redis_client.set(refresh_token_jti, json.dumps(json_payload), int(REFRESH_EXPIRES * 1.2))
-        redis_client.set(access_jti, json.dumps(json_payload), int(ACCESS_EXPIRES * 1.2))
-        
+
+        payload['session_expired'] = 'false'
+
+        cacheRepository.save(refresh_token_jti, payload, expired_time = int(REFRESH_EXPIRES * 1.2))
+        cacheRepository.save(access_jti, payload, expired_time = int(ACCESS_EXPIRES * 1.2))
+
+        userTokens = cacheRepository.getByKey(username)
+        userTokens['access_token'] = access_jti
+        userTokens['refresh_token'] = refresh_token_jti
+        cacheRepository.save(username,userTokens, expired_time = int(REFRESH_EXPIRES * 1.2))
+
         data = { 'ok': 1,
                 'data': { 
                     'access_token': access_token, 
@@ -294,7 +298,7 @@ class TokenRefreshResource(Resource):
 
 
 class ProxySecureResource(Resource):
-
+    
     def checkCredentials(self):
         access_token_jti = get_raw_jwt()['jti']
         security_credentials = CacheRepository().getByKey(access_token_jti)
@@ -336,6 +340,28 @@ class MemberFinishSignupResource(ProxySecureResource):
         payload = request.json
         payload['id'] = security_credentials['id']        
         data = MemberFinishRegisterUseCase().execute(security_credentials, payload)
+
+        #Update User Password in Cache 
+        access_token_jti = get_raw_jwt()['jti']
+        cacheRepository = CacheRepository()
+        cache_payload = cacheRepository.getByKey(access_token_jti)
+
+        cache_payload['password'] = payload['password']
+
+        user = GetUserByNameUseCase().execute(cache_payload)
+        if user.status == STATUS_ACTIVE:
+            person = GetMemberProfileUseCase().execute(cache_payload,{})
+            cache_payload['person_id'] = person['data']['id']
+            cache_payload['person_extension_id'] = person['data']['person_extension_id']
+    
+        cacheRepository.save(access_token_jti,cache_payload, expired_time = int(ACCESS_EXPIRES * 1.2))
+
+        username = cache_payload['username']
+        userTokens = cacheRepository.getByKey(username)
+        refresh_token_jti = userTokens['refresh_token'] 
+
+        cacheRepository.save(refresh_token_jti,cache_payload, expired_time = int(REFRESH_EXPIRES * 1.2))
+        
         return  data, 200
 
 @member_ns.route('/profile')
@@ -390,6 +416,29 @@ class ChangePasswordMemberResource(ProxySecureResource):
                    'old_password': user_payload['old_password']}
         
         data = ChangePasswordMemberUseCase().execute(security_credentials,request_payload)
+        
+        #Update User Password in Cache 
+        access_token_jti = get_raw_jwt()['jti']
+        cacheRepository = CacheRepository()
+        cache_payload = cacheRepository.getByKey(access_token_jti)
+
+        cache_payload['password'] = user_payload['new_password']
+
+        user = GetUserByNameUseCase().execute(cache_payload)
+        if user.status == STATUS_ACTIVE:
+            person = GetMemberProfileUseCase().execute(cache_payload,{})
+            cache_payload['person_id'] = person['data']['id']
+            cache_payload['person_extension_id'] = person['data']['person_extension_id']
+    
+    
+        cacheRepository.save(access_token_jti,cache_payload, expired_time = int(ACCESS_EXPIRES * 1.2))
+
+        username = cache_payload['username']
+        userTokens = cacheRepository.getByKey(username)
+        refresh_token_jti = userTokens['refresh_token'] 
+
+        cacheRepository.save(refresh_token_jti,cache_payload, expired_time = int(REFRESH_EXPIRES * 1.2))
+        
         return  data, 200
 
 @member_ns.route('/password/reset')

@@ -30,10 +30,18 @@ class UserRepository(object):
 
 class CacheRepository(object):
 
+    DEFAULT_EXPIRED_TIME = 300
+
     def getByKey(self,key):
         value = redis_client.get(key)
         json_value = json.loads(value)        
         return json_value
+
+    def save(self,key,payload,expired_time = int(DEFAULT_EXPIRED_TIME)):
+        json_payload = json.dumps(payload)
+        print(json_payload)
+        redis_client.set(key, json_payload,expired_time)
+
 
 
 import urllib.parse
