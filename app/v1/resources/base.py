@@ -137,8 +137,8 @@ class MemberLoginResource(Resource):
 
     @member_ns.doc('Make Login in Application')
     @member_ns.expect(mLogin)
-    @member_ns.marshal_with(mResultLogin, code=200)
-    @member_ns.marshal_with(mResult, code=401)
+#     @member_ns.marshal_with(mResultLogin)
+#     @member_ns.marshal_with(mResult, code=401,description='Error')
     def post(self):
         data = request.json
 
@@ -148,11 +148,11 @@ class MemberLoginResource(Resource):
         securityElement = AuthenticateUseCase().execute(username, password)
         if securityElement == None:
             error =  { 'ok' : 0, 
-                'message' : { 
-                    'code' : 'ESEC000',
-                    'text': "Bad username or password"
-                } 
-                }
+                       'message' : { 
+                           'code' : 'ESEC000',
+                           'text': "Bad username or password"
+                        } 
+                      }
             return error, 401
         
         if not securityElement.status in (STATUS_ACTIVE,STATUS_PENDING) : 
