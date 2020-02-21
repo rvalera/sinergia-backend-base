@@ -263,6 +263,21 @@ class TokenRefreshResource(Resource):
 
         payload = redis_client.get(refresh_token_jti)
         json_payload = json.loads(payload)
+
+        user = GetUserByNameUseCase().execute(json_payload)
+        if user.status == STATUS_ACTIVE:
+            person = GetMemberProfileUseCase().execute(json_payload,{})
+            payload['person_id'] = person['data']['id']
+            payload['person_extension_id'] = person['data']['person_extension_id']
+        else:
+            error =  { 'ok' : 0, 
+                'message' : { 
+                    'code' : 'ESEC000',
+                    'text': "Locked User or Not Finished Register"
+                } 
+                }
+            return error, 401            
+                    
         json_payload['session_expired'] = 'false'
         redis_client.set(access_jti, json.dumps(json_payload), int(ACCESS_EXPIRES * 1.2))
         
