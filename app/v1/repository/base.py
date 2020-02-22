@@ -39,7 +39,6 @@ class CacheRepository(object):
 
     def save(self,key,payload,expired_time = int(DEFAULT_EXPIRED_TIME)):
         json_payload = json.dumps(payload)
-        print(json_payload)
         redis_client.set(key, json_payload,expired_time)
 
 
