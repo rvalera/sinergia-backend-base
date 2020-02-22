@@ -29,7 +29,7 @@ def create_app(config_type='dev'):
     babel.init_app(app)
 
     from .v1 import v1_blueprint
-    app.register_blueprint(v1_blueprint, url_prefix='/api/v1')      
+    app.register_blueprint(v1_blueprint, url_prefix='/api/v1')
 
     CORS(app, resources={r'/*': {'origins': '*'}})        
 

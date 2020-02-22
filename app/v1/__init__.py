@@ -36,17 +36,14 @@ def get_locale():
 def custom_handler_exception(e):
     return {'ok': 0, 'message': {'code': e.code, 'text': e.text} } , 400
     
-# from .resources.todo import todo_ns
-# from .resources.user import user_ns
-
 @jwt.expired_token_loader
-def handle_expired_signature_error():
+def handle_expired_signature_error(e):
     return {'ok': 0, 'message': {'code': 'ESEC001', 'text': 'Token expired'} }, 401
 
 @jwt.invalid_token_loader
 @jwt.revoked_token_loader
 @jwt.unauthorized_loader
-def handle_invalid_token_error():
+def handle_invalid_token_error(e):
     return {'ok': 0, 'message': {'code': 'ESEC002', 'text': 'Token incorrect, supplied or malformed'} }, 401
 
 @jwt.token_in_blacklist_loader
@@ -58,22 +55,17 @@ def check_if_token_is_revoked(decrypted_token):
     json_entry = json.loads(entry)
     return 'session_expired' in json_entry  and json_entry['session_expired'] == 'true'
 
+
+@v1_blueprint.app_errorhandler(404)
+def error_handler_404(error):
+    return {'ok': 0, 'message': {'code': 'E404', 'text': 'Path not Found!' } }, 404
+
+@v1_blueprint.app_errorhandler(500)
+def error_handler_500(error):
+    return {'ok': 0, 'message': {'code': 'E500', 'text': 'Internal Server Error -> %s' % str(error) } }, 500
+
+
 v1_api.add_namespace(member_ns)
 v1_api.add_namespace(application_ns)
 v1_api.add_namespace(transaction_ns)
 v1_api.add_namespace(affiliate_ns)
-
-# v1_api.add_namespace(todo_ns)
-# v1_api.add_namespace(user_ns)
-
-@v1_blueprint.errorhandler(500)
-def error_handler_500(error):
-    return {'ok': 0, 'message': {'code': 'E500', 'text': str(error) } }, 500
-
-@v1_blueprint.errorhandler(404)
-def error_handler_404(error):
-    return {'ok': 0, 'message': {'code': 'E404', 'text': str(error) } }, 500
-    
-#     parameters = {}
-#     parameters['response_code'] = 404 
-#     return render_application_template('html/404.html',parameters = parameters)
