@@ -299,6 +299,28 @@ class TokenRefreshResource(Resource):
 
 class ProxySecureResource(Resource):
     
+    def syncronizePasswordCache(self,password):
+        access_token_jti = get_raw_jwt()['jti']
+        cacheRepository = CacheRepository()
+        cache_payload = cacheRepository.getByKey(access_token_jti)
+
+        cache_payload['password'] = password
+
+        user = GetUserByNameUseCase().execute(cache_payload)
+        if user.status == STATUS_ACTIVE:
+            person = GetMemberProfileUseCase().execute(cache_payload,{})
+            cache_payload['person_id'] = person['data']['id']
+            cache_payload['person_extension_id'] = person['data']['person_extension_id']
+    
+        cacheRepository.save(access_token_jti,cache_payload, expired_time = int(ACCESS_EXPIRES * 1.2))
+
+        username = cache_payload['username']
+        userTokens = cacheRepository.getByKey(username)
+        refresh_token_jti = userTokens['refresh_token'] 
+        
+        cacheRepository.save(refresh_token_jti,cache_payload, expired_time = int(REFRESH_EXPIRES * 1.2))
+        
+    
     def checkCredentials(self):
         access_token_jti = get_raw_jwt()['jti']
         security_credentials = CacheRepository().getByKey(access_token_jti)
@@ -340,28 +362,7 @@ class MemberFinishSignupResource(ProxySecureResource):
         payload = request.json
         payload['id'] = security_credentials['id']        
         data = MemberFinishRegisterUseCase().execute(security_credentials, payload)
-
-        #Update User Password in Cache 
-        access_token_jti = get_raw_jwt()['jti']
-        cacheRepository = CacheRepository()
-        cache_payload = cacheRepository.getByKey(access_token_jti)
-
-        cache_payload['password'] = payload['password']
-
-        user = GetUserByNameUseCase().execute(cache_payload)
-        if user.status == STATUS_ACTIVE:
-            person = GetMemberProfileUseCase().execute(cache_payload,{})
-            cache_payload['person_id'] = person['data']['id']
-            cache_payload['person_extension_id'] = person['data']['person_extension_id']
-    
-        cacheRepository.save(access_token_jti,cache_payload, expired_time = int(ACCESS_EXPIRES * 1.2))
-
-        username = cache_payload['username']
-        userTokens = cacheRepository.getByKey(username)
-        refresh_token_jti = userTokens['refresh_token'] 
-
-        cacheRepository.save(refresh_token_jti,cache_payload, expired_time = int(REFRESH_EXPIRES * 1.2))
-        
+        self.syncronizePasswordCache(payload['password'])
         return  data, 200
 
 @member_ns.route('/profile')
@@ -414,31 +415,8 @@ class ChangePasswordMemberResource(ProxySecureResource):
         request_payload = { 'id': security_credentials['id'] ,
                    'password': user_payload['new_password'],
                    'old_password': user_payload['old_password']}
-        
         data = ChangePasswordMemberUseCase().execute(security_credentials,request_payload)
-        
-        #Update User Password in Cache 
-        access_token_jti = get_raw_jwt()['jti']
-        cacheRepository = CacheRepository()
-        cache_payload = cacheRepository.getByKey(access_token_jti)
-
-        cache_payload['password'] = user_payload['new_password']
-
-        user = GetUserByNameUseCase().execute(cache_payload)
-        if user.status == STATUS_ACTIVE:
-            person = GetMemberProfileUseCase().execute(cache_payload,{})
-            cache_payload['person_id'] = person['data']['id']
-            cache_payload['person_extension_id'] = person['data']['person_extension_id']
-    
-    
-        cacheRepository.save(access_token_jti,cache_payload, expired_time = int(ACCESS_EXPIRES * 1.2))
-
-        username = cache_payload['username']
-        userTokens = cacheRepository.getByKey(username)
-        refresh_token_jti = userTokens['refresh_token'] 
-
-        cacheRepository.save(refresh_token_jti,cache_payload, expired_time = int(REFRESH_EXPIRES * 1.2))
-        
+        self.syncronizePasswordCache(user_payload['new_password'])
         return  data, 200
 
 @member_ns.route('/password/reset')
