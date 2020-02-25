@@ -37,13 +37,19 @@ def custom_handler_exception(e):
     return {'ok': 0, 'message': {'code': e.code, 'text': e.text} } , 400
     
 @jwt.expired_token_loader
-@jwt.revoked_token_loader
 def handle_expired_signature_error(e):
     return {'ok': 0, 'message': {'code': 'ESEC001', 'text': 'Token expired'} }, 401
 
+@jwt.revoked_token_loader
+def handle_revoked_signature_error():
+    return {'ok': 0, 'message': {'code': 'ESEC001', 'text': 'Token expired'} }, 401
+
 @jwt.invalid_token_loader
-@jwt.unauthorized_loader
 def handle_invalid_token_error(e):
+    return {'ok': 0, 'message': {'code': 'ESEC002', 'text': 'Token incorrect, supplied or malformed'} }, 401
+
+@jwt.unauthorized_loader
+def handle_unauthorized_token_error(e):
     return {'ok': 0, 'message': {'code': 'ESEC002', 'text': 'Token incorrect, supplied or malformed'} }, 401
 
 @jwt.token_in_blacklist_loader
