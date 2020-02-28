@@ -31,7 +31,6 @@ LANGUAGES = {
 def get_locale():
     return request.accept_languages.best_match(LANGUAGES.keys())
 
-
 @v1_blueprint.errorhandler(SinergiaException)
 def custom_handler_exception(e):
     return {'ok': 0, 'message': {'code': e.code, 'text': e.text} } , 400

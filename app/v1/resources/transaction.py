@@ -28,6 +28,7 @@ from app.v1.use_cases.wallet import ChangeOperationKeyMemberUseCase
 from app.v1.resources.base import ProxySecureResource, secureHeader
 from app.v1.use_cases.transaction import MakeTransferenceUseCase,\
     MakeReloadUseCase, MakePaymentQRUseCase
+from app.v1.resources.wallet import mNewPaymentInstrument
 
 
 transaction_ns = v1_api.namespace('transaction', description='Transaction Services')
@@ -68,7 +69,9 @@ mP2PTransferenceTransaction = v1_api.model('P2PTransferenceTransaction', {
 mReloadTransaction = v1_api.model('ReloadTransaction', {
     'fiat_coin_symbol': fields.String(required=True, description='Fiat Coin Symbol'),
     'crypto_coin_symbol': fields.String(required=True, description='Crypto Coin Symbol'),
-    'payment_instrument_id': fields.String(required=True, description='Payment Instrument ID'),    
+    'payment_instrument_id': fields.String(required=True, description='Payment Instrument ID'),   
+    'payment_instrument' : fields.Nested(mNewPaymentInstrument),
+    'add_new_card': fields.Boolean(False),  
     'amount': fields.Float(required=True, description='Amount Transaction'),
 })
 
