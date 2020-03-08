@@ -53,6 +53,7 @@ def handle_unauthorized_token_error(e):
 
 @jwt.token_in_blacklist_loader
 def check_if_token_is_revoked(decrypted_token):
+    print(request.headers)
     jti = decrypted_token['jti']
     entry = redis_client.get(jti)
     if entry is None:
