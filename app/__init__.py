@@ -7,6 +7,9 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_cors import CORS
 
 
+import logging
+from logging.handlers import RotatingFileHandler
+
 db = SQLAlchemy()
 redis_client = FlaskRedis(strict=True)
 jwt = JWTManager()
@@ -27,6 +30,11 @@ def create_app(config_type='dev'):
     jwt.init_app(app)
 
     babel.init_app(app)
+
+    handler = RotatingFileHandler('sinergia.log', maxBytes=10000, backupCount=1)
+    handler.setLevel(logging.DEBUG)
+    app.logger.addHandler(handler)
+
 
     from .v1 import v1_blueprint
     app.register_blueprint(v1_blueprint, url_prefix='/api/v1')

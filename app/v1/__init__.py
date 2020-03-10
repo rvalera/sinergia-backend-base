@@ -7,6 +7,11 @@ from app.exceptions.base import SinergiaException
 from flask.globals import request
 from flask_babel import gettext
 
+from werkzeug.local import LocalProxy
+from flask import current_app
+
+logger = LocalProxy(lambda: current_app.logger)
+
 v1_blueprint = Blueprint('v1_blueprint', __name__,template_folder='/templates')
 v1_api = Api(v1_blueprint,
              title='CryptoPOS API',
@@ -53,7 +58,7 @@ def handle_unauthorized_token_error(e):
 
 @jwt.token_in_blacklist_loader
 def check_if_token_is_revoked(decrypted_token):
-    print(request.headers)
+    logger.debug(request.headers)
     jti = decrypted_token['jti']
     entry = redis_client.get(jti)
     if entry is None:
