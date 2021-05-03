@@ -431,6 +431,3 @@ class ResetPasswordMemberResource(Resource):
         data = ResetPasswordMemberUseCase().execute(request_payload)
         return  data, 200
 
-
-
-# from .wallet import *  
