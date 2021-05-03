@@ -19,6 +19,7 @@ v1_api = Api(v1_blueprint,
              description='OpenAPI to Sinergia Security Service')
 
 from app.v1.resources.base import member_ns
+from app.v1.resources.entities import entities_ns
 
 # pybabel extract -o locale/base.pot  .
 # pybabel init -i base.pot -d translations -l en
@@ -74,3 +75,4 @@ def error_handler_500(error):
 
 
 v1_api.add_namespace(member_ns)
+v1_api.add_namespace(entities_ns)

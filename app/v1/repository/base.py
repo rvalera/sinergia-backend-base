@@ -11,29 +11,6 @@ from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
 from app.exceptions.base import CryptoPOSException, ConnectionException
 
-class SecurityElementRepository(object):
-    
-    def getByAuthToken(self,token):
-        security_element = SecurityElement.verify_auth_token(token)
-        return security_element
-    
-    def getByName(self,name):
-        security_element = SecurityElement.query.filter(SecurityElement.name==name.lower()).first()
-        return security_element
-
-class UserRepository(object):
-    
-    def getByName(self,name):
-        user = User.query.filter(User.name==name.lower()).first()
-        return user
-
-class PersonExtensionRepository(object):
-
-    def getById(self,id):
-        person_extension = PersonExtension.query.filter( PersonExtension.id_number == id).first()
-        return person_extension
-
-
 class CacheRepository(object):
 
     DEFAULT_EXPIRED_TIME = 300
@@ -47,6 +24,14 @@ class CacheRepository(object):
         json_payload = json.dumps(payload)
         redis_client.set(key, json_payload,expired_time)
 
+class SinergiaRepository(object):
+
+    username = None
+    token = None
+    
+    def __init__(self,username=None,token=None):
+        self.username = username
+        self.token = token
 
 
 import urllib.parse

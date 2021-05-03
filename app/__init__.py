@@ -35,7 +35,6 @@ def create_app(config_type='dev'):
     handler.setLevel(logging.DEBUG)
     app.logger.addHandler(handler)
 
-
     from .v1 import v1_blueprint
     app.register_blueprint(v1_blueprint, url_prefix='/api/v1')
 

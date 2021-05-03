@@ -11,3 +11,4 @@ pip install cached_property
 pip install  Werkzeug==0.16.1
 pip install passlib
 pip install psycopg2-binary
+pip install pandas
