@@ -433,4 +433,4 @@ class ResetPasswordMemberResource(Resource):
 
 
 
-from .wallet import *  
+# from .wallet import *  
