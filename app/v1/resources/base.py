@@ -21,7 +21,8 @@ from app.exceptions.base import SinergiaException, ProxyCredentialsNotFound
 #     UpdateMemberProfileUseCase, ChangePasswordMemberUseCase,\
 #     ResetPasswordMemberUseCase, GetAnyMemberProfileUseCase,\
 #     GetDetailedMemberProfileUseCase, GetUserByNameUseCase
-from app.v1.use_cases.security import   GetMemberProfileUseCase,\
+from app.v1.use_cases.security import   MemberInitSignUpUseCase,\
+    MemberFinishRegisterUseCase, GetMemberProfileUseCase,\
     UpdateMemberProfileUseCase, ChangePasswordMemberUseCase,\
     ResetPasswordMemberUseCase, GetAnyMemberProfileUseCase,\
     GetDetailedMemberProfileUseCase, GetUserByNameUseCase
@@ -36,6 +37,24 @@ member_ns = v1_api.namespace('member', description='Security Services')
 mLogin = v1_api.model('Login', {
     'username': fields.String(required=True, description='User Name '),
     'password': fields.String(required=True, description='Password User')
+})
+
+mMemberInitRegister = v1_api.model('MemberInitRegister', {
+    'email': fields.String(required=True, description='Email'),
+    'first_name': fields.String(required=True, description='First Name'),
+    'last_name': fields.String(required=True, description='Last Name')
+})
+
+mMemberFinishRegister = v1_api.model('MemberFinishRegister', {
+#     'email': fields.String(required=True, description='Email'),
+#     'first_name': fields.String(required=True, description='First Name'),
+#     'last_name': fields.String(required=True, description='Last Name'),
+    'phone_number': fields.String(required=True, description='Phone Number'),
+    'gender': fields.String(required=True, description='Gender'),
+    'secondary_email': fields.String(required=True, description='Secondary email'),
+    'birth_date': fields.String(required=True, description='Birth Date'),
+    'operation_key': fields.String(required=True, description='Operation Key of Operations'),
+    'password': fields.String(required=True, description='New Password')
 })
 
 mMemberProfile = v1_api.model('MemberProfile', {
@@ -100,7 +119,7 @@ mChangePassword = v1_api.model('ChangePassword', {
     'new_password': fields.String(required=True, description='New Password'),
 })
 
-BankStruct = v1_api.model('UserStruct', { 
+BankStruct = v1_api.model('BankStruct', { 
     'id': fields.String(attribute='id'),
     'name': fields.String(attribute='name'),
     'account_number': fields.String(attribute='account_number'),
@@ -116,7 +135,7 @@ UserStruct = v1_api.model('UserStruct', {
     'gender': fields.String(attribute='person_extension.gender'),
     'address': fields.String(attribute='person_extension.address'),
     'phone_number': fields.String(attribute='person_extension.phone_number'),
-    # 'bank' : fields.Nested(BankStruct,attribute='person_extension.bank')
+    'bank' : fields.Nested(BankStruct,attribute='person_extension.bank')
 }) 
 
 GetUserStruct = v1_api.model('GetUserResult', { 
@@ -133,8 +152,8 @@ publicHeader.add_argument('Accept-Language', type=str,location='headers',help="e
 
 queryParams = v1_api.parser()
 queryParams.add_argument('filter',type=str,  help='{"stringParamName" : "stringParamValue","numericParamName" : numericParamValue}', location='args')
-queryParams.add_argument('order',type=str, location='args')
-queryParams.add_argument('range',type=str, location='args')
+queryParams.add_argument('order',type=str, location='args', help='["field1","field2 ASC","field3 DESC"]')
+queryParams.add_argument('range',type=str, location='args', help='[low,high]')
 
 
 ACCESS_EXPIRES = 300
@@ -360,6 +379,37 @@ class ProxySecureResource(Resource):
         return security_credentials    
 
 
+@member_ns.route('/signup')
+@v1_api.expect(publicHeader)
+class MemberInitSignupResource(Resource):
+     
+    @member_ns.doc('Member Register (Step-1)')
+    @member_ns.expect(mMemberInitRegister)
+    @member_ns.marshal_with(mResult, code=200)
+    def post(self):
+        payload = request.json
+        data = MemberInitSignUpUseCase().execute(payload)
+        return  data, 200
+        
+
+@member_ns.route('/signup/finish')
+@v1_api.expect(secureHeader)
+class MemberFinishSignupResource(ProxySecureResource):
+     
+    @member_ns.doc('Member Register (Step-2)')
+    @member_ns.expect(mMemberFinishRegister)
+    @member_ns.marshal_with(mResult, code=200)
+    @jwt_required    
+    def put(self):
+        security_credentials = self.checkForFinishSignup()
+        payload = request.json
+        payload['id'] = security_credentials['id']        
+        data = MemberFinishRegisterUseCase().execute(security_credentials, payload)
+        self.syncronizePasswordCache(payload['password'])
+        return  data, 200
+
+
+
 @member_ns.route('/profile')
 @v1_api.expect(secureHeader)
 class MemberProfileResource(ProxySecureResource): 
@@ -372,8 +422,7 @@ class MemberProfileResource(ProxySecureResource):
         query_params = {}
         data = GetDetailedMemberProfileUseCase().execute(security_credentials,query_params)
         # return make_template_response(data, 'json/member/get.json'), 200
-        # return {'ok': 1,'data': data},200
-        return {'data': data },200
+        return {'ok' : 1, 'data': data },200
 
     @member_ns.doc('Update Member Profile')
     @v1_api.expect(mMemberProfile)
@@ -382,8 +431,8 @@ class MemberProfileResource(ProxySecureResource):
         payload = request.json        
         security_credentials = self.checkCredentials()
         payload['id'] = security_credentials['id']
-        data = UpdateMemberProfileUseCase().execute(security_credentials,payload)
-        return  data, 200
+        UpdateMemberProfileUseCase().execute(security_credentials,payload)
+        return  { 'ok': 1 }, 200
 
 @member_ns.route('/profile/<email>')
 @member_ns.param('email', 'Email Member')
@@ -392,11 +441,12 @@ class GetAnyMemberProfileResource(ProxySecureResource):
  
     @member_ns.doc('Get Any Member Profile')
     @jwt_required    
+    @v1_api.marshal_with(GetUserStruct) 
     def get(self,email):
         security_credentials = self.checkCredentials()
         query_params = {'email': email}
         data = GetAnyMemberProfileUseCase().execute(security_credentials,query_params)
-        return  data, 200
+        return  {'ok' : 1, 'data': data }, 200
 
 
 @member_ns.route('/password')
@@ -413,14 +463,15 @@ class ChangePasswordMemberResource(ProxySecureResource):
         request_payload = { 'id': security_credentials['id'] ,
                    'password': user_payload['new_password'],
                    'old_password': user_payload['old_password']}
-        data = ChangePasswordMemberUseCase().execute(security_credentials,request_payload)
+        ChangePasswordMemberUseCase().execute(security_credentials,request_payload)
         self.syncronizePasswordCache(user_payload['new_password'])
-        return  data, 200
+        return  { 'ok': 1 }, 200
+
 
 @member_ns.route('/password/reset')
 @v1_api.expect(publicHeader)
 class ResetPasswordMemberResource(Resource):
- 
+
     @member_ns.doc('Reset Password')
     @v1_api.expect(mMemberEmail)    
     def post(self):

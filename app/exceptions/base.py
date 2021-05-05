@@ -24,4 +24,12 @@ class ProxyCredentialsNotFound(SinergiaException):
 
 class NotImplementedException(SinergiaException):
     def __init__(self,text=None):
-        super(ConnectionException, self).__init__(code='NOTIMP001',text = text)
+        super(NotImplementedException, self).__init__(code='NOTIMP001',text = text)
+
+class UserCurrentPasswordException(SinergiaException):
+    def __init__(self,text=None):
+        super(UserCurrentPasswordException, self).__init__(code='USRPWD001',text = text)
+
+class UserRepeatedPasswordException(SinergiaException):
+    def __init__(self,text=None):
+        super(UserRepeatedPasswordException, self).__init__(code='USRPWD002',text = text)

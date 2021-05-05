@@ -40,13 +40,20 @@ class GetAnyMemberProfileUseCase(object):
 
 class UpdateMemberProfileUseCase(object):
     def execute(self,security_credentials,payload):
-        return MemberRepository(username=security_credentials['username']).save(payload)
+        MemberRepository(username=security_credentials['username']).save(payload)
 
 class ChangePasswordMemberUseCase(object):
     def execute(self,security_credentials,payload):
-        return MemberRepository(username=security_credentials['username']).changePassword(payload)
+        MemberRepository(username=security_credentials['username']).changePassword(payload)
 
 class ResetPasswordMemberUseCase(object):
     def execute(self,payload):
         return MemberRepository().resetPassword(payload)
 
+class MemberInitSignUpUseCase(object):
+    def execute(self,payload):
+        return MemberRepository().initCreate(payload)
+
+class MemberFinishRegisterUseCase(object):
+    def execute(self,security_credentials,payload):
+        return MemberRepository(username=security_credentials['username'],password=security_credentials['password']).finishCreate(payload)

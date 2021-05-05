@@ -5,6 +5,7 @@ Created on 17 dic. 2019
 '''
 from app.v1.models.security import SecurityElement, User, PersonExtension
 from app import redis_client, db
+from app.exceptions.base import UserCurrentPasswordException,UserRepeatedPasswordException
 import json
 import requests
 from requests.auth import HTTPBasicAuth
@@ -13,7 +14,7 @@ from app.exceptions.base import CryptoPOSException, ConnectionException,NotImple
 from .base import SinergiaRepository
 
 import pandas as pd
-
+import hashlib
 
 class SecurityElementRepository(object):
     
@@ -42,16 +43,48 @@ class MemberRepository(SinergiaRepository):
         return result
     
     def save(self,payload):
-        data = self.executePut('/api/v2/mobile_user/%s' % payload['id'], payload)
-        return data
+        user = User.query.filter(User.name == self.username).first()
+        
+        first_name =  payload['first_name']
+        last_name =  payload['last_name']
+        phone_number =  payload['phone_number']
+        gender =  payload['gender']
+        secondary_email =  payload['secondary_email']
+        birth_date =  payload['birth_date']
+    
+        user.person_extension.first_name = first_name
+        user.person_extension.last_name = last_name
+        user.person_extension.fullname =  first_name + ' ' + last_name
+        user.person_extension.phone_number = phone_number
+        user.person_extension.gender = gender
+        user.person_extension.secondary_email = secondary_email
+        user.person_extension.birth_date = birth_date
+
+        db.session.add(user)
+        db.session.commit()
     
     def changePassword(self,payload):
-        data = self.executePut('/api/v2/user/password/%s' % payload['id'], payload)
-        return data
+
+        user = User.query.filter(User.name == self.username).first()
+
+        new_password = payload['password']
+        old_password = payload['old_password']        
+
+        if not user.verify_password(old_password):
+            raise UserCurrentPasswordException()
+        
+        if (new_password is not None) and (new_password != ''):
+            new_password_hash = hashlib.md5(new_password.encode('utf-8')).hexdigest()
+            if new_password_hash == user.password_hash:
+                raise UserRepeatedPasswordException()
+            user.hash_password(new_password)
+            
+        db.session.add(user)
+        db.session.commit()        
+
 
     def resetPassword(self,payload):
-        data = self.executePost('/api/v2/user/reset_user_password/%s' % payload['email'], payload)
-        return data
+        raise NotImplementedException()
     
     def changeOperationKey(self,payload):
         raise NotImplementedException()

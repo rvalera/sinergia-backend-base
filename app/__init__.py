@@ -5,6 +5,7 @@ from flask_jwt_extended.jwt_manager import JWTManager
 from flask_babel import Babel, get_locale
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_cors import CORS
+from flask_alembic import Alembic
 
 
 import logging
@@ -14,6 +15,7 @@ db = SQLAlchemy()
 redis_client = FlaskRedis(strict=True)
 jwt = JWTManager()
 babel = Babel()
+alembic = Alembic()
 
 def create_app(config_type='dev'):
     from config import config
@@ -30,6 +32,8 @@ def create_app(config_type='dev'):
     jwt.init_app(app)
 
     babel.init_app(app)
+
+    alembic.init_app(app)  
 
     handler = RotatingFileHandler('sinergia.log', maxBytes=10000, backupCount=1)
     handler.setLevel(logging.DEBUG)
