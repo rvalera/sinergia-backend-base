@@ -209,3 +209,12 @@ class MemberRepository(SinergiaRepository):
             #No se proporciono el username o la contrasena, es obligatorio 
             raise RepositoryUnknownException()
 
+class RolRepository(SinergiaRepository):
+
+    def get(self,query_params):
+
+        rows = Rol.query.all()
+        count_result_rows = len(rows)
+        count_all_rows = Rol.query.count()
+
+        return { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows} 

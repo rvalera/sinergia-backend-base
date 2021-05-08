@@ -26,7 +26,8 @@ from app.v1.models.constant import STATUS_ACTIVE, STATUS_GENERATED,\
 from app.tools.sqlalchemy import entity_as_dict
 from app.tools.response_tools import make_template_response
 
-from app.v1.use_cases.admin import GetAdminMemberListUseCase,GetAdminMemberUseCase,DeleteAdminMemberUseCase,CreateAdminMemberUseCase,SaveAdminMemberUseCase
+from app.v1.use_cases.admin import GetAdminMemberListUseCase,GetAdminMemberUseCase,\
+    DeleteAdminMemberUseCase,CreateAdminMemberUseCase,SaveAdminMemberUseCase,GetRolListUseCase
 from app.v1.resources.entities import TrabajadorStruct, CentroCostoStruct,UpdateTrabajadorStruct
 
 admin_ns = v1_api.namespace('admin', description='Admin Services')
@@ -91,6 +92,14 @@ GetOneAdminUserStruct = v1_api.model('GetOneAdminUserStruct', {
     'ok' : fields.Integer(description='Ok Result'), 
     'data' : fields.Nested(AdminUserStruct,attribute='data')
 }) 
+
+GetRolListStruct = v1_api.model('GetRolListStruct', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'count' : fields.Integer(description='Count Row'), 
+    'total' : fields.Integer(description='Total Row'), 
+    'data' : fields.Nested(RolStruct,attribute='data')
+}) 
+
 
 @admin_ns.route('/member')
 @v1_api.expect(secureHeader)
@@ -161,3 +170,18 @@ class OneAdmiMemberResource(ProxySecureResource):
         query_params = {'username': username}
         DeleteAdminMemberUseCase().execute(security_credentials,query_params)
         return  {'ok':1} , 200
+
+
+@admin_ns.route('/rol')
+@v1_api.expect(secureHeader)
+class RolResource(ProxySecureResource): 
+
+    @admin_ns.doc('User Rol')
+    @jwt_required    
+    @v1_api.marshal_with(GetRolListStruct) 
+    def get(self):
+        security_credentials = self.checkCredentials()
+        query_params = {}
+        data = GetRolListUseCase().execute(security_credentials,query_params)
+        data['ok']= 1
+        return  data , 200

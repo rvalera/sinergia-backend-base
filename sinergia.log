@@ -150,3 +150,13 @@ Accept-Encoding: gzip, deflate
 Accept-Language: es-ES,es;q=0.9,en;q=0.8
 
 
+Host: 0.0.0.0:5000
+Connection: keep-alive
+Accept: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MjA0NDQ0NTUsIm5iZiI6MTYyMDQ0NDQ1NSwianRpIjoiOTFkMGRmNmMtNTcyMy00YzkxLTg2YjUtYTAzYWIyMzJkMjQ2IiwiZXhwIjoxNjIwNDQ1MzU1LCJpZGVudGl0eSI6InJhbW9uLnZhbGVyYUBnbWFpbC5jb20iLCJmcmVzaCI6ZmFsc2UsInR5cGUiOiJhY2Nlc3MifQ.mQ02AytsDDKBeczpD4q3jvju4l6uQQPVzDhwj2wya4M
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36
+Referer: http://0.0.0.0:5000/api/v1/
+Accept-Encoding: gzip, deflate
+Accept-Language: es-ES,es;q=0.9,en;q=0.8
+
+
