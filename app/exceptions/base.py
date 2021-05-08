@@ -33,3 +33,7 @@ class UserCurrentPasswordException(SinergiaException):
 class UserRepeatedPasswordException(SinergiaException):
     def __init__(self,text=None):
         super(UserRepeatedPasswordException, self).__init__(code='USRPWD002',text = text)
+
+class RepositoryUnknownException(SinergiaException):
+    def __init__(self,text=None):
+        super(RepositoryUnknownException, self).__init__(code='UNKNOWN',text = text)

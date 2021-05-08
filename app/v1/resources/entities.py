@@ -4,11 +4,31 @@ from flask_restplus import Resource, Namespace, fields
 from app.v1.resources.base import ProxySecureResource, secureHeader,queryParams
 from app.v1.use_cases.entities import GetCargoListUseCase,GetCentroCostoListUseCase,GetConceptoNominaListUseCase,\
     GetDispositivoListUseCase,GetEstatusTrabajadorListUseCase,GetTipoAusenciaListUseCase,GetTipoNominaListUseCase,\
-    GetTrabajadorListUseCase
+    GetTrabajadorListUseCase,GetTrabajadorUseCase
 from flask.globals import request    
 import json 
 
 entities_ns = v1_api.namespace('entities', description='Business Entities Services')
+
+CargoStruct = v1_api.model('CargoStruct', { 
+    'codigo' : fields.String(), 
+    'descripcion' : fields.String(), 
+})
+
+CentroCostoStruct = v1_api.model('CentroCostoStruct', { 
+    'codigo' : fields.String(), 
+    'descripcion' : fields.String(), 
+})
+
+TipoNominaStruct = v1_api.model('TipoNominaStruct', { 
+    'codigo' : fields.String(), 
+    'descripcion' : fields.String(), 
+})
+
+StatusTrabajadorStruct = v1_api.model('StatusTrabajadorStruct', { 
+    'codigo' : fields.String(), 
+    'descripcion' : fields.String(), 
+})
 
 TrabajadorStruct = v1_api.model('TrabajadorStruct', { 
     'cedula' : fields.String(), 
@@ -17,24 +37,29 @@ TrabajadorStruct = v1_api.model('TrabajadorStruct', {
     'apellidos' : fields.String(),  
     'sexo' : fields.String(),  
     'fecha_ingreso' : fields.String(format='date-time'),   
-    'fecha_egreso' : fields.String(format='date-time'),   
-    'id_cargo' : fields.String(),  
-    'nombre_cargo' : fields.String(),  
-    'id_centro_costo' : fields.String(),  
-    'nombre_centro_costo' : fields.String(),  
-    'id_tipo_nomina' : fields.String(),   
-    'nombre_tipo_nomina' : fields.String(),  
-    'id_status_actual' : fields.String(),   
-    'status_trabajador' : fields.String(),  
+    'fecha_egreso' : fields.String(format='date-time'), 
+    'cargo': fields.Nested(CargoStruct,attribute='cargo'),      
+    'centro_costo': fields.Nested(CentroCostoStruct,attribute='centro_costo'),
+    'tipo_nomina': fields.Nested(TipoNominaStruct,attribute='tipo_nomina'),    
+    'status_actual': fields.Nested(StatusTrabajadorStruct,attribute='status_actual'),
     'id_tarjeta': fields.String(),   
     'telefono' : fields.String(),  
     'correo' : fields.String()
+}) 
+
+UpdateTrabajadorStruct = v1_api.model('UpdateTrabajadorStruct', { 
+    'cedula' : fields.String(), 
 }) 
 
 GetTrabajadorListStruct = v1_api.model('GetTrabajadorListResult', { 
     'ok' : fields.Integer(description='Ok Result'), 
     'count' : fields.Integer(description='Count Row'), 
     'total' : fields.Integer(description='Total Row'), 
+    'data' : fields.Nested(TrabajadorStruct,attribute='data')
+}) 
+
+GetTrabajadorStruct = v1_api.model('GetTrabajadorResult', { 
+    'ok' : fields.Integer(description='Ok Result'), 
     'data' : fields.Nested(TrabajadorStruct,attribute='data')
 }) 
 
@@ -168,15 +193,16 @@ class TipoNominaResource(ProxySecureResource):
         return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
 
 @entities_ns.route('/trabajador')
-@v1_api.expect(secureHeader)
+# @v1_api.expect(secureHeader)
 class TrabajadorResource(ProxySecureResource): 
 
     @entities_ns.doc('Trabajador')
     @v1_api.expect(queryParams)    
-    @jwt_required    
+    # @jwt_required    
     @v1_api.marshal_with(GetTrabajadorListStruct) 
     def get(self):
-        security_credentials = self.checkCredentials()
+        # security_credentials = self.checkCredentials()
+        security_credentials = {'username' : 'guest'}
 
         query_params = {}
         request_payload =  {}        
@@ -196,3 +222,20 @@ class TrabajadorResource(ProxySecureResource):
         data = GetTrabajadorListUseCase().execute(security_credentials,query_params)
         data['ok']= 1
         return  data , 200
+
+@entities_ns.route('/trabajador/<cedula>')
+@entities_ns.param('cedula', 'Cedula Trabajador')
+# @v1_api.expect(secureHeader)
+class OneTrabajadorResource(ProxySecureResource):
+    
+    @entities_ns.doc('Get Trabajador')
+    @v1_api.marshal_with(GetTrabajadorStruct) 
+    # @jwt_required    
+    def get(self,cedula):
+        # security_credentials = self.checkCredentials()
+        security_credentials = {'username': 'guest'}
+        query_params = {'cedula': cedula}
+        data = GetTrabajadorUseCase().execute(security_credentials,query_params)
+        return  {'ok': 1, 'data': data}, 200
+
+

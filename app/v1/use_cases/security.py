@@ -36,7 +36,7 @@ class GetDetailedMemberProfileUseCase(object):
 
 class GetAnyMemberProfileUseCase(object):
     def execute(self,security_credentials,payload):
-        return MemberRepository(username=security_credentials['username']).getByEmail(payload)
+        return MemberRepository(username=security_credentials['username']).getByEmail(payload['email'])
 
 class UpdateMemberProfileUseCase(object):
     def execute(self,security_credentials,payload):

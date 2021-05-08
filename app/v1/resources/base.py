@@ -57,15 +57,6 @@ mMemberFinishRegister = v1_api.model('MemberFinishRegister', {
     'password': fields.String(required=True, description='New Password')
 })
 
-mMemberProfile = v1_api.model('MemberProfile', {
-    'first_name': fields.String(required=True, description='First Name'),
-    'last_name': fields.String(required=True, description='Last Name'),
-    'phone_number': fields.String(required=True, description='Phone Number'),
-    'gender': fields.String(required=True, description='Gender'),
-    'secondary_email': fields.String(required=True, description='Secondary email'),
-    'birth_date': fields.String(required=True, description='Birth Date'),
-})
-
 mMemberEmail = v1_api.model('MemberEmail', {
     'email': fields.String(required=True, description='Email')
 })
@@ -119,13 +110,22 @@ mChangePassword = v1_api.model('ChangePassword', {
     'new_password': fields.String(required=True, description='New Password'),
 })
 
-BankStruct = v1_api.model('BankStruct', { 
-    'id': fields.String(attribute='id'),
-    'name': fields.String(attribute='name'),
-    'account_number': fields.String(attribute='account_number'),
-}) 
+# BankStruct = v1_api.model('BankStruct', { 
+#     'id': fields.String(attribute='id'),
+#     'name': fields.String(attribute='name'),
+#     'account_number': fields.String(attribute='account_number'),
+# }) 
 
-UserStruct = v1_api.model('UserStruct', { 
+UpdateProfileUserStruct = v1_api.model('UpdateProfileUserStruct', {
+    'first_name': fields.String(required=True, description='First Name'),
+    'last_name': fields.String(required=True, description='Last Name'),
+    'phone_number': fields.String(required=True, description='Phone Number'),
+    'gender': fields.String(required=True, description='Gender'),
+    'secondary_email': fields.String(required=True, description='Secondary email'),
+    'birth_date': fields.String(required=True, description='Birth Date'),
+})
+
+ProfileUserStruct = v1_api.model('ProfileUserStruct', { 
     'id': fields.String(attribute='id'),
     'id_number': fields.String(attribute='person_extension.id_number'),
     'first_name': fields.String(attribute='person_extension.first_name'),
@@ -135,12 +135,12 @@ UserStruct = v1_api.model('UserStruct', {
     'gender': fields.String(attribute='person_extension.gender'),
     'address': fields.String(attribute='person_extension.address'),
     'phone_number': fields.String(attribute='person_extension.phone_number'),
-    'bank' : fields.Nested(BankStruct,attribute='person_extension.bank')
+    # 'bank' : fields.Nested(BankStruct,attribute='person_extension.bank')
 }) 
 
-GetUserStruct = v1_api.model('GetUserResult', { 
+GetProfileUserStruct = v1_api.model('GetProfileUserStruct', { 
     'ok' : fields.Integer(description='Ok Result'), 
-    'data' : fields.Nested(UserStruct,attribute='data')
+    'data' : fields.Nested(ProfileUserStruct,attribute='data')
 }) 
 
 secureHeader = v1_api.parser()
@@ -409,14 +409,13 @@ class MemberFinishSignupResource(ProxySecureResource):
         return  data, 200
 
 
-
 @member_ns.route('/profile')
 @v1_api.expect(secureHeader)
 class MemberProfileResource(ProxySecureResource): 
  
     @member_ns.doc('Member Profile')
     @jwt_required   
-    @v1_api.marshal_with(GetUserStruct) 
+    @v1_api.marshal_with(GetProfileUserStruct) 
     def get(self):
         security_credentials = self.checkCredentials()
         query_params = {}
@@ -425,7 +424,7 @@ class MemberProfileResource(ProxySecureResource):
         return {'ok' : 1, 'data': data },200
 
     @member_ns.doc('Update Member Profile')
-    @v1_api.expect(mMemberProfile)
+    @v1_api.expect(UpdateProfileUserStruct)
     @jwt_required    
     def put(self):
         payload = request.json        
@@ -441,7 +440,7 @@ class GetAnyMemberProfileResource(ProxySecureResource):
  
     @member_ns.doc('Get Any Member Profile')
     @jwt_required    
-    @v1_api.marshal_with(GetUserStruct) 
+    @v1_api.marshal_with(GetProfileUserStruct) 
     def get(self,email):
         security_credentials = self.checkCredentials()
         query_params = {'email': email}

@@ -27,7 +27,7 @@ class SecurityElementRepository(object):
         return security_element
 
 class UserRepository(object):
-    
+
     def getByName(self,name):
         user = User.query.filter(User.name==name.lower()).first()
         return user
@@ -38,8 +38,8 @@ class MemberRepository(SinergiaRepository):
         result = User.query.filter(User.name == self.username).first()
         return result
 
-    def getByEmail(self,query_params):
-        result = User.query.filter(User.name == query_params['email']).first()
+    def getByEmail(self,email):
+        result = User.query.filter(User.name == email).first()
         return result
     
     def save(self,payload):
@@ -97,6 +97,3 @@ class MemberRepository(SinergiaRepository):
 
     def finishCreate(self,data):
         raise NotImplementedException()
-
-
-

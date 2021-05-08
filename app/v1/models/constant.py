@@ -13,10 +13,19 @@ STATUS_ACTIVE      = 'A' # Active
 STATUS_LOCKED      = 'L' # Locked
 STATUS_REPLACED    = 'R' # Replaced
 
+#User Types
+CONSOLE_USER = 'C'
+
+#User Source
+FROM_BACKOFFICE = 'B'
+AUTOREGISTER = 'A'
+
+
+#Basic Responses
 YES = 'Y' # Yes
 NO  = 'N' # No
 
-#CryptoPOS Privileges
+#Custom Privileges
 PRIV_MAKE_PAYMENT = 'PAY'
 PRIV_MAKE_REFILL = 'REF'
 PRIV_LOCK = 'LOCK'

@@ -38,3 +38,7 @@ class GetTipoNominaListUseCase(object):
 class GetTrabajadorListUseCase(object):
     def execute(self,security_credentials,query_params):
         return TrabajadorRepository(username=security_credentials['username']).get(query_params)
+
+class GetTrabajadorUseCase(object):
+    def execute(self,security_credentials,query_params):
+        return TrabajadorRepository(username=security_credentials['username']).getByCedula(query_params['cedula'])

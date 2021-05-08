@@ -4,6 +4,7 @@ Created on 17 dic. 2019
 @author: ramon
 '''
 from app.v1.models.security import SecurityElement, User, PersonExtension
+from app.v1.models.hr import Trabajador
 from app import redis_client, db
 import json
 import requests
@@ -154,33 +155,10 @@ class TipoNominaRepository(SinergiaRepository):
 
 class TrabajadorRepository(SinergiaRepository):
     def get(self,query_params):
-        sql = '''
-        SELECT  
-            t.cedula, 
-            t.codigo, 
-            t.nombres, 
-            t.apellidos, 
-            t.sexo, 
-            t.fecha_ingreso, 
-            t.fecha_egreso, 
-            t.cargo id_cargo, c.descripcion nombre_cargo, 
-            t.centro_costo id_centro_costo, cc.descripcion nombre_centro_costo, 
-            t.tipo_nomina id_tipo_nomina, tn.descripcion nombre_tipo_nomina, 
-            t.status_actual id_status_actual, et.descripcion status_trabajador, 
-            t.id_tarjeta, 
-            t.telefono, 
-            t.correo
-        FROM integrador.trabajadores t 
-        JOIN integrador.cargos c 
-        ON t.cargo = c.codigo
-        JOIN integrador.centro_costo cc 
-        ON t.centro_costo = cc.codigo 
-        JOIN integrador.tipos_de_nomina tn 
-        ON t.tipo_nomina = tn.codigo 
-        JOIN integrador.estatus_trabajador et 
-        ON t.status_actual = et.codigo 
-        '''
-        count_sql = 'SELECT COUNT(*) count_rows FROM integrador.trabajadores '
+        # Definiendo Filter
+        filter_criteria = {}
+        if 'filter' in query_params:
+            filter_criteria = query_params['filter']
 
         # Definiendo order
         if 'order' in query_params:
@@ -202,14 +180,14 @@ class TrabajadorRepository(SinergiaRepository):
                 high_limit = query_range[0] 
             limit = (high_limit - low_limit) + 1
             offset = low_limit 
-        sql += ' LIMIT %s OFFSET %s' % (limit,offset)
 
-        table_df = pd.read_sql_query(sql,con=db.engine)
-        rows = table_df.to_dict('records')
-        count_result_rows = limit
+        rows = Trabajador.query.filter_by(**filter_criteria).slice(offset,limit).all()
+        count_result_rows = len(rows)
+        count_all_rows = Trabajador.query.filter_by(**filter_criteria).count()
 
-        count_df = pd.read_sql_query(count_sql,con=db.engine)
-        result_count = count_df.to_dict('records')
-        count_all_rows = result_count[0]['count_rows']
+        return { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows} 
 
-        return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
+
+    def getByCedula(self,cedula):
+        row = Trabajador.query.filter(Trabajador.cedula == cedula).first()
+        return  row
