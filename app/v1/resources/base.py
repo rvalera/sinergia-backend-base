@@ -230,7 +230,9 @@ class MemberLoginResource(Resource):
             'data': {
                 'extra_info' : {
                     'username' : username,
-                    'status' : securityElement.status 
+                    'status' : securityElement.status,
+                    'roles' : [r.name for r in user.roles],
+                    'cecos' : [c.codigo for c in user.person_extension.centroscosto]
                 },
                 'access_token': access_token,
                 'refresh_token': refresh_token

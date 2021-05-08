@@ -13,4 +13,5 @@ pip install  Werkzeug==0.16.1
 pip install passlib
 pip install psycopg2-binary
 pip install pandas
-pip install alembic
+pip install requests
+pip install gunicorn

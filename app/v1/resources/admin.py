@@ -57,7 +57,6 @@ AdminUserStruct = v1_api.model('AdminUserStruct', {
     'extra_info': fields.Nested(ExtraInfoUserStruct,attribute='person_extension'),
 }) 
 
-
 UpdateExtraInfoUserStruct = v1_api.model('UpdateExtraInfoUserStruct', { 
     'id_number': fields.String(),
     'first_name': fields.String(),
@@ -94,16 +93,15 @@ GetOneAdminUserStruct = v1_api.model('GetOneAdminUserStruct', {
 }) 
 
 @admin_ns.route('/member')
-# @v1_api.expect(secureHeader)
+@v1_api.expect(secureHeader)
 class AdmiMemnberResource(ProxySecureResource): 
 
     @admin_ns.doc('Admin Member')
     @v1_api.expect(queryParams)    
-    # @jwt_required    
+    @jwt_required    
     @v1_api.marshal_with(GetAdminUserListStruct) 
     def get(self):
-        # security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'guest'}
+        security_credentials = self.checkCredentials()
 
         query_params = {}
         request_payload =  {}        
@@ -126,44 +124,40 @@ class AdmiMemnberResource(ProxySecureResource):
 
     @admin_ns.doc('Create Member')
     @v1_api.expect(UpdateAdminUserStruct)    
-    # @jwt_required    
+    @jwt_required    
     def post(self):
-        # security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'guest'}
+        security_credentials = self.checkCredentials()
         payload = request.json        
         CreateAdminMemberUseCase().execute(security_credentials,payload)
         return  {'ok':1} , 200
 
     @admin_ns.doc('Update Member')
     @v1_api.expect(UpdateAdminUserStruct)    
-    # @jwt_required    
+    @jwt_required    
     def put(self):
-        # security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'guest'}
+        security_credentials = self.checkCredentials()
         payload = request.json        
         SaveAdminMemberUseCase().execute(security_credentials,payload)
         return  {'ok':1} , 200
 
 @admin_ns.route('/member/<username>')
 @admin_ns.param('username', 'Nombre de Usuario')
-# @v1_api.expect(secureHeader)
+@v1_api.expect(secureHeader)
 class OneAdmiMemberResource(ProxySecureResource):
     
     @admin_ns.doc('Get Trabajador')
     @v1_api.marshal_with(GetOneAdminUserStruct) 
-    # @jwt_required    
+    @jwt_required    
     def get(self,username):
-        # security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'guest'}
+        security_credentials = self.checkCredentials()
         query_params = {'username': username}
         data = GetAdminMemberUseCase().execute(security_credentials,query_params)
         return  {'ok' : 1, 'data': data}, 200
 
     @admin_ns.doc('Remove Trabajador')
-    # @jwt_required    
+    @jwt_required    
     def delete(self,username):
-        # security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'guest'}
+        security_credentials = self.checkCredentials()
         query_params = {'username': username}
         DeleteAdminMemberUseCase().execute(security_credentials,query_params)
         return  {'ok':1} , 200
