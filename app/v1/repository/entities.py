@@ -14,6 +14,7 @@ from app.exceptions.base import CryptoPOSException, ConnectionException,NotImple
 from .base import SinergiaRepository
 
 import pandas as pd
+import logging
 
 class CargoRepository(SinergiaRepository):
     def get(self,query_params):
@@ -154,6 +155,7 @@ class TipoNominaRepository(SinergiaRepository):
         return result
 
 class TrabajadorRepository(SinergiaRepository):
+
     def get(self,query_params):
         # Definiendo Filter
         filter_criteria = {}
@@ -164,11 +166,13 @@ class TrabajadorRepository(SinergiaRepository):
         if 'order' in query_params:
             order_criteria = query_params['order']
             order_fields = ','.join(order_criteria)
-            sql += ' ORDER BY %s' % (order_fields)
 
         # Definiendo los Rangos de Paginacion
         limit = 10
         offset = 0
+        low_limit = 0 
+        high_limit = 9 
+
         query_range = [0,10]
         if 'range' in query_params:
             query_range = query_params['range']
@@ -181,7 +185,8 @@ class TrabajadorRepository(SinergiaRepository):
             limit = (high_limit - low_limit) + 1
             offset = low_limit 
 
-        rows = Trabajador.query.filter_by(**filter_criteria).slice(offset,limit).all()
+        high_limit = high_limit + 1
+        rows = Trabajador.query.filter_by(**filter_criteria).slice(low_limit,high_limit).all()
         count_result_rows = len(rows)
         count_all_rows = Trabajador.query.filter_by(**filter_criteria).count()
 

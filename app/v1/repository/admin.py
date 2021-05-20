@@ -36,6 +36,8 @@ class MemberRepository(SinergiaRepository):
         # Definiendo los Rangos de Paginacion
         limit = 10
         offset = 0
+        low_limit = 0 
+        high_limit = 9 
         query_range = [0,10]
         if 'range' in query_params:
             query_range = query_params['range']
@@ -48,7 +50,9 @@ class MemberRepository(SinergiaRepository):
             limit = (high_limit - low_limit) + 1
             offset = low_limit 
 
-        rows = User.query.filter_by(**filter_criteria).slice(offset,limit).all()
+        high_limit = high_limit + 1
+
+        rows = User.query.filter_by(**filter_criteria).slice(low_limit,high_limit).all()
         count_result_rows = len(rows)
         count_all_rows = User.query.filter_by(**filter_criteria).count()
 
