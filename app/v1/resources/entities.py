@@ -193,16 +193,15 @@ class TipoNominaResource(ProxySecureResource):
         return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
 
 @entities_ns.route('/trabajador')
-# @v1_api.expect(secureHeader)
+@v1_api.expect(secureHeader)
 class TrabajadorResource(ProxySecureResource): 
 
     @entities_ns.doc('Trabajador')
     @v1_api.expect(queryParams)    
-    # @jwt_required    
+    @jwt_required    
     @v1_api.marshal_with(GetTrabajadorListStruct) 
     def get(self):
-        # security_credentials = self.checkCredentials()
-        security_credentials = {'username' : 'guest'}
+        security_credentials = self.checkCredentials()
 
         query_params = {}
         request_payload =  {}        
@@ -225,15 +224,15 @@ class TrabajadorResource(ProxySecureResource):
 
 @entities_ns.route('/trabajador/<cedula>')
 @entities_ns.param('cedula', 'Cedula Trabajador')
-# @v1_api.expect(secureHeader)
+@v1_api.expect(secureHeader)
 class OneTrabajadorResource(ProxySecureResource):
     
     @entities_ns.doc('Get Trabajador')
     @v1_api.marshal_with(GetTrabajadorStruct) 
-    # @jwt_required    
+    @jwt_required    
     def get(self,cedula):
-        # security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'guest'}
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username': 'guest'}
         query_params = {'cedula': cedula}
         data = GetTrabajadorUseCase().execute(security_credentials,query_params)
         return  {'ok': 1, 'data': data}, 200

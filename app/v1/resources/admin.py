@@ -185,3 +185,4 @@ class RolResource(ProxySecureResource):
         data = GetRolListUseCase().execute(security_credentials,query_params)
         data['ok']= 1
         return  data , 200
+
