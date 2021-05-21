@@ -30,3 +30,6 @@ class GetRolListUseCase(object):
     def execute(self,security_credentials,query_params):
         return RolRepository(username=security_credentials['username']).get(query_params)
 
+class SaveRolUseCase(object):
+    def execute(self,security_credentials,payload):
+        return RolRepository(username=security_credentials['username']).save(payload)

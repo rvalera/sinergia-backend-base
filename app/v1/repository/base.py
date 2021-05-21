@@ -60,7 +60,7 @@ class CryptoPOSClient(object):
             }
     
             json_payload = json.dumps(payload)
-    
+
             final_url = urllib.parse.urljoin(self.url_base,end_point)
     
             if authenticate  and (self.username != None and self.password != None):

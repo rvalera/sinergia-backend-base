@@ -42,6 +42,13 @@ class EstatusTrabajador(db.Model):
     codigo = Column(String(20), primary_key=True)
     descripcion = Column(String(100)) 
 
+class TipoAusencia(db.Model):
+    __tablename__ = 'tipos_ausencias'
+    __table_args__ = {'schema' : 'integrador'}
+
+    codigo = Column(Integer(), primary_key=True)
+    descripcion = Column(String(200)) 
+
 class Trabajador(db.Model):
     __tablename__ = 'trabajadores'
     __table_args__ = {'schema' : 'integrador'}

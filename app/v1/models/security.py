@@ -13,7 +13,7 @@ from itsdangerous import (TimedJSONWebSignatureSerializer
 import hashlib
 from app.v1.models.constant import STATUS_ACTIVE, configuration
 from app.v1.models.payment import Bank
-from app.v1.models.hr import Trabajador,CentroCosto
+from app.v1.models.hr import Trabajador,CentroCosto,TipoAusencia
 
 
 securityelement_rol_table = Table('securityelement_rol', db.Model.metadata,
@@ -54,6 +54,11 @@ class Function(db.Model):
     children = relationship("Function")
     status = Column(String(1))    
 
+rol_tipoausencia_table = Table('rol_tipausencias', db.Model.metadata,
+    Column('idrol', Integer, ForeignKey('public.rol.id')),
+    Column('tpau', Integer, ForeignKey('integrador.tipos_ausencias.codigo'))
+)  
+
 class Rol(db.Model):
     __tablename__ = 'rol'
     __table_args__ = {'schema' : 'public'}
@@ -63,10 +68,13 @@ class Rol(db.Model):
     privileges = relationship("Privilege", secondary=rol_privilege_table)
     functions = relationship("Function", secondary=function_rol_table)
 
+    tipos_ausencias = relationship("TipoAusencia", secondary=rol_tipoausencia_table,cascade="save-update")
+
 personextension_centrocosto_table = Table('user_ceco', db.Model.metadata,
     Column('id_user_extension', Integer, ForeignKey('public.personextension.id')),
     Column('centro_costo', Integer, ForeignKey('integrador.centro_costo.codigo'))
-)    
+)
+
 
 class PersonExtension(db.Model):
     __tablename__ = 'personextension'

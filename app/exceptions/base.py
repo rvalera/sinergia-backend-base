@@ -36,4 +36,8 @@ class UserRepeatedPasswordException(SinergiaException):
 
 class RepositoryUnknownException(SinergiaException):
     def __init__(self,text=None):
-        super(RepositoryUnknownException, self).__init__(code='UNKNOWN',text = text)
+        super(RepositoryUnknownException, self).__init__(code='REP001',text = text)
+
+class RESTClientException(SinergiaException):
+    def __init__(self, text=None):
+        super(RESTClientException, self).__init__(code='AIR001',text = text)

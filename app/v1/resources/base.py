@@ -125,6 +125,22 @@ UpdateProfileUserStruct = v1_api.model('UpdateProfileUserStruct', {
     'birth_date': fields.String(required=True, description='Birth Date'),
 })
 
+ProfileTipoAusenciaStruct = v1_api.model('ProfileTipoAusenciaStruct', { 
+    'codigo' : fields.Integer(attribute='codigo'), 
+    'descripcion' : fields.String(attribute='descripcion'), 
+})
+
+ProfileRolStruct = v1_api.model('ProfileRolStruct', { 
+    'id' : fields.Integer(), 
+    'name' : fields.String(), 
+    'tipos_ausencias': fields.Nested(ProfileTipoAusenciaStruct,attribute='tipos_ausencias'), #Listado de Ids de Centros de Costo
+})
+
+ProfileCentroCostoStruct = v1_api.model('ProfileCentroCostoStruct', { 
+    'codigo' : fields.String(), 
+    'descripcion' : fields.String(), 
+})
+
 ProfileUserStruct = v1_api.model('ProfileUserStruct', { 
     'id': fields.String(attribute='id'),
     'id_number': fields.String(attribute='person_extension.id_number'),
@@ -135,6 +151,10 @@ ProfileUserStruct = v1_api.model('ProfileUserStruct', {
     'gender': fields.String(attribute='person_extension.gender'),
     'address': fields.String(attribute='person_extension.address'),
     'phone_number': fields.String(attribute='person_extension.phone_number'),
+
+    'roles' : fields.Nested(ProfileRolStruct,attribute='roles'),
+    'centroscosto': fields.Nested(ProfileCentroCostoStruct,attribute='person_extension.centroscosto'),
+
     # 'bank' : fields.Nested(BankStruct,attribute='person_extension.bank')
 }) 
 
@@ -142,6 +162,11 @@ GetProfileUserStruct = v1_api.model('GetProfileUserStruct', {
     'ok' : fields.Integer(description='Ok Result'), 
     'data' : fields.Nested(ProfileUserStruct,attribute='data')
 }) 
+
+DateRangeStruct = v1_api.model('DateRangeStruct', { 
+    'from': fields.String(description='From'),
+    'to': fields.String(description='To') 
+})
 
 secureHeader = v1_api.parser()
 secureHeader.add_argument('Authorization', type=str,location='headers',help='Bearer Access Token',required=True)

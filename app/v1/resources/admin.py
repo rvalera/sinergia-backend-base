@@ -27,15 +27,27 @@ from app.tools.sqlalchemy import entity_as_dict
 from app.tools.response_tools import make_template_response
 
 from app.v1.use_cases.admin import GetAdminMemberListUseCase,GetAdminMemberUseCase,\
-    DeleteAdminMemberUseCase,CreateAdminMemberUseCase,SaveAdminMemberUseCase,GetRolListUseCase
+    DeleteAdminMemberUseCase,CreateAdminMemberUseCase,SaveAdminMemberUseCase,GetRolListUseCase, SaveRolUseCase
 from app.v1.resources.entities import TrabajadorStruct, CentroCostoStruct,UpdateTrabajadorStruct
 
 admin_ns = v1_api.namespace('admin', description='Admin Services')
 
+TipoAusenciaStruct = v1_api.model('TipoAusenciaStruct', { 
+    'codigo' : fields.Integer(attribute='codigo'), 
+    'descripcion' : fields.String(attribute='descripcion'), 
+})
+
 RolStruct = v1_api.model('RolStruct', { 
     'id' : fields.Integer(), 
     'name' : fields.String(), 
+    'tipos_ausencias': fields.Nested(TipoAusenciaStruct,attribute='tipos_ausencias'), #Listado de Ids de Centros de Costo
 })
+
+UpdateRolStruct = v1_api.model('UpdateRolStruct', { 
+    'name': fields.String(),
+    # 'privileges' : fields.List(fields.String()), 
+    'tipos_ausencias' : fields.List(fields.Integer()), 
+}) 
 
 ExtraInfoUserStruct = v1_api.model('ExtraInfoUserStruct', { 
     'id_number': fields.String(attribute='id_number'),
@@ -186,3 +198,11 @@ class RolResource(ProxySecureResource):
         data['ok']= 1
         return  data , 200
 
+    @admin_ns.doc('Save Rol')
+    @v1_api.expect(UpdateRolStruct)    
+    @jwt_required    
+    def put(self):
+        security_credentials = self.checkCredentials()
+        payload = request.json        
+        SaveRolUseCase().execute(security_credentials,payload)
+        return  {'ok':1} , 200

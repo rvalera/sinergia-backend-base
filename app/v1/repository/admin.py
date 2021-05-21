@@ -3,8 +3,8 @@ Created on 17 dic. 2019
 
 @author: ramon
 '''
-from app.v1.models.security import SecurityElement, User, PersonExtension, Rol
-from app.v1.models.hr import Trabajador,CentroCosto
+from app.v1.models.security import SecurityElement, User, PersonExtension, Rol, Privilege
+from app.v1.models.hr import Trabajador,CentroCosto,TipoAusencia
 from app.v1.models.constant import *
 
 from app import redis_client, db
@@ -215,10 +215,43 @@ class MemberRepository(SinergiaRepository):
 
 class RolRepository(SinergiaRepository):
 
-    def get(self,query_params):
+    def get_privileges(self,payload):
+        tipos_ausencias_list = []
+        if 'privileges' in payload:
+            ids_privileges = payload['privileges']
+            privileges_list = Privilege.query.filter(Privilege.name.in_(ids_privileges)).all()
+        return privileges_list    
 
+    def get_tipos_ausencias(self,payload):
+        tipos_ausencias_list = []
+        if 'tipos_ausencias' in payload:
+            ids_tipos_ausencias = payload['tipos_ausencias']
+            tipos_ausencias_list = TipoAusencia.query.filter(TipoAusencia.codigo.in_(ids_tipos_ausencias)).all()
+        return tipos_ausencias_list    
+
+    def get(self,query_params):
         rows = Rol.query.all()
         count_result_rows = len(rows)
         count_all_rows = Rol.query.count()
-
         return { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows} 
+
+    def save(self,payload):
+        rol_name = payload['name'] if 'name' in payload else None
+        if rol_name:
+            rol = Rol.query.filter(Rol.name == rol_name).first()
+            if rol is None:
+                raise RepositoryUnknownException()
+
+            tipos_ausencias = self.get_tipos_ausencias(payload)
+            if len(tipos_ausencias):
+                rol.tipos_ausencias = [t for t in tipos_ausencias] 
+
+            privileges = self.get_privileges(payload)
+            if len(privileges):
+                rol.privileges = [p for p in privileges] 
+
+            db.session.add(rol)
+            db.session.commit()
+        else:
+            raise RepositoryUnknownException()
+
