@@ -25,7 +25,7 @@ class GetDispositivoListUseCase(object):
 
 class GetEstatusTrabajadorListUseCase(object):
     def execute(self,security_credentials):
-        return TrabajadorRepository(username=security_credentials['username']).getAll()
+        return EstatusTrabajadorRepository(username=security_credentials['username']).getAll()
 
 class GetTipoAusenciaListUseCase(object):
     def execute(self,security_credentials):

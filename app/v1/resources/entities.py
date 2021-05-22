@@ -162,7 +162,7 @@ class DispositivoResource(ProxySecureResource):
 @entities_ns.route('/estatus_trabajador')
 @v1_api.expect(secureHeader)
 class EstatusTrabajadorResource(ProxySecureResource): 
-
+ 
     @entities_ns.doc('Estatus de Trabajador')
     @jwt_required    
     def get(self):
