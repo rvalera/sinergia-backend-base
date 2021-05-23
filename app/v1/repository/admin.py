@@ -111,6 +111,7 @@ class MemberRepository(SinergiaRepository):
                 last_name =  payload['extra_info']['last_name'] if 'last_name' in payload['extra_info'] else ''
                 phone_number =  payload['extra_info']['phone_number'] if 'phone_number' in payload['extra_info'] else ''
                 gender =  payload['extra_info']['gender'] if 'gender' in payload['extra_info'] else ''
+                email =  payload['extra_info']['email'] if 'email' in payload['extra_info'] else ''
 
                 user.person_extension = PersonExtension()
 
@@ -136,6 +137,7 @@ class MemberRepository(SinergiaRepository):
                 user.person_extension.last_name = last_name
                 user.person_extension.fullname =  first_name + ' ' + last_name
                 user.person_extension.phone_number = phone_number
+                user.person_extension.email = email
                 user.person_extension.gender = gender
 
             #Se procesan los Roles del Usuario
@@ -177,6 +179,7 @@ class MemberRepository(SinergiaRepository):
                 last_name =  payload['extra_info']['last_name'] if 'last_name' in payload['extra_info'] else ''
                 phone_number =  payload['extra_info']['phone_number'] if 'phone_number' in payload['extra_info'] else ''
                 gender =  payload['extra_info']['gender'] if 'gender' in payload['extra_info'] else ''
+                email =  payload['extra_info']['email'] if 'email' in payload['extra_info'] else ''
 
                 if 'rrhh_info' in payload['extra_info'] and 'cedula' in payload['extra_info']['rrhh_info'] :
                     cedula = payload['extra_info']['rrhh_info']['cedula']
@@ -200,6 +203,7 @@ class MemberRepository(SinergiaRepository):
                 user.person_extension.last_name = last_name
                 user.person_extension.fullname =  first_name + ' ' + last_name
                 user.person_extension.phone_number = phone_number
+                user.person_extension.email = email
                 user.person_extension.gender = gender
 
             #Se procesan los Roles del Usuario

@@ -4,7 +4,7 @@ from flask_restplus import Resource, Namespace, fields
 from app.v1.resources.base import ProxySecureResource, secureHeader,queryParams
 from app.v1.use_cases.entities import GetCargoListUseCase,GetCentroCostoListUseCase,GetConceptoNominaListUseCase,\
     GetDispositivoListUseCase,GetEstatusTrabajadorListUseCase,GetTipoAusenciaListUseCase,GetTipoNominaListUseCase,\
-    GetTrabajadorListUseCase,GetTrabajadorUseCase
+    GetTrabajadorListUseCase,GetTrabajadorUseCase,GetTipoTrabajadorListUseCase,GetGrupoGuardiaListUseCase
 from flask.globals import request    
 import json 
 

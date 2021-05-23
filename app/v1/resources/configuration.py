@@ -17,6 +17,8 @@ HolguraStruct = v1_api.model('HolguraStruct', {
     'minutos_tolerancia' : fields.Integer(), 
     'id_centro_costo' : fields.String(),  
     'nombre_centro_costo' : fields.String(),  
+    'id_tipo_nomina' : fields.String(),  
+    'nombre_tipo_nomina' : fields.String() 
 }) 
 
 NewHolguraStruct = v1_api.model('NewHolguraStruct', { 
@@ -25,6 +27,7 @@ NewHolguraStruct = v1_api.model('NewHolguraStruct', {
     'autorizado_por' : fields.String(required=True),  
     'minutos_tolerancia' : fields.Integer(required=True), 
     'id_centro_costo' : fields.String(required=True),  
+    'id_tipo_nomina' : fields.String(required=True),  
 }) 
 
 SaveHolguraStruct = v1_api.model('SaveHolguraStruct', { 
@@ -34,6 +37,7 @@ SaveHolguraStruct = v1_api.model('SaveHolguraStruct', {
     'autorizado_por' : fields.String(required=True),  
     'minutos_tolerancia' : fields.Integer(required=True), 
     'id_centro_costo' : fields.String(required=True),  
+    'id_tipo_nomina' : fields.String(required=True),  
 }) 
 
 

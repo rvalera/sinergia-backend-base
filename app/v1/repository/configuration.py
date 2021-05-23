@@ -93,7 +93,7 @@ class HolguraRepository(SinergiaRepository):
         JOIN integrador.centro_costo cc 
         ON h.centro_costo = cc.codigo 
         JOIN integrador.tipos_de_nomina tn
-        On h.codigo_nomina = tn.codigo 
+        ON h.codigo_nomina = tn.codigo 
         '''
         count_sql = 'SELECT COUNT(*) count_rows FROM integrador.holguras '
 
