@@ -142,7 +142,7 @@ class MemberRepository(SinergiaRepository):
             roles = self.get_roles(payload) 
             if len(roles):
                 user.roles = [r for r in roles]
-                            
+
             db.session.add(user)
             db.session.commit()            
         else:

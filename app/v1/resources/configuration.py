@@ -135,7 +135,6 @@ class DeleteHolguraResource(ProxySecureResource):
 @configuration_ns.route('/turno')
 @v1_api.expect(secureHeader)
 class TurnoResource(ProxySecureResource): 
-# class TurnoResource(Resource): 
 
     @configuration_ns.doc('Get Turno List')
     @v1_api.expect(queryParams)    
@@ -189,7 +188,6 @@ class TurnoResource(ProxySecureResource):
 @configuration_ns.param('codigo', 'Turno Codigo')
 @v1_api.expect(secureHeader)
 class DeleteTurnoResource(ProxySecureResource):
-# class DeleteTurnoResource(Resource):
     
     @configuration_ns.doc('Remove Turno')
     @jwt_required    
