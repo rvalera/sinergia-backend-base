@@ -30,6 +30,16 @@ StatusTrabajadorStruct = v1_api.model('StatusTrabajadorStruct', {
     'descripcion' : fields.String(), 
 })
 
+GrupoGuardiaStruct = v1_api.model('GrupoGuardiaStruct', { 
+    'codigo' : fields.String(), 
+    'descripcion' : fields.String(), 
+})
+
+TipoTrabajadorStruct = v1_api.model('TipoTrabajadorStruct', { 
+    'codigo' : fields.String(), 
+    'descripcion' : fields.String(), 
+})
+
 TrabajadorStruct = v1_api.model('TrabajadorStruct', { 
     'cedula' : fields.String(), 
     'codigo' : fields.String(), 
@@ -42,6 +52,8 @@ TrabajadorStruct = v1_api.model('TrabajadorStruct', {
     'centro_costo': fields.Nested(CentroCostoStruct,attribute='centro_costo'),
     'tipo_nomina': fields.Nested(TipoNominaStruct,attribute='tipo_nomina'),    
     'status_actual': fields.Nested(StatusTrabajadorStruct,attribute='status_actual'),
+    'tipo_trabajador': fields.Nested(TipoTrabajadorStruct,attribute='tipo_trabajador'),
+    'grupo_guardia': fields.Nested(GrupoGuardiaStruct,attribute='grupo_guardia'),
     'id_tarjeta': fields.String(),   
     'telefono' : fields.String(),  
     'correo' : fields.String()
@@ -238,3 +250,24 @@ class OneTrabajadorResource(ProxySecureResource):
         return  {'ok': 1, 'data': data}, 200
 
 
+@entities_ns.route('/tipo_trabajador')
+@v1_api.expect(secureHeader)
+class TipoTrabajadorResource(ProxySecureResource): 
+
+    @entities_ns.doc('Tipo de Trabajador')
+    @jwt_required    
+    def get(self):
+        security_credentials = self.checkCredentials()
+        data = GetTipoTrabajadorListUseCase().execute(security_credentials)
+        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+
+@entities_ns.route('/grupo_guardia')
+@v1_api.expect(secureHeader)
+class GrupoGuardiaResource(ProxySecureResource): 
+
+    @entities_ns.doc('Grupo de Guardia')
+    @jwt_required    
+    def get(self):
+        security_credentials = self.checkCredentials()
+        data = GetGrupoGuardiaListUseCase().execute(security_credentials)
+        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200

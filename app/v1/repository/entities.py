@@ -196,3 +196,16 @@ class TrabajadorRepository(SinergiaRepository):
     def getByCedula(self,cedula):
         row = Trabajador.query.filter(Trabajador.cedula == cedula).first()
         return  row
+
+
+class TipoTrabajadorRepository(SinergiaRepository):
+    def getAll(self):
+        table_df = pd.read_sql_query('select * from integrador.tipo_trabajador',con=db.engine)
+        result = table_df.to_dict('records')
+        return result
+
+class GrupoGuardiaRepository(SinergiaRepository):
+    def getAll(self):
+        table_df = pd.read_sql_query('select * from integrador.grupo_guardia',con=db.engine)
+        result = table_df.to_dict('records')
+        return result

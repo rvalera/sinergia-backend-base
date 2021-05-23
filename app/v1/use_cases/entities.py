@@ -4,7 +4,8 @@ Created on 17 dic. 2019
 @author: ramon
 '''
 from app.v1.repository.entities import CargoRepository,CentroCostoRepository,ConceptoNominaRepository,DispositivoRepository,\
-    EstatusTrabajadorRepository,TipoAusenciaRepository,TipoNominaRepository,TrabajadorRepository
+    EstatusTrabajadorRepository,TipoAusenciaRepository,TipoNominaRepository,TrabajadorRepository,\
+    TipoTrabajadorRepository,GrupoGuardiaRepository
 
 class GetCargoListUseCase(object):
     def execute(self,security_credentials,query_params):
@@ -17,7 +18,6 @@ class GetCentroCostoListUseCase(object):
 class GetConceptoNominaListUseCase(object):
     def execute(self,security_credentials,query_params):
         return ConceptoNominaRepository(username=security_credentials['username']).get(query_params)
-
 
 class GetDispositivoListUseCase(object):
     def execute(self,security_credentials):
@@ -42,3 +42,11 @@ class GetTrabajadorListUseCase(object):
 class GetTrabajadorUseCase(object):
     def execute(self,security_credentials,query_params):
         return TrabajadorRepository(username=security_credentials['username']).getByCedula(query_params['cedula'])
+
+class GetTipoTrabajadorListUseCase(object):
+    def execute(self,security_credentials):
+        return TipoTrabajadorRepository(username=security_credentials['username']).getAll()
+
+class GetGrupoGuardiaListUseCase(object):
+    def execute(self,security_credentials):
+        return GrupoGuardiaRepository(username=security_credentials['username']).getAll()

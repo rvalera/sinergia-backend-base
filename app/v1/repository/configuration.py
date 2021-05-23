@@ -30,6 +30,7 @@ class HolguraRepository(SinergiaRepository):
                     ,autorizado_por
                     ,minutos_tolerancia
                     ,centro_costo
+                    ,codigo_nomina
                     ) 
                     values 
                     (
@@ -38,6 +39,7 @@ class HolguraRepository(SinergiaRepository):
                     ,:autorizado_por
                     ,:minutos_tolerancia
                     ,:id_centro_costo
+                    ,:id_tipo_nomina
                     ) 
                 """
             ), 
@@ -57,6 +59,7 @@ class HolguraRepository(SinergiaRepository):
                     ,autorizado_por = :autorizado_por
                     ,minutos_tolerancia = :minutos_tolerancia
                     ,centro_costo = :id_centro_costo 
+                    ,codigo_nomina = :id_tipo_nomina  
                     WHERE id = :id
                 """
             ), 
@@ -85,9 +88,12 @@ class HolguraRepository(SinergiaRepository):
             autorizado_por, 
             minutos_tolerancia, 
             centro_costo id_centro_costo, cc.descripcion nombre_centro_costo
+            codigo_nomina id_tipo_nomina, tn.descripcion nombre_tipo_nomina
         FROM integrador.holguras h 
         JOIN integrador.centro_costo cc 
         ON h.centro_costo = cc.codigo 
+        JOIN integrador.tipos_de_nomina tn
+        On h.codigo_nomina = tn.codigo 
         '''
         count_sql = 'SELECT COUNT(*) count_rows FROM integrador.holguras '
 

@@ -49,6 +49,25 @@ class TipoAusencia(db.Model):
     codigo = Column(Integer(), primary_key=True)
     descripcion = Column(String(200)) 
 
+class TipoTrabajador(db.Model):
+    __tablename__ = 'tipo_trabajador'
+    __table_args__ = {'schema' : 'integrador'}
+
+    codigo = Column(String(20), primary_key=True)
+    descripcion = Column(String(150)) 
+
+class GrupoGuardia(db.Model):
+    __tablename__ = 'grupo_guardia'
+    __table_args__ = {'schema' : 'integrador'}
+
+    codigo = Column(String(10), primary_key=True)
+    descripcion = Column(String(150)) 
+    cndtra = Column(String(10)) 
+
+    rotacion = Column(Integer()) 
+    origen = Column(Integer()) 
+    status = Column(Integer()) 
+
 class Trabajador(db.Model):
     __tablename__ = 'trabajadores'
     __table_args__ = {'schema' : 'integrador'}
@@ -73,6 +92,12 @@ class Trabajador(db.Model):
     id_status_actual = Column('status_actual',String(10),ForeignKey('integrador.estatus_trabajador.codigo'))
     status_actual = relationship("EstatusTrabajador")
 
+    id_tipo_trabajador = Column('tipo_de_trabajador',String(20), ForeignKey('integrador.tipo_trabajador.codigo'))
+    tipo_trabajador = relationship("TipoTabajador")
+
+    id_grupo_guardia = Column('grupo_guardia',String(10), ForeignKey('integrador.grupo_guardia.codigo'))
+    tipo_trabajador = relationship("GrupoGuardia")
+    
     id_tarjeta = Column(Integer()) 
     telefono = Column(String(50))
     correo = Column(String(150))
