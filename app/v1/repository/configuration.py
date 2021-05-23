@@ -87,7 +87,7 @@ class HolguraRepository(SinergiaRepository):
             fecha_hasta, 
             autorizado_por, 
             minutos_tolerancia, 
-            centro_costo id_centro_costo, cc.descripcion nombre_centro_costo
+            centro_costo id_centro_costo, cc.descripcion nombre_centro_costo,
             codigo_nomina id_tipo_nomina, tn.descripcion nombre_tipo_nomina
         FROM integrador.holguras h 
         JOIN integrador.centro_costo cc 
