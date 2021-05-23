@@ -172,11 +172,11 @@ class MemberRepository(SinergiaRepository):
 
             #Se Verifica si el usuario es un trabajador asociado a RH
             if 'extra_info' in payload:
-                id_number = payload['id_number'] if 'id_number' in payload else ''
-                first_name =  payload['first_name'] if 'first_name' in payload else ''
-                last_name =  payload['last_name'] if 'last_name' in payload else ''
-                phone_number =  payload['phone_number'] if 'phone_number' in payload else ''
-                gender =  payload['gender'] if 'gender' in payload else ''
+                id_number = payload['extra_info']['id_number'] if 'id_number' in payload['extra_info'] else ''
+                first_name =  payload['extra_info']['first_name'] if 'first_name' in payload['extra_info'] else ''
+                last_name =  payload['extra_info']['last_name'] if 'last_name' in payload['extra_info'] else ''
+                phone_number =  payload['extra_info']['phone_number'] if 'phone_number' in payload['extra_info'] else ''
+                gender =  payload['extra_info']['gender'] if 'gender' in payload['extra_info'] else ''
 
                 if 'rrhh_info' in payload['extra_info'] and 'cedula' in payload['extra_info']['rrhh_info'] :
                     cedula = payload['extra_info']['rrhh_info']['cedula']
