@@ -220,7 +220,7 @@ class MemberRepository(SinergiaRepository):
 class RolRepository(SinergiaRepository):
 
     def get_privileges(self,payload):
-        tipos_ausencias_list = []
+        privileges_list = []
         if 'privileges' in payload:
             ids_privileges = payload['privileges']
             privileges_list = Privilege.query.filter(Privilege.name.in_(ids_privileges)).all()

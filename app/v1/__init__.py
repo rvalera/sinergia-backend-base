@@ -23,6 +23,7 @@ from app.v1.resources.entities import entities_ns
 from app.v1.resources.configuration import configuration_ns
 from app.v1.resources.admin import admin_ns
 from app.v1.resources.system import system_ns
+from app.v1.resources.process import process_ns
 
 # pybabel extract -o locale/base.pot  .
 # pybabel init -i base.pot -d translations -l en
@@ -82,3 +83,4 @@ v1_api.add_namespace(entities_ns)
 v1_api.add_namespace(configuration_ns)
 v1_api.add_namespace(admin_ns)
 v1_api.add_namespace(system_ns)
+v1_api.add_namespace(process_ns)
