@@ -28,7 +28,11 @@ class SinergiaRepository(object):
 
     username = None
     token = None
-    
+
+    def getUser(self):
+        user = User.query.filter(User.name==self.username.lower()).first()        
+        return user       
+
     def __init__(self,username=None,token=None):
         self.username = username
         self.token = token
