@@ -620,7 +620,7 @@ class DailyMarkingRepository(SinergiaRepository):
 
         sql = '''
         SELECT 
-            TO_CHAR(md.fecdia,'YYYY-MM-DD') fecha
+            TO_CHAR(md.fecdia,'YYYY-MM-DD') fecdia
             , dia_marcaje
             , id_turno
             , nombre_turno 
