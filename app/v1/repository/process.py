@@ -598,11 +598,11 @@ class BatchJustificationAbsenceRepository(SinergiaRepository):
             parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
 
         sql = sql.format(**parameters)
-
         table_df = pd.read_sql_query(sql,con=db.engine)
         rows = table_df.to_dict('records')
         count_result_rows = limit
 
+        count_sql = count_sql.format(**parameters)
         count_df = pd.read_sql_query(count_sql,con=db.engine)
         result_count = count_df.to_dict('records')
         count_all_rows = result_count[0]['count_rows']
@@ -622,8 +622,9 @@ class BatchJustificationAbsenceRepository(SinergiaRepository):
             'observaciones' : payload['observaciones']
         }
 
+
         conn = alembic.op.get_bind()
-        conn.execute(
+        result = conn.execute(
             text(
                 """
                 INSERT INTO integrador.ausencia_masivas (
@@ -634,7 +635,7 @@ class BatchJustificationAbsenceRepository(SinergiaRepository):
                     ,fecdia
                     ,usuario_creador
                     ,observaciones 
-                    ,estatus
+                    ,status
                     ) 
                 VALUES (
                     :fecha_inicio
@@ -643,13 +644,26 @@ class BatchJustificationAbsenceRepository(SinergiaRepository):
                     ,:cantidad_horas
                     ,CURRENT_DATE
                     ,:id_user_creador
-                    ,:observaciones 
+                    ,:observaciones
                     ,0
-                    )
+                    ) RETURNING ausencia_masivas.serial
                 """
-                        ), 
+            ), 
             **parameters
         )
+
+        header_id = result.fetchone()[0]
+
+        for cedula in payload['trabajadores']:
+            conn.execute(
+                text(
+                    """
+                    INSERT INTO integrador.ausencia_masivas_trabajador (serial,cedula)
+                    VALUES (:header_id,:cedula)
+                    """), 
+                **{'header_id': header_id,'cedula': cedula}
+            )
+
 
     def getById(self,id):
         parameters = {
@@ -705,7 +719,32 @@ class BatchJustificationAbsenceRepository(SinergiaRepository):
         if len(rows) == 0:
             raise RepositoryUnknownException()                
 
-        return rows[0]        
+        #######################################################################################
+        header = rows[0] 
+
+        sql = '''
+           SELECT vt.*
+            FROM             
+                integrador.ausencia_masivas am 
+            JOIN  
+                integrador.ausencia_masivas_trabajador amt 
+            ON  
+                am."serial" = amt."serial" 
+            JOIN  
+                integrador.vw_trabajador vt 
+            ON  
+                amt.cedula = vt.cedula 
+            WHERE 
+                am.serial = {id}
+        '''
+        sql = sql.format(**parameters)
+        
+        detail_df = pd.read_sql_query(sql,con=db.engine)
+        details = detail_df.to_dict('records')
+
+        header['trabajadores'] = details
+
+        return header        
 
 
     def save(self,payload):
@@ -740,6 +779,27 @@ class BatchJustificationAbsenceRepository(SinergiaRepository):
             **parameters
         )
 
+        #Actualizar los Trabajadores a los que afecta 
+        conn.execute(
+            text(
+                """
+                DELETE FROM integrador.ausencia_masivas_trabajador
+                WHERE serial = :id
+                """), 
+            **{'id': payload['id']}
+        )
+
+        for cedula in payload['trabajadores']:
+            conn.execute(
+                text(
+                    """
+                    INSERT INTO integrador.ausencia_masivas_trabajador (serial,cedula)
+                    VALUES (:header_id,:cedula)
+                    """), 
+                **{'header_id': payload['id'],'cedula': cedula}
+            )
+
+
     def delete(self,id):
         justicacion_ausencia_masiva = self.getById(id)
         user = self.getUser()
@@ -752,6 +812,9 @@ class BatchJustificationAbsenceRepository(SinergiaRepository):
         conn.execute(
             text(
                 """
+                DELETE FROM integrador.ausencia_masivas_trabajador
+                WHERE 
+                    serial = :id;
                 DELETE FROM integrador.ausencia_masivas 
                 WHERE 
                     serial = :id
@@ -777,6 +840,7 @@ class BatchJustificationAbsenceRepository(SinergiaRepository):
                 SET fecha_aprobacion = CURRENT_DATE
                     , cantidad_aprobada = cantidad
                     , usuario_aprobador = :id_user_aprobador
+                    , status = 1
                 WHERE 
                     serial = :id
                 """
@@ -910,6 +974,7 @@ class BatchOvertimeRepository(SinergiaRepository):
         rows = table_df.to_dict('records')
         count_result_rows = limit
 
+        count_sql = count_sql.format(**parameters)
         count_df = pd.read_sql_query(count_sql,con=db.engine)
         result_count = count_df.to_dict('records')
         count_all_rows = result_count[0]['count_rows']
@@ -929,7 +994,7 @@ class BatchOvertimeRepository(SinergiaRepository):
         }
 
         conn = alembic.op.get_bind()
-        conn.execute(
+        result = conn.execute(
             text(
                 """
                 INSERT INTO integrador.horas_exmasivas (
@@ -951,11 +1016,24 @@ class BatchOvertimeRepository(SinergiaRepository):
                     ,:id_user_creador
                     ,:observaciones 
                     ,0
-                    )
+                    ) RETURNING horas_exmasivas.serial
                 """
                         ), 
             **parameters
         )
+
+        header_id = result.fetchone()[0]
+
+        for cedula in payload['trabajadores']:
+            conn.execute(
+                text(
+                    """
+                    INSERT INTO integrador.horas_exmasivas_trabajador (serial,cedula)
+                    VALUES (:header_id,:cedula)
+                    """), 
+                **{'header_id': header_id,'cedula': cedula}
+            )
+
 
     def getById(self,id):
         parameters = {
@@ -1002,11 +1080,36 @@ class BatchOvertimeRepository(SinergiaRepository):
         
         table_df = pd.read_sql_query(sql,con=db.engine)
         rows = table_df.to_dict('records')
-        
+
         if len(rows) == 0:
             raise RepositoryUnknownException()                
 
-        return rows[0]        
+        #######################################################################################
+        header = rows[0]
+
+        sql = '''
+            SELECT vt.*
+            FROM             
+                integrador.horas_exmasivas am 
+            JOIN  
+                integrador.horas_exmasivas_trabajador amt 
+            ON  
+                am."serial" = amt."serial" 
+            JOIN  
+                integrador.vw_trabajador vt 
+            ON  
+                amt.cedula = vt.cedula 
+            WHERE 
+                am.serial = {id}
+        '''
+        sql = sql.format(**parameters)
+        
+        detail_df = pd.read_sql_query(sql,con=db.engine)
+        details = detail_df.to_dict('records')
+
+        header['trabajadores'] = details
+
+        return header        
 
 
     def save(self,payload):
@@ -1041,6 +1144,27 @@ class BatchOvertimeRepository(SinergiaRepository):
             **parameters
         )
 
+        #Actualizar los Trabajadores a los que afecta 
+        conn.execute(
+            text(
+                """
+                DELETE FROM integrador.horas_exmasivas_trabajador
+                WHERE serial = :id
+                """), 
+            **{'id': payload['id']}
+        )
+
+        for cedula in payload['trabajadores']:
+            conn.execute(
+                text(
+                    """
+                    INSERT INTO integrador.horas_exmasivas_trabajador (serial,cedula)
+                    VALUES (:header_id,:cedula)
+                    """), 
+                **{'header_id': payload['id'],'cedula': cedula}
+            )
+
+
     def delete(self,id):
         horas_extras_masiva = self.getById(id)
         user = self.getUser()
@@ -1052,9 +1176,12 @@ class BatchOvertimeRepository(SinergiaRepository):
         conn.execute(
             text(
                 """
+                DELETE FROM integrador.horas_exmasivas_trabajador
+                WHERE 
+                    serial = :id;
                 DELETE FROM integrador.horas_exmasivas 
                 WHERE 
-                    serial = :id
+                    serial = :id;
                 """
             ), 
             **parameters
@@ -1078,13 +1205,13 @@ class BatchOvertimeRepository(SinergiaRepository):
                 SET fecha_aprobacion = CURRENT_DATE 
                     , cantidad_aprobada = cantidad 
                     , usuario_aprobador = :id_user_aprobador 
+                    , status = 1
                 WHERE 
                     serial = :id
                 """
                         ), 
             **parameters
         )
-
 
 
 class DailyMarkingRepository(SinergiaRepository):

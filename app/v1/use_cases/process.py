@@ -3,7 +3,8 @@ Created on 17 dic. 2019
 
 @author: ramon
 '''
-from app.v1.repository.process import DailyMarkingRepository,OvertimeEventRepository,AbsenceEventRepository,JustificationAbsenceRepository
+from app.v1.repository.process import DailyMarkingRepository,OvertimeEventRepository,AbsenceEventRepository,JustificationAbsenceRepository,\
+    BatchJustificationAbsenceRepository,BatchOvertimeRepository
 
 class GetDailyMarkingListUseCase(object):
     def execute(self,security_credentials,query_params):
@@ -37,5 +38,56 @@ class ApproveAbsenceJustificationUseCase(object):
     def execute(self,security_credentials,event_date,cedula,id):
         return JustificationAbsenceRepository(username=security_credentials['username']).approve(event_date,cedula,id)        
 
-        
+#################################################################################################################################
 
+class GetBatchAbsenceJustificationUseCase(object):
+    def execute(self,security_credentials,query_params):
+        return BatchJustificationAbsenceRepository(username=security_credentials['username']).get(query_params)        
+
+class NewBatchAbsenceJustificationUseCase(object):
+    def execute(self,security_credentials,payload):
+        return BatchJustificationAbsenceRepository(username=security_credentials['username']).new(payload)        
+
+class SaveBatchAbsenceJustificationUseCase(object):
+    def execute(self,security_credentials,payload):
+        return BatchJustificationAbsenceRepository(username=security_credentials['username']).save(payload)        
+
+class DeleteBatchAbsenceJustificationUseCase(object):
+    def execute(self,security_credentials,id):
+        return BatchJustificationAbsenceRepository(username=security_credentials['username']).delete(id)      
+
+class GetDetailBatchAbsenceJustificationUseCase(object):
+    def execute(self,security_credentials,id):
+        return BatchJustificationAbsenceRepository(username=security_credentials['username']).getById(id)        
+
+class ApproveBatchAbsenceJustificationUseCase(object):
+    def execute(self,security_credentials,id):
+        return BatchJustificationAbsenceRepository(username=security_credentials['username']).approve(id)        
+
+#################################################################################################################################
+
+class GetBatchOvertimeUseCase(object):
+    def execute(self,security_credentials,query_params):
+        return BatchOvertimeRepository(username=security_credentials['username']).get(query_params)        
+
+class NewBatchOvertimeUseCase(object):
+    def execute(self,security_credentials,payload):
+        return BatchOvertimeRepository(username=security_credentials['username']).new(payload)        
+
+class SaveBatchOvertimeUseCase(object):
+    def execute(self,security_credentials,payload):
+        return BatchOvertimeRepository(username=security_credentials['username']).save(payload)        
+
+class DeleteBatchOvertimeUseCase(object):
+    def execute(self,security_credentials,id):
+        return BatchOvertimeRepository(username=security_credentials['username']).delete(id)        
+
+class GetDetailBatchOvertimeUseCase(object):
+    def execute(self,security_credentials,id):
+        return BatchOvertimeRepository(username=security_credentials['username']).getById(id)        
+
+class ApproveBatchOvertimeUseCase(object):
+    def execute(self,security_credentials,id):
+        return BatchOvertimeRepository(username=security_credentials['username']).approve(id)  
+
+#################################################################################################################################
