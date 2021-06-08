@@ -197,8 +197,6 @@ class JustificationAbsenceRepository(SinergiaRepository):
 
         sql = sql.format(**parameters)
         
-        print(sql)
-
         table_df = pd.read_sql_query(sql,con=db.engine)
         rows = table_df.to_dict('records')
         
@@ -211,7 +209,6 @@ class JustificationAbsenceRepository(SinergiaRepository):
     def save(self,payload):
 
         justicacion_ausencia = self.getById(payload['fecha'],payload['cedula'],payload['id'])
-        print(justicacion_ausencia)
         user = self.getUser()
 
         parameters = {
@@ -476,37 +473,618 @@ class OvertimeEventRepository(SinergiaRepository):
 class BatchJustificationAbsenceRepository(SinergiaRepository):
 
     def get(self,query_params):    
-        pass
+        sql = '''
+            SELECT DISTINCT
+                am."serial" id
+                , TO_CHAR(am.hora_inicio,'YYYY-MM-DD') fecha_inicio
+                , TO_CHAR(am.hora_final,'YYYY-MM-DD') fecha_fin
+                , TO_CHAR(am.fecdia,'YYYY-MM-DD') fecha_registro
+                , cantidad cantidad_horas
+                , ta.codigo id_justificacion_ausencia
+                , ta.descripcion nombre_justificacion_ausencia
+                , am.usuario_creador id_usuario_creador
+                , se1.name nombre_usuario_creador
+                , TO_CHAR(am.fecha_aprobacion,'YYYY-MM-DD') fecha_aprobacion
+                , am.usuario_aprobador id_usuario_aprobador
+                , se2.name nombre_usuario_aprobador
+                , am.status estatus 
+            FROM             
+                integrador.ausencia_masivas am 
+            JOIN  
+                integrador.ausencia_masivas_trabajador amt 
+            ON  
+                am."serial" = amt."serial" 
+            JOIN  
+                integrador.vw_trabajador vt 
+            ON  
+                amt.cedula = vt.cedula 
+            JOIN  
+                integrador.tipos_ausencias ta 
+            ON  
+                am.tpau = ta.codigo 
+            LEFT JOIN 
+                public.securityelement se1
+            ON 
+                am.usuario_creador = se1.id
+            LEFT JOIN 
+                public.securityelement se2
+            ON  
+                am.usuario_aprobador = se2.id
+            {conditions}
+            {order_by}
+            {limits_offset}
+        '''
+
+        count_sql = '''
+            SELECT COUNT(distinct am.*) count_rows 
+            FROM             
+                integrador.ausencia_masivas am 
+            JOIN  
+                integrador.ausencia_masivas_trabajador amt 
+            ON  
+                am."serial" = amt."serial" 
+            JOIN  
+                integrador.vw_trabajador vt 
+            ON  
+                amt.cedula = vt.cedula 
+            JOIN  
+                integrador.tipos_ausencias ta 
+            ON  
+                am.tpau = ta.codigo 
+            LEFT JOIN 
+                public.securityelement se1
+            ON 
+                am.usuario_creador = se1.id
+            LEFT JOIN 
+                public.securityelement se2
+            ON  
+                am.usuario_aprobador = se2.id
+            {conditions}
+        '''
+        parameters = {'conditions' : '', 'order_by': '', 'limits_offset': ''}
+
+        limit = 10
+        offset = 0        
+        if len(query_params) > 0:
+
+            if 'filter' in query_params:
+                filter_conditions = query_params['filter']
+
+                if len(filter_conditions) > 0 :
+
+                    conditions = []         
+                    if 'cedula_trabajador' in filter_conditions:
+                        conditions.append('vt.cedula  = {cedula_trabajador}')
+
+                    if 'id_centro_costo' in filter_conditions:
+                        conditions.append('vt.id_centro_costo = {id_centro_costo}')
+
+                    if 'id_tipo_nomina' in filter_conditions:
+                        conditions.append('vt.id_tipo_nomina = {id_tipo_nomina}')
+
+                    if 'id_tipo_justificacion_audiencia' in filter_conditions:
+                        conditions.append('am.tpau = {id_tipo_justificacion_ausencia}')
+
+                    if 'from' in filter_conditions:
+                        conditions.append("md.hora_inicio >= '{from}' ")
+
+                    if 'to' in filter_conditions:
+                        conditions.append("md.hora_final <= '{to}' ")
+
+                    where_clausule = 'WHERE ' + ' AND '.join(conditions)
+                    where_clausule = where_clausule.format(**filter_conditions)
+
+                    parameters['conditions'] = where_clausule
+            
+            # Definiendo order
+            if 'order' in query_params:
+                order_criteria = query_params['order']
+                order_fields = ','.join(order_criteria)
+                parameters['order_by'] = 'ORDER BY ' + order_fields
+
+
+            # Definiendo los Rangos de Paginacion
+            query_range = [0,10]
+            if 'range' in query_params:
+                query_range = query_params['range']
+                if len(query_range) >= 2:
+                    low_limit = query_range[0] 
+                    high_limit = query_range[1] 
+                else:
+                    low_limit = query_range[0]
+                    high_limit = query_range[0] 
+                limit = (high_limit - low_limit) + 1
+                offset = low_limit 
+            parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
+
+        sql = sql.format(**parameters)
+
+        table_df = pd.read_sql_query(sql,con=db.engine)
+        rows = table_df.to_dict('records')
+        count_result_rows = limit
+
+        count_df = pd.read_sql_query(count_sql,con=db.engine)
+        result_count = count_df.to_dict('records')
+        count_all_rows = result_count[0]['count_rows']
+
+        return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
+
 
     def new(self,payload):
-        pass
+        user = self.getUser()
 
-    def remove(self,payload):
-        pass
+        parameters = {
+            'fecha_inicio': payload['fecha_inicio'],
+            'fecha_fin': payload['fecha_fin'],
+            'cantidad_horas' : payload['cantidad_horas'],
+            'id_justificacion_ausencia' : payload['id_justificacion_ausencia'],
+            'id_user_creador' : user.id,                                 
+            'observaciones' : payload['observaciones']
+        }
+
+        conn = alembic.op.get_bind()
+        conn.execute(
+            text(
+                """
+                INSERT INTO integrador.ausencia_masivas (
+                    hora_inicio
+                    ,hora_final
+                    ,tpau
+                    ,cantidad
+                    ,fecdia
+                    ,usuario_creador
+                    ,observaciones 
+                    ,estatus
+                    ) 
+                VALUES (
+                    :fecha_inicio
+                    ,:fecha_fin
+                    ,:id_justificacion_ausencia
+                    ,:cantidad_horas
+                    ,CURRENT_DATE
+                    ,:id_user_creador
+                    ,:observaciones 
+                    ,0
+                    )
+                """
+                        ), 
+            **parameters
+        )
+
+    def getById(self,id):
+        parameters = {
+            'id': id,
+        }
+        
+        sql = '''
+            SELECT DISTINCT
+                am."serial" id
+                , TO_CHAR(am.hora_inicio,'YYYY-MM-DD') fecha_inicio
+                , TO_CHAR(am.hora_final,'YYYY-MM-DD') fecha_fin
+                , TO_CHAR(am.fecdia,'YYYY-MM-DD') fecha_registro
+                , cantidad cantidad_horas
+                , ta.codigo id_justificacion_ausencia
+                , ta.descripcion nombre_justificacion_ausencia
+                , am.usuario_creador id_usuario_creador
+                , se1.name nombre_usuario_creador
+                , TO_CHAR(am.fecha_aprobacion,'YYYY-MM-DD') fecha_aprobacion
+                , am.usuario_aprobador id_usuario_aprobador
+                , se2.name nombre_usuario_aprobador
+                , am.status estatus 
+            FROM             
+                integrador.ausencia_masivas am 
+            JOIN  
+                integrador.ausencia_masivas_trabajador amt 
+            ON  
+                am."serial" = amt."serial" 
+            JOIN  
+                integrador.vw_trabajador vt 
+            ON  
+                amt.cedula = vt.cedula 
+            JOIN  
+                integrador.tipos_ausencias ta 
+            ON  
+                am.tpau = ta.codigo 
+            LEFT JOIN 
+                public.securityelement se1
+            ON 
+                am.usuario_creador = se1.id
+            LEFT JOIN 
+                public.securityelement se2
+            ON  
+                am.usuario_aprobador = se2.id
+            WHERE 
+                am.serial = {id}
+        '''
+
+        sql = sql.format(**parameters)
+        
+        table_df = pd.read_sql_query(sql,con=db.engine)
+        rows = table_df.to_dict('records')
+        
+        if len(rows) == 0:
+            raise RepositoryUnknownException()                
+
+        return rows[0]        
+
 
     def save(self,payload):
-        pass
+        justicacion_ausencia_masiva = self.getById(payload['id'])
+        user = self.getUser()
+
+        parameters = {
+            'id' : payload['id'],
+            'fecha_inicio': payload['fecha_inicio'],
+            'fecha_fin': payload['fecha_fin'],
+            'cantidad_horas' : payload['cantidad_horas'],
+            'id_justificacion_ausencia' : payload['id_justificacion_ausencia'],
+            'id_user_creador' : user.id,                                 
+            'observaciones' : payload['observaciones']
+        }
+
+        conn = alembic.op.get_bind()
+        conn.execute(
+            text(
+                """
+                UPDATE integrador.ausencia_masivas 
+                SET hora_inicio = :fecha_inicio 
+                    , hora_final = :fecha_fin
+                    , cantidad = :cantidad_horas
+                    , tpau = :id_justificacion_ausencia
+                    , usuario_creador = :id_user_creador
+                    , observaciones = :observaciones
+                WHERE 
+                    serial = :id
+                """
+                        ), 
+            **parameters
+        )
+
+    def delete(self,id):
+        justicacion_ausencia_masiva = self.getById(id)
+        user = self.getUser()
+
+        parameters = {
+            'id' : id
+        }
+
+        conn = alembic.op.get_bind()
+        conn.execute(
+            text(
+                """
+                DELETE FROM integrador.ausencia_masivas 
+                WHERE 
+                    serial = :id
+                """
+            ), 
+            **parameters
+        )
 
     def approve(self,id):
-        pass
+        justicacion_ausencia = self.getById(id)
+        user = self.getUser()
+
+        parameters = {
+            'id': id,
+            'id_user_aprobador' : user.id
+        }
+
+        conn = alembic.op.get_bind()
+        conn.execute(
+            text(
+                """
+                UPDATE integrador.ausencia_masivas 
+                SET fecha_aprobacion = CURRENT_DATE
+                    , cantidad_aprobada = cantidad
+                    , usuario_aprobador = :id_user_aprobador
+                WHERE 
+                    serial = :id
+                """
+                        ), 
+            **parameters
+        )
+
 
 
 class BatchOvertimeRepository(SinergiaRepository):
 
     def get(self,query_params):    
-        pass
+        sql = '''
+        SELECT DISTINCT
+            am."serial" id
+            , TO_CHAR(am.hora_inicio,'YYYY-MM-DD') fecha_inicio
+            , TO_CHAR(am.hora_final,'YYYY-MM-DD') fecha_fin
+            , TO_CHAR(am.fecdia,'YYYY-MM-DD') fecha_registro
+            , cantidad cantidad_horas
+            , am.tipo_de_hora tipo_hora
+            , am.usuario_creador id_usuario_creador
+            , se1.name nombre_usuario_creador
+            , TO_CHAR(am.fecha_aprobacion,'YYYY-MM-DD') fecha_aprobacion
+            , am.usuario_aprobador id_usuario_aprobador
+            , se2.name nombre_usuario_aprobador
+            , am.status estatus 
+        FROM             
+            integrador.horas_exmasivas am 
+        JOIN  
+            integrador.horas_exmasivas_trabajador amt 
+        ON  
+            am."serial" = amt."serial" 
+        JOIN  
+            integrador.vw_trabajador vt 
+        ON  
+            amt.cedula = vt.cedula 
+        LEFT JOIN 
+            public.securityelement se1
+        ON 
+            am.usuario_creador = se1.id
+        LEFT JOIN 
+            public.securityelement se2
+        ON  
+            am.usuario_aprobador = se2.id
+        {conditions}
+        {order_by}
+        {limits_offset}
+        '''
+
+        count_sql = '''
+            SELECT COUNT(distinct am.*) count_rows 
+            FROM             
+                integrador.horas_exmasivas am 
+            JOIN  
+                integrador.horas_exmasivas_trabajador amt 
+            ON  
+                am."serial" = amt."serial" 
+            JOIN  
+                integrador.vw_trabajador vt 
+            ON  
+                amt.cedula = vt.cedula 
+            LEFT JOIN 
+                public.securityelement se1
+            ON 
+                am.usuario_creador = se1.id
+            LEFT JOIN 
+                public.securityelement se2
+            ON  
+                am.usuario_aprobador = se2.id
+            {conditions}
+        '''
+        parameters = {'conditions' : '', 'order_by': '', 'limits_offset': ''}
+
+        limit = 10
+        offset = 0        
+        if len(query_params) > 0:
+
+            if 'filter' in query_params:
+                filter_conditions = query_params['filter']
+
+                if len(filter_conditions) > 0 :
+
+                    conditions = []         
+                    if 'cedula_trabajador' in filter_conditions:
+                        conditions.append('vt.cedula  = {cedula_trabajador}')
+
+                    if 'id_centro_costo' in filter_conditions:
+                        conditions.append('vt.id_centro_costo = {id_centro_costo}')
+
+                    if 'id_tipo_nomina' in filter_conditions:
+                        conditions.append('vt.id_tipo_nomina = {id_tipo_nomina}')
+
+                    if 'id_tipo_justificacion_audiencia' in filter_conditions:
+                        conditions.append('am.tpau = {id_tipo_justificacion_ausencia}')
+
+                    if 'from' in filter_conditions:
+                        conditions.append("md.hora_final >= '{from}' ")
+
+                    if 'to' in filter_conditions:
+                        conditions.append("md.hora_inicio <= '{to}' ")
+
+                    where_clausule = 'WHERE ' + ' AND '.join(conditions)
+                    where_clausule = where_clausule.format(**filter_conditions)
+
+                    parameters['conditions'] = where_clausule
+            
+            # Definiendo order
+            if 'order' in query_params:
+                order_criteria = query_params['order']
+                order_fields = ','.join(order_criteria)
+                parameters['order_by'] = 'ORDER BY ' + order_fields
+
+
+            # Definiendo los Rangos de Paginacion
+            query_range = [0,10]
+            if 'range' in query_params:
+                query_range = query_params['range']
+                if len(query_range) >= 2:
+                    low_limit = query_range[0] 
+                    high_limit = query_range[1] 
+                else:
+                    low_limit = query_range[0]
+                    high_limit = query_range[0] 
+                limit = (high_limit - low_limit) + 1
+                offset = low_limit 
+            parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
+
+        sql = sql.format(**parameters)
+
+        table_df = pd.read_sql_query(sql,con=db.engine)
+        rows = table_df.to_dict('records')
+        count_result_rows = limit
+
+        count_df = pd.read_sql_query(count_sql,con=db.engine)
+        result_count = count_df.to_dict('records')
+        count_all_rows = result_count[0]['count_rows']
+
+        return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
 
     def new(self,payload):
-        pass
+        user = self.getUser()
 
-    def remove(self,payload):
-        pass
+        parameters = {
+            'fecha_inicio': payload['fecha_inicio'],
+            'fecha_fin': payload['fecha_fin'],
+            'cantidad_horas' : payload['cantidad_horas'],
+            'tipo_hora' : payload['tipo_hora'],
+            'id_user_creador' : user.id,                                 
+            'observaciones' : payload['observaciones']
+        }
+
+        conn = alembic.op.get_bind()
+        conn.execute(
+            text(
+                """
+                INSERT INTO integrador.horas_exmasivas (
+                    hora_inicio
+                    ,hora_final
+                    ,tipo_de_hora
+                    ,cantidad
+                    ,fecdia
+                    ,usuario_creador
+                    ,observaciones 
+                    ,status
+                    ) 
+                VALUES (
+                    :fecha_inicio
+                    ,:fecha_fin
+                    ,:tipo_hora
+                    ,:cantidad_horas
+                    ,CURRENT_DATE
+                    ,:id_user_creador
+                    ,:observaciones 
+                    ,0
+                    )
+                """
+                        ), 
+            **parameters
+        )
+
+    def getById(self,id):
+        parameters = {
+            'id': id,
+        }
+        
+        sql = '''
+            SELECT DISTINCT
+                am."serial" id
+                , TO_CHAR(am.hora_inicio,'YYYY-MM-DD') fecha_inicio
+                , TO_CHAR(am.hora_final,'YYYY-MM-DD') fecha_fin
+                , TO_CHAR(am.fecdia,'YYYY-MM-DD') fecha_registro
+                , cantidad cantidad_horas
+                , am.tipo_de_hora tipo_hora
+                , am.usuario_creador id_usuario_creador
+                , se1.name nombre_usuario_creador
+                , TO_CHAR(am.fecha_aprobacion,'YYYY-MM-DD') fecha_aprobacion
+                , am.usuario_aprobador id_usuario_aprobador
+                , se2.name nombre_usuario_aprobador
+                , am.status estatus 
+            FROM             
+                integrador.horas_exmasivas am 
+            JOIN  
+                integrador.horas_exmasivas_trabajador amt 
+            ON  
+                am."serial" = amt."serial" 
+            JOIN  
+                integrador.vw_trabajador vt 
+            ON  
+                amt.cedula = vt.cedula 
+            LEFT JOIN 
+                public.securityelement se1
+            ON 
+                am.usuario_creador = se1.id
+            LEFT JOIN 
+                public.securityelement se2
+            ON  
+                am.usuario_aprobador = se2.id
+            WHERE 
+                am.serial = {id}
+        '''
+
+        sql = sql.format(**parameters)
+        
+        table_df = pd.read_sql_query(sql,con=db.engine)
+        rows = table_df.to_dict('records')
+        
+        if len(rows) == 0:
+            raise RepositoryUnknownException()                
+
+        return rows[0]        
+
 
     def save(self,payload):
-        pass
+        horas_extras_masiva = self.getById(payload['id'])
+        user = self.getUser()
+
+        parameters = {
+            'id' : payload['id'],
+            'fecha_inicio': payload['fecha_inicio'],
+            'fecha_fin': payload['fecha_fin'],
+            'cantidad_horas' : payload['cantidad_horas'],
+            'tipo_hora' : payload['tipo_hora'],
+            'id_user_creador' : user.id,                                 
+            'observaciones' : payload['observaciones']
+        }
+
+        conn = alembic.op.get_bind()
+        conn.execute(
+            text(
+                """
+                UPDATE integrador.horas_exmasivas 
+                SET hora_inicio = :fecha_inicio 
+                    , hora_final = :fecha_fin
+                    , cantidad = :cantidad_horas
+                    , tipo_de_hora = :tipo_hora
+                    , usuario_creador = :id_user_creador
+                    , observaciones = :observaciones
+                WHERE 
+                    serial = :id
+                """
+                        ), 
+            **parameters
+        )
+
+    def delete(self,id):
+        horas_extras_masiva = self.getById(id)
+        user = self.getUser()
+        parameters = {
+            'id' : id
+        }
+
+        conn = alembic.op.get_bind()
+        conn.execute(
+            text(
+                """
+                DELETE FROM integrador.horas_exmasivas 
+                WHERE 
+                    serial = :id
+                """
+            ), 
+            **parameters
+        )
+
 
     def approve(self,id):
-        pass
+        justicacion_ausencia = self.getById(id)
+        user = self.getUser()
+
+        parameters = {
+            'id': id,
+            'id_user_aprobador' : user.id
+        }
+
+        conn = alembic.op.get_bind()
+        conn.execute(
+            text(
+                """
+                UPDATE integrador.horas_exmasivas 
+                SET fecha_aprobacion = CURRENT_DATE 
+                    , cantidad_aprobada = cantidad 
+                    , usuario_aprobador = :id_user_aprobador 
+                WHERE 
+                    serial = :id
+                """
+                        ), 
+            **parameters
+        )
+
 
 
 class DailyMarkingRepository(SinergiaRepository):
@@ -644,21 +1222,21 @@ class DailyMarkingRepository(SinergiaRepository):
             , TO_CHAR(inicio_planificado,'YYYY-MM-DD HH24:MI:SS') inicio_planificado
             , TO_CHAR(fin_planificado,'YYYY-MM-DD HH24:MI:SS') fin_planificado
             , TO_CHAR( hora_inicio_turno, 'HH24:MI' ) hora_inicio_turno
-            , TO_CHAR( hora_final_turno, 'HH24:MI' ) hora_final_turno
-            , TO_CHAR( horas_planificadas, 'HH24:MI' ) hora_inicio_turno
-            , TO_CHAR( horas_marcajes, 'HH24:MI' ) hora_final_turno
-            , id_tipo_marcaje
-            , nombre_tipo_marcaje
-            , horas_ausencias_calculadas
-            , horas_extras_calculadas
-            , horas_ausencias_aprobadas
-            , horas_extras_aprobadas
+            , TO_CHAR( hora_final_turno, 'HH24:MI' ) hora_final_turno 
+            , TO_CHAR( horas_planificadas, 'HH24:MI' ) hora_inicio_turno 
+            , TO_CHAR( horas_marcajes, 'HH24:MI' ) hora_final_turno 
+            , id_tipo_marcaje 
+            , nombre_tipo_marcaje 
+            , horas_ausencias_calculadas 
+            , horas_extras_calculadas 
+            , horas_ausencias_aprobadas 
+            , horas_extras_aprobadas 
             , suma_horas_ausencias_creadas
-            , suma_horas_extras_creadas
-            , suma_horas_ausencias_aprobadas
-            , suma_horas_extras_aprobadas
+            , suma_horas_extras_creadas 
+            , suma_horas_ausencias_aprobadas 
+            , suma_horas_extras_aprobadas 
         FROM 
-            integrador.vw_marcajes_dia_con_totales md
+            integrador.vw_marcajes_dia_con_totales md 
         {conditions}
         {order_by}
         {limits_offset}
@@ -688,11 +1266,11 @@ class DailyMarkingRepository(SinergiaRepository):
                     if 'id_turno' in filter_conditions:
                         conditions.append('md.id_turno = {id_turno}')
 
-                    if 'to' in filter_conditions:
-                        conditions.append("md.fecdia >= '{to}' ")
-
                     if 'from' in filter_conditions:
-                        conditions.append("md.fecdia <= '{from}' ")
+                        conditions.append("md.fecdia >= '{from}' ")
+
+                    if 'to' in filter_conditions:
+                        conditions.append("md.fecdia <= '{to}' ")
 
                     where_clausule = 'WHERE ' + ' AND '.join(conditions)
                     where_clausule = where_clausule.format(**filter_conditions)
@@ -721,6 +1299,7 @@ class DailyMarkingRepository(SinergiaRepository):
             parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
 
         sql = sql.format(**parameters)
+
         table_df = pd.read_sql_query(sql,con=db.engine)
         return table_df
 
@@ -757,11 +1336,11 @@ class DailyMarkingRepository(SinergiaRepository):
                     if 'id_turno' in filter_conditions:
                         conditions.append('md.id_turno = {id_turno}')
 
-                    if 'to' in filter_conditions:
-                        conditions.append("md.fecdia >= '{to}' ")
-
                     if 'from' in filter_conditions:
-                        conditions.append("md.fecdia <= '{from}' ")
+                        conditions.append("md.fecdia >= '{from}' ")
+
+                    if 'to' in filter_conditions:
+                        conditions.append("md.fecdia <= '{to}' ")
 
                     where_clausule = 'WHERE ' + ' AND '.join(conditions)
                     where_clausule = where_clausule.format(**filter_conditions)
@@ -786,7 +1365,7 @@ class DailyMarkingRepository(SinergiaRepository):
                 hasta = None
 
                 if 'from' in filter_conditions:
-                    desde =  filter_conditions['to']
+                    desde =  filter_conditions['from']
 
                 if 'to' in filter_conditions:
                     hasta =  filter_conditions['to']
