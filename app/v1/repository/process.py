@@ -487,6 +487,7 @@ class BatchJustificationAbsenceRepository(SinergiaRepository):
                 , TO_CHAR(am.fecha_aprobacion,'YYYY-MM-DD') fecha_aprobacion
                 , am.usuario_aprobador id_usuario_aprobador
                 , se2.name nombre_usuario_aprobador
+                , am.observaciones observaciones
                 , am.status estatus 
             FROM             
                 integrador.ausencia_masivas am 
@@ -684,6 +685,7 @@ class BatchJustificationAbsenceRepository(SinergiaRepository):
                 , TO_CHAR(am.fecha_aprobacion,'YYYY-MM-DD') fecha_aprobacion
                 , am.usuario_aprobador id_usuario_aprobador
                 , se2.name nombre_usuario_aprobador
+                , am.observaciones observaciones
                 , am.status estatus 
             FROM             
                 integrador.ausencia_masivas am 
@@ -866,6 +868,7 @@ class BatchOvertimeRepository(SinergiaRepository):
             , TO_CHAR(am.fecha_aprobacion,'YYYY-MM-DD') fecha_aprobacion
             , am.usuario_aprobador id_usuario_aprobador
             , se2.name nombre_usuario_aprobador
+            , am.observaciones observaciones
             , am.status estatus 
         FROM             
             integrador.horas_exmasivas am 
@@ -1053,6 +1056,7 @@ class BatchOvertimeRepository(SinergiaRepository):
                 , TO_CHAR(am.fecha_aprobacion,'YYYY-MM-DD') fecha_aprobacion
                 , am.usuario_aprobador id_usuario_aprobador
                 , se2.name nombre_usuario_aprobador
+                , am.observaciones observaciones
                 , am.status estatus 
             FROM             
                 integrador.horas_exmasivas am 
