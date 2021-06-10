@@ -137,7 +137,7 @@ class  ApproveOvertimeEventResource(ProxySecureResource):
 class GetAbsenceEventResource(ProxySecureResource): 
 
     @process_ns.doc('Get Ausencia y sus correspondientes Justificaciones para un Marcaje determinado')
-    # @jwt_required
+    @jwt_required
     def get(self,event_date,cedula):
         security_credentials = self.checkCredentials()
         # security_credentials = {'username': 'prueba'}               
