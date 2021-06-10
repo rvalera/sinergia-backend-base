@@ -1354,8 +1354,8 @@ class DailyMarkingRepository(SinergiaRepository):
             , TO_CHAR(fin_planificado,'YYYY-MM-DD HH24:MI:SS') fin_planificado
             , TO_CHAR( hora_inicio_turno, 'HH24:MI' ) hora_inicio_turno
             , TO_CHAR( hora_final_turno, 'HH24:MI' ) hora_final_turno 
-            , TO_CHAR( horas_planificadas, 'HH24:MI' ) hora_inicio_turno 
-            , TO_CHAR( horas_marcajes, 'HH24:MI' ) hora_final_turno 
+            , TO_CHAR( horas_planificadas, 'HH24:MI' ) horas_planificadas 
+            , TO_CHAR( horas_marcajes, 'HH24:MI' ) horas_marcajes 
             , id_tipo_marcaje 
             , nombre_tipo_marcaje 
             , horas_ausencias_calculadas 
