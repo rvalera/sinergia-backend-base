@@ -69,6 +69,7 @@ SaveAbsenceJustificationStruct = v1_api.model('SaveAbsenceJustificationStruct', 
     'id_justificacion_ausencia' : fields.Integer(required=True), 
 }) 
 
+
 @process_ns.route('/daily_marking')
 @v1_api.expect(secureHeader)
 class DailyMarkingResource(ProxySecureResource): 
@@ -144,6 +145,7 @@ class GetAbsenceEventResource(ProxySecureResource):
         data = GetAbsenceEventUseCase().execute(security_credentials,event_date,cedula)
         return  {'ok':1, 'data': data} , 200
 
+
 @process_ns.route('/daily_marking/absence_justification')
 @v1_api.expect(secureHeader)
 class AbsenceJustificationResource(ProxySecureResource): 
@@ -160,14 +162,14 @@ class AbsenceJustificationResource(ProxySecureResource):
 
     @process_ns.doc('Update Justificacion de Ausencia')
     @v1_api.expect(SaveAbsenceJustificationStruct)    
-    # @jwt_required
+    @jwt_required
     def put(self):
         payload = request.json        
         security_credentials = self.checkCredentials()
         # security_credentials = {'username': 'prueba'}
         SaveAbsenceJustificationUseCase().execute(security_credentials,payload)
         return  {'ok': 1}, 200
-    
+
 
 @process_ns.route('/daily_marking/absence_justification/<event_date>/<cedula>/<id>/approve')
 @process_ns.param('event_date', 'Fecha Evento')
@@ -285,7 +287,7 @@ class  DetailBatchAbsenceJustificationResource(ProxySecureResource):
         security_credentials = self.checkCredentials()
         # security_credentials = {'username': 'prueba'}        
         data = GetDetailBatchAbsenceJustificationUseCase().execute(security_credentials,id)
-        return  { 'ok': 1, 'data' : data } , 200        
+        return  { 'ok': 1, 'data' : data } , 200
 
 #############################################################################################################
 
@@ -356,7 +358,7 @@ class  ApproveBatchOvertimeResource(ProxySecureResource):
 @process_ns.route('/batch_overtime/<id>')
 @process_ns.param('id', 'Identificador')
 @v1_api.expect(secureHeader)
-class  DetailBatchOvertimeResource(ProxySecureResource):        
+class  DetailBatchOvertimeResource(ProxySecureResource):
 
     @process_ns.doc('Eliminar Sobretiempo por Lotes')
     @jwt_required
@@ -365,7 +367,6 @@ class  DetailBatchOvertimeResource(ProxySecureResource):
         # security_credentials = {'username': 'prueba'}        
         data = DeleteBatchOvertimeUseCase().execute(security_credentials,id)
         return  { 'ok': 1 } , 200
-
 
     @process_ns.doc('Get Detalles Sobretiempo por Lotes')
     @jwt_required
