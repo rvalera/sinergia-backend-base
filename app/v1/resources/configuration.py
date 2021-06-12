@@ -3,7 +3,7 @@ from flask_jwt_extended.view_decorators import jwt_required
 from flask_restplus import Resource, Namespace, fields
 from app.v1.resources.base import ProxySecureResource, secureHeader,queryParams
 from app.v1.use_cases.configuration import GetHolguraListUseCase,NewHolguraUseCase,SaveHolguraUseCase,DeleteHolguraUseCase,\
-    GetTurnoListUseCase,NewTurnoUseCase,SaveTurnoUseCase,DeleteTurnoUseCase
+    GetTurnoListUseCase,NewTurnoUseCase,SaveTurnoUseCase,DeleteTurnoUseCase,ApproveHolguraUseCase
 from flask.globals import request    
 import json 
 
@@ -138,6 +138,21 @@ class DeleteHolguraResource(ProxySecureResource):
         query_params = {'id': id}
         DeleteHolguraUseCase().execute(security_credentials,query_params)
         return  {'ok': 1}, 200
+
+@configuration_ns.route('/holgura/<id>/approve')
+@configuration_ns.param('id', 'Holgura Id')
+@v1_api.expect(secureHeader)
+class DeleteHolguraResource(ProxySecureResource):
+# class DeleteHolguraResource(Resource):
+    
+    @configuration_ns.doc('Approve Holgura')
+    @jwt_required    
+    def delete(self,id):
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username': 'guest'}
+        ApproveHolguraUseCase().execute(security_credentials,id)
+        return  {'ok': 1}, 200
+
 
 ###################################################################################################
 

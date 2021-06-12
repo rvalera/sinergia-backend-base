@@ -21,6 +21,11 @@ class DeleteHolguraUseCase(object):
     def execute(self,security_credentials,query_params):
         HolguraRepository(username=security_credentials['username']).delete(query_params)   
 
+class ApproveHolguraUseCase(object):
+    def execute(self,security_credentials,id):
+        HolguraRepository(username=security_credentials['username']).approve(id)   
+
+
 ###################################
 
 class GetTurnoListUseCase(object):

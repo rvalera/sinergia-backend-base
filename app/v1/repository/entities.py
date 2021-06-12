@@ -120,7 +120,7 @@ class CentroCostoRepository(SinergiaRepository):
 
                     conditions = []         
                     if 'codigo' in filter_conditions:
-                        conditions.append('codigo  = {codigo}')
+                        conditions.append("codigo  = '{codigo}' ")
 
                     if 'descripcion' in filter_conditions:
                         conditions.append("descripcion LIKE '%{descripcion}%' ")
