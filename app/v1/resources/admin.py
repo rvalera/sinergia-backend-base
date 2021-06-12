@@ -114,16 +114,16 @@ GetRolListStruct = v1_api.model('GetRolListStruct', {
 
 
 @admin_ns.route('/member')
-# @v1_api.expect(secureHeader)
+@v1_api.expect(secureHeader)
 class AdminMemberResource(ProxySecureResource): 
 
     @admin_ns.doc('Admin Member')
     @v1_api.expect(queryParams)    
-    # @jwt_required    
+    @jwt_required    
     @v1_api.marshal_with(GetAdminUserListStruct) 
     def get(self):
-        # security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username': 'prueba'}
 
         query_params = {}
         request_payload =  {}        
@@ -164,15 +164,15 @@ class AdminMemberResource(ProxySecureResource):
 
 @admin_ns.route('/member/<username>')
 @admin_ns.param('username', 'Nombre de Usuario')
-# @v1_api.expect(secureHeader)
+@v1_api.expect(secureHeader)
 class OneAdminMemberResource(ProxySecureResource):
     
     @admin_ns.doc('Get Trabajador')
     @v1_api.marshal_with(GetOneAdminUserStruct) 
-    # @jwt_required    
+    @jwt_required    
     def get(self,username):
-        # security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username': 'prueba'}
         query_params = {'username': username}
         data = GetAdminMemberUseCase().execute(security_credentials,query_params)
         return  {'ok' : 1, 'data': data}, 200

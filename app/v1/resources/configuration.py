@@ -73,17 +73,17 @@ GetTurnoListStruct = v1_api.model('GetTurnoListStruct', {
 })
 
 @configuration_ns.route('/holgura')
-# @v1_api.expect(secureHeader)
+@v1_api.expect(secureHeader)
 class HolguraResource(ProxySecureResource): 
 # class HolguraResource(Resource): 
 
     @configuration_ns.doc('Get Holgura List')
     @v1_api.expect(queryParams)    
-    # @jwt_required    
+    @jwt_required    
     @v1_api.marshal_with(GetHolguraListStruct) 
     def get(self):
-        # security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username': 'prueba'}
         query_params = {}
         request_payload =  {}        
         if 'filter' in  request.args and request.args['filter']:
@@ -105,21 +105,21 @@ class HolguraResource(ProxySecureResource):
 
     @configuration_ns.doc('New Holgura')
     @v1_api.expect(NewHolguraStruct)    
-    # @jwt_required    
+    @jwt_required    
     def post(self):
         payload = request.json        
-        # security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username': 'prueba'}
         NewHolguraUseCase().execute(security_credentials,payload)
         return  {'ok': 1}, 200
 
     @configuration_ns.doc('Save Holgura')
     @v1_api.expect(SaveHolguraStruct)    
-    # @jwt_required    
+    @jwt_required    
     def put(self):
         payload = request.json        
-        # security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username': 'prueba'}
         SaveHolguraUseCase().execute(security_credentials,payload)
         return  {'ok': 1}, 200
 

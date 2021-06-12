@@ -71,15 +71,15 @@ SaveAbsenceJustificationStruct = v1_api.model('SaveAbsenceJustificationStruct', 
 
 
 @process_ns.route('/daily_marking')
-# @v1_api.expect(secureHeader)
+@v1_api.expect(secureHeader)
 class DailyMarkingResource(ProxySecureResource): 
 
     @process_ns.doc('Get Marcajes Diarios')
     @v1_api.expect(queryParams)
-    # @jwt_required    
+    @jwt_required    
     def get(self):
-        # security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'guest'}
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username': 'guest'}
         query_params = {}
         request_payload =  {}        
         if 'filter' in  request.args and request.args['filter']:
