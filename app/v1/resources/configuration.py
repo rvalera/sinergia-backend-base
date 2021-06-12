@@ -142,12 +142,12 @@ class DeleteHolguraResource(ProxySecureResource):
 @configuration_ns.route('/holgura/<id>/approve')
 @configuration_ns.param('id', 'Holgura Id')
 @v1_api.expect(secureHeader)
-class DeleteHolguraResource(ProxySecureResource):
+class ApproveHolguraResource(ProxySecureResource):
 # class DeleteHolguraResource(Resource):
     
     @configuration_ns.doc('Approve Holgura')
     @jwt_required    
-    def delete(self,id):
+    def put(self,id):
         security_credentials = self.checkCredentials()
         # security_credentials = {'username': 'guest'}
         ApproveHolguraUseCase().execute(security_credentials,id)
