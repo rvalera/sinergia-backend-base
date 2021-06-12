@@ -13,121 +13,228 @@ from requests.exceptions import HTTPError
 from app.exceptions.base import CryptoPOSException, ConnectionException,NotImplementedException
 from .base import SinergiaRepository
 
+from app.exceptions.base import RepositoryUnknownException
+
 import pandas as pd
 import logging
 
 class CargoRepository(SinergiaRepository):
     def get(self,query_params):
-        sql = 'SELECT * FROM integrador.cargos'
-        count_sql = 'SELECT COUNT(*) count_rows  FROM integrador.cargos'
+        sql = '''
+        SELECT * FROM integrador.cargos
+        {conditions}
+        {order_by}
+        {limits_offset}
+        '''
+        count_sql = '''
+        SELECT COUNT(*) count_rows  FROM integrador.cargos
+        {conditions}
+        '''
 
-        # Definiendo order
-        if 'order' in query_params:
-            order_criteria = query_params['order']
-            order_fields = ','.join(order_criteria)
-            sql += ' ORDER BY %s' % (order_fields)
+        parameters = {'conditions' : '', 'order_by': '', 'limits_offset': ''}
 
-        # Definiendo los Rangos de Paginacion
         limit = 10
-        offset = 0
-        query_range = [0,10]
-        if 'range' in query_params:
-            query_range = query_params['range']
-            if len(query_range) >= 2:
-                low_limit = query_range[0] 
-                high_limit = query_range[1] 
-            else:
-                low_limit = query_range[0]
-                high_limit = query_range[0] 
-            limit = (high_limit - low_limit) + 1
-            offset = low_limit 
-        sql += ' LIMIT %s OFFSET %s' % (limit,offset)
+        offset = 0        
+        if len(query_params) > 0:
+
+            if 'filter' in query_params:
+                filter_conditions = query_params['filter']
+
+                if len(filter_conditions) > 0 :
+
+                    conditions = []         
+                    if 'codigo' in filter_conditions:
+                        conditions.append("codigo  = '{codigo}' ")
+
+                    if 'descripcion' in filter_conditions:
+                        conditions.append("descripcion LIKE '%{descripcion}%' ")
+
+                    if 'codigo_rrhh' in filter_conditions:
+                        conditions.append("codigo_rrhh LIKE '%{codigo_rrhh}%' ")
+
+
+                    where_clausule = 'WHERE ' + ' AND '.join(conditions)
+                    where_clausule = where_clausule.format(**filter_conditions)
+
+                    parameters['conditions'] = where_clausule
+            
+            # Definiendo order
+            if 'order' in query_params:
+                order_criteria = query_params['order']
+                order_fields = ','.join(order_criteria)
+                parameters['order_by'] = 'ORDER BY ' + order_fields
+
+
+            # Definiendo los Rangos de Paginacion
+            query_range = [0,10]
+            if 'range' in query_params:
+                query_range = query_params['range']
+                if len(query_range) >= 2:
+                    low_limit = query_range[0] 
+                    high_limit = query_range[1] 
+                else:
+                    low_limit = query_range[0]
+                    high_limit = query_range[0] 
+                limit = (high_limit - low_limit) + 1
+                offset = low_limit 
+            parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
+
+        sql = sql.format(**parameters)
 
         table_df = pd.read_sql_query(sql,con=db.engine)
         rows = table_df.to_dict('records')
         count_result_rows = limit
 
+        count_sql = count_sql.format(**parameters)
         count_df = pd.read_sql_query(count_sql,con=db.engine)
         result_count = count_df.to_dict('records')
         count_all_rows = result_count[0]['count_rows']
 
         return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
+
 
 
 class CentroCostoRepository(SinergiaRepository):
     def get(self,query_params):
-        sql = 'SELECT * FROM integrador.centro_costo'
-        count_sql = 'SELECT COUNT(*) count_rows  FROM integrador.centro_costo'
+        sql = '''
+        SELECT * FROM integrador.centro_costo
+        {conditions}
+        {order_by}
+        {limits_offset}
+        '''
+        count_sql = '''
+        SELECT COUNT(*) count_rows  FROM integrador.centro_costo
+        {conditions}
+        '''
 
-        # Definiendo order
-        if 'order' in query_params:
-            order_criteria = query_params['order']
-            order_fields = ','.join(order_criteria)
-            sql += ' ORDER BY %s' % (order_fields)
+        parameters = {'conditions' : '', 'order_by': '', 'limits_offset': ''}
 
-        # Definiendo los Rangos de Paginacion
         limit = 10
-        offset = 0
-        query_range = [0,10]
-        if 'range' in query_params:
-            query_range = query_params['range']
-            if len(query_range) >= 2:
-                low_limit = query_range[0] 
-                high_limit = query_range[1] 
-            else:
-                low_limit = query_range[0]
-                high_limit = query_range[0] 
-            limit = (high_limit - low_limit) + 1
-            offset = low_limit 
-        sql += ' LIMIT %s OFFSET %s' % (limit,offset)
+        offset = 0        
+        if len(query_params) > 0:
+
+            if 'filter' in query_params:
+                filter_conditions = query_params['filter']
+
+                if len(filter_conditions) > 0 :
+
+                    conditions = []         
+                    if 'codigo' in filter_conditions:
+                        conditions.append('codigo  = {codigo}')
+
+                    if 'descripcion' in filter_conditions:
+                        conditions.append("descripcion LIKE '%{descripcion}%' ")
+
+                    where_clausule = 'WHERE ' + ' AND '.join(conditions)
+                    where_clausule = where_clausule.format(**filter_conditions)
+
+                    parameters['conditions'] = where_clausule
+            
+            # Definiendo order
+            if 'order' in query_params:
+                order_criteria = query_params['order']
+                order_fields = ','.join(order_criteria)
+                parameters['order_by'] = 'ORDER BY ' + order_fields
+
+
+            # Definiendo los Rangos de Paginacion
+            query_range = [0,10]
+            if 'range' in query_params:
+                query_range = query_params['range']
+                if len(query_range) >= 2:
+                    low_limit = query_range[0] 
+                    high_limit = query_range[1] 
+                else:
+                    low_limit = query_range[0]
+                    high_limit = query_range[0] 
+                limit = (high_limit - low_limit) + 1
+                offset = low_limit 
+            parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
+
+        sql = sql.format(**parameters)
 
         table_df = pd.read_sql_query(sql,con=db.engine)
         rows = table_df.to_dict('records')
         count_result_rows = limit
 
+        count_sql = count_sql.format(**parameters)
         count_df = pd.read_sql_query(count_sql,con=db.engine)
         result_count = count_df.to_dict('records')
         count_all_rows = result_count[0]['count_rows']
 
         return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
+
 
 class ConceptoNominaRepository(SinergiaRepository):
     def get(self,query_params):
-        sql = 'SELECT * FROM integrador.conceptos_nomina'
-        count_sql = 'SELECT COUNT(*) count_rows  FROM integrador.conceptos_nomina'
 
-        # Definiendo order
-        if 'order' in query_params:
-            order_criteria = query_params['order']
-            order_fields = ','.join(order_criteria)
-            sql += ' ORDER BY %s' % (order_fields)
+        sql = '''
+        SELECT * FROM integrador.conceptos_nomina
+        {conditions}
+        {order_by}
+        {limits_offset}
+        '''
+        count_sql = '''
+        SELECT COUNT(*) count_rows  FROM integrador.conceptos_nomina        
+        {conditions}
+        '''
 
-        # Definiendo los Rangos de Paginacion
+        parameters = {'conditions' : '', 'order_by': '', 'limits_offset': ''}
+
         limit = 10
-        offset = 0
-        query_range = [0,10]
-        if 'range' in query_params:
-            query_range = query_params['range']
-            if len(query_range) >= 2:
-                low_limit = query_range[0] 
-                high_limit = query_range[1] 
-            else:
-                low_limit = query_range[0]
-                high_limit = query_range[0] 
-            limit = (high_limit - low_limit) + 1
-            offset = low_limit 
-        sql += ' LIMIT %s OFFSET %s' % (limit,offset)
+        offset = 0        
+        if len(query_params) > 0:
+
+            if 'filter' in query_params:
+                filter_conditions = query_params['filter']
+
+                if len(filter_conditions) > 0 :
+
+                    conditions = []         
+                    if 'codigo' in filter_conditions:
+                        conditions.append('codigo  = {codigo}')
+
+                    if 'descripcion' in filter_conditions:
+                        conditions.append("descripcion LIKE '%{descripcion}%' ")
+
+                    where_clausule = 'WHERE ' + ' AND '.join(conditions)
+                    where_clausule = where_clausule.format(**filter_conditions)
+
+                    parameters['conditions'] = where_clausule
+            
+            # Definiendo order
+            if 'order' in query_params:
+                order_criteria = query_params['order']
+                order_fields = ','.join(order_criteria)
+                parameters['order_by'] = 'ORDER BY ' + order_fields
+
+
+            # Definiendo los Rangos de Paginacion
+            query_range = [0,10]
+            if 'range' in query_params:
+                query_range = query_params['range']
+                if len(query_range) >= 2:
+                    low_limit = query_range[0] 
+                    high_limit = query_range[1] 
+                else:
+                    low_limit = query_range[0]
+                    high_limit = query_range[0] 
+                limit = (high_limit - low_limit) + 1
+                offset = low_limit 
+            parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
+
+        sql = sql.format(**parameters)
 
         table_df = pd.read_sql_query(sql,con=db.engine)
         rows = table_df.to_dict('records')
         count_result_rows = limit
 
+        count_sql = count_sql.format(**parameters)
         count_df = pd.read_sql_query(count_sql,con=db.engine)
         result_count = count_df.to_dict('records')
         count_all_rows = result_count[0]['count_rows']
 
         return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
-
 
 
 class DispositivoRepository(SinergiaRepository):
@@ -154,48 +261,111 @@ class TipoNominaRepository(SinergiaRepository):
         result = table_df.to_dict('records')
         return result
 
+#################################################################################################################
+
 class TrabajadorRepository(SinergiaRepository):
 
     def get(self,query_params):
-        # Definiendo Filter
-        filter_criteria = {}
-        if 'filter' in query_params:
-            filter_criteria = query_params['filter']
 
-        # Definiendo order
-        if 'order' in query_params:
-            order_criteria = query_params['order']
-            order_fields = ','.join(order_criteria)
+        sql = '''
+        SELECT  * 
+        FROM integrador.vw_trabajador t
+        {conditions}
+        {order_by}
+        {limits_offset}
+        '''
+        count_sql = '''
+        SELECT COUNT(*) count_rows 
+        FROM integrador.vw_trabajador t
+        {conditions}
+        '''
 
-        # Definiendo los Rangos de Paginacion
+        parameters = {'conditions' : '', 'order_by': '', 'limits_offset': ''}
+
         limit = 10
-        offset = 0
-        low_limit = 0 
-        high_limit = 9 
+        offset = 0        
+        if len(query_params) > 0:
 
-        query_range = [0,10]
-        if 'range' in query_params:
-            query_range = query_params['range']
-            if len(query_range) >= 2:
-                low_limit = query_range[0] 
-                high_limit = query_range[1] 
-            else:
-                low_limit = query_range[0]
-                high_limit = query_range[0] 
-            limit = (high_limit - low_limit) + 1
-            offset = low_limit 
+            if 'filter' in query_params:
+                filter_conditions = query_params['filter']
 
-        high_limit = high_limit + 1
-        rows = Trabajador.query.filter_by(**filter_criteria).slice(low_limit,high_limit).all()
-        count_result_rows = len(rows)
-        count_all_rows = Trabajador.query.filter_by(**filter_criteria).count()
+                if len(filter_conditions) > 0 :
 
-        return { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows} 
+                    conditions = []         
+                    if 'cedula_trabajador' in filter_conditions:
+                        conditions.append('t.cedula  = {cedula_trabajador}')
 
+                    if 'id_centro_costo' in filter_conditions:
+                        if type(filter_conditions['id_centro_costo']) == str :
+                            conditions.append("t.id_centro_costo = '{id_centro_costo}' ")
+                        else:
+                            conditions.append('t.id_centro_costo IN {id_centro_costo}')
+
+                    if 'id_tipo_nomina' in filter_conditions:
+                        if type(filter_conditions['id_tipo_nomina']) == str:
+                            conditions.append("t.id_tipo_nomina = '{id_tipo_nomina}' ")
+                        else:
+                            conditions.append('t.id_tipo_nomina IN {id_tipo_nomina}')
+
+                    if 'id_estatus' in filter_conditions:
+                        if type(filter_conditions['id_estatus']) == str:
+                            conditions.append("t.id_estatus = '{id_estatus}' ")
+                        else:
+                            conditions.append('t.id_estatus IN {id_estatus}')
+
+                    where_clausule = 'WHERE ' + ' AND '.join(conditions)
+                    where_clausule = where_clausule.format(**filter_conditions)
+
+                    parameters['conditions'] = where_clausule
+            
+            # Definiendo order
+            if 'order' in query_params:
+                order_criteria = query_params['order']
+                order_fields = ','.join(order_criteria)
+                parameters['order_by'] = 'ORDER BY ' + order_fields
+
+
+            # Definiendo los Rangos de Paginacion
+            query_range = [0,10]
+            if 'range' in query_params:
+                query_range = query_params['range']
+                if len(query_range) >= 2:
+                    low_limit = query_range[0] 
+                    high_limit = query_range[1] 
+                else:
+                    low_limit = query_range[0]
+                    high_limit = query_range[0] 
+                limit = (high_limit - low_limit) + 1
+                offset = low_limit 
+            parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
+
+        sql = sql.format(**parameters)
+
+        table_df = pd.read_sql_query(sql,con=db.engine)
+        rows = table_df.to_dict('records')
+        count_result_rows = limit
+
+        count_sql = count_sql.format(**parameters)
+        count_df = pd.read_sql_query(count_sql,con=db.engine)
+        result_count = count_df.to_dict('records')
+        count_all_rows = result_count[0]['count_rows']
+
+        return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
 
     def getByCedula(self,cedula):
-        row = Trabajador.query.filter(Trabajador.cedula == cedula).first()
-        return  row
+        sql = '''
+        SELECT  * 
+        FROM integrador.vw_trabajador t
+        WHERE cedula = %s
+        ''' % cedula  
+
+        table_df = pd.read_sql_query(sql,con=db.engine)
+        rows = table_df.to_dict('records')
+
+        if len(rows) > 0:
+            raise RepositoryUnknownException()            
+
+        return  rows[0]
 
 
 class TipoTrabajadorRepository(SinergiaRepository):

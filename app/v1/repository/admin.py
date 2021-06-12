@@ -20,41 +20,116 @@ import pandas as pd
 import hashlib
 import datetime
 
+from sqlalchemy import text    
+from sqlalchemy import select    
+
+
 class MemberRepository(SinergiaRepository):
 
     def get(self,query_params):
-        # Definiendo Filter
-        filter_criteria = {}
-        if 'filter' in query_params:
-            filter_criteria = query_params['filter']
+        sql = '''
+        SELECT DISTINCT s.*
+        FROM securityelement s
+        JOIN "user" u 
+        ON s.id = u.id 
+        JOIN personextension pe
+        ON u.person_extension_id = pe.id
+        LEFT JOIN securityelement_rol sr 
+        ON s.id = sr.securityelement_id 
+        LEFT JOIN rol r 
+        ON sr.rol_id = r.id  
+        LEFT JOIN user_ceco uc 
+        ON pe.id = uc.id_user_extension  
+        {conditions}
+        {order_by}
+        {limits_offset}
+        '''
 
-        # Definiendo order
-        order_criteria = []
-        if 'order' in query_params:
-            order_criteria = query_params['order']
+        count_sql = '''
+        SELECT COUNT(DISTINCT s.*) count_rows
+        FROM securityelement s
+        JOIN "user" u 
+        ON s.id = u.id 
+        JOIN personextension pe
+        ON u.person_extension_id = pe.id
+        LEFT JOIN securityelement_rol sr 
+        ON s.id = sr.securityelement_id 
+        LEFT JOIN rol r 
+        ON sr.rol_id = r.id  
+        LEFT JOIN user_ceco uc 
+        ON pe.id = uc.id_user_extension  
+        {conditions}
+        '''
 
-        # Definiendo los Rangos de Paginacion
+        parameters = {'conditions' : '', 'order_by': '', 'limits_offset': ''}
+
         limit = 10
-        offset = 0
-        low_limit = 0 
-        high_limit = 9 
-        query_range = [0,10]
-        if 'range' in query_params:
-            query_range = query_params['range']
-            if len(query_range) >= 2:
-                low_limit = query_range[0] 
-                high_limit = query_range[1] 
-            else:
-                low_limit = query_range[0]
-                high_limit = query_range[0] 
-            limit = (high_limit - low_limit) + 1
-            offset = low_limit 
+        offset = 0        
+        if len(query_params) > 0:
 
-        high_limit = high_limit + 1
+            if 'filter' in query_params:
+                filter_conditions = query_params['filter']
 
-        rows = User.query.filter_by(**filter_criteria).slice(low_limit,high_limit).all()
+                if len(filter_conditions) > 0 :
+
+                    conditions = []         
+                    if 'username' in filter_conditions:
+                        conditions.append('s.name  = {username}')
+
+                    if 'first_name' in filter_conditions:
+                        conditions.append("pe.first_name LIKE '%{first_name}%' ")
+
+                    if 'last_name' in filter_conditions:
+                        conditions.append("pe.last_name LIKE '%{last_name}%' ")
+
+                    if 'id_centro_costo' in filter_conditions:
+                        if type(filter_conditions['id_centro_costo']) == str :
+                            conditions.append("uc.centro_costo = '{id_centro_costo}' ")
+                        else:
+                            conditions.append('uc.centro_costo IN {id_centro_costo}')
+
+                    if 'rolname' in filter_conditions:
+                        if type(filter_conditions['rolname']) == str:
+                            conditions.append("r.name = '{rolname}' ")
+                        else:
+                            conditions.append('r.name IN {rolname}')
+
+                    where_clausule = 'WHERE ' + ' AND '.join(conditions)
+                    where_clausule = where_clausule.format(**filter_conditions)
+
+                    parameters['conditions'] = where_clausule
+
+            # Definiendo order
+            if 'order' in query_params:
+                order_criteria = query_params['order']
+                order_fields = ','.join(order_criteria)
+                parameters['order_by'] = 'ORDER BY ' + order_fields
+
+
+            # Definiendo los Rangos de Paginacion
+            query_range = [0,10]
+            if 'range' in query_params:
+                query_range = query_params['range']
+                if len(query_range) >= 2:
+                    low_limit = query_range[0] 
+                    high_limit = query_range[1] 
+                else:
+                    low_limit = query_range[0]
+                    high_limit = query_range[0] 
+                limit = (high_limit - low_limit) + 1
+                offset = low_limit 
+            parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
+
+        sql = sql.format(**parameters)
+
+        textual_sql = text(sql)
+        rows = db.session.query(User).from_statement(textual_sql).all()
         count_result_rows = len(rows)
-        count_all_rows = User.query.filter_by(**filter_criteria).count()
+
+        count_sql = count_sql.format(**parameters)
+        count_df = pd.read_sql_query(count_sql,con=db.engine)
+        result_count = count_df.to_dict('records')
+        count_all_rows = result_count[0]['count_rows']
 
         return { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows} 
 

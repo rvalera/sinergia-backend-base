@@ -558,13 +558,22 @@ class BatchJustificationAbsenceRepository(SinergiaRepository):
                         conditions.append('vt.cedula  = {cedula_trabajador}')
 
                     if 'id_centro_costo' in filter_conditions:
-                        conditions.append('vt.id_centro_costo = {id_centro_costo}')
+                        if type(filter_conditions['id_centro_costo']) == str :
+                            conditions.append("vt.id_centro_costo = '{id_centro_costo}' ")
+                        else:
+                            conditions.append('vt.id_centro_costo IN {id_centro_costo}')
 
                     if 'id_tipo_nomina' in filter_conditions:
-                        conditions.append('vt.id_tipo_nomina = {id_tipo_nomina}')
+                        if type(filter_conditions['id_tipo_nomina']) == str:
+                            conditions.append("vt.id_tipo_nomina = '{id_tipo_nomina}' ")
+                        else:
+                            conditions.append('vt.id_tipo_nomina IN {id_tipo_nomina}')
 
                     if 'id_tipo_justificacion_audiencia' in filter_conditions:
-                        conditions.append('am.tpau = {id_tipo_justificacion_ausencia}')
+                        if type(filter_conditions['id_tipo_nomina']) == str:
+                            conditions.append("am.tpau = {id_tipo_justificacion_ausencia} ")
+                        else:
+                            conditions.append('am.tpau IN {id_tipo_justificacion_audiencia}')
 
                     if 'from' in filter_conditions:
                         conditions.append("md.hora_inicio >= '{from}' ")
@@ -931,13 +940,16 @@ class BatchOvertimeRepository(SinergiaRepository):
                         conditions.append('vt.cedula  = {cedula_trabajador}')
 
                     if 'id_centro_costo' in filter_conditions:
-                        conditions.append('vt.id_centro_costo = {id_centro_costo}')
+                        if type(filter_conditions['id_centro_costo']) == str :
+                            conditions.append("vt.id_centro_costo = '{id_centro_costo}' ")
+                        else:
+                            conditions.append('vt.id_centro_costo IN {id_centro_costo}')
 
                     if 'id_tipo_nomina' in filter_conditions:
-                        conditions.append('vt.id_tipo_nomina = {id_tipo_nomina}')
-
-                    if 'id_tipo_justificacion_audiencia' in filter_conditions:
-                        conditions.append('am.tpau = {id_tipo_justificacion_ausencia}')
+                        if type(filter_conditions['id_tipo_nomina']) == str:
+                            conditions.append("vt.id_tipo_nomina = '{id_tipo_nomina}' ")
+                        else:
+                            conditions.append('vt.id_tipo_nomina IN {id_tipo_nomina}')
 
                     if 'from' in filter_conditions:
                         conditions.append("md.hora_final >= '{from}' ")
@@ -1389,13 +1401,22 @@ class DailyMarkingRepository(SinergiaRepository):
                         conditions.append('md.cedula  = {cedula_trabajador}')
 
                     if 'id_centro_costo' in filter_conditions:
-                        conditions.append('md.id_centro_costo = {id_centro_costo}')
+                        if type(filter_conditions['id_centro_costo']) == str :
+                            conditions.append("md.id_centro_costo = '{id_centro_costo}' ")
+                        else:
+                            conditions.append('md.id_centro_costo IN {id_centro_costo}')
 
-                    if 'id_tipo_trabajador' in filter_conditions:
-                        conditions.append('md.id_tipo_trabajador = {id_tipo_trabajador}')
+                    if 'id_tipo_nomina' in filter_conditions:
+                        if type(filter_conditions['id_tipo_nomina']) == str:
+                            conditions.append("md.id_tipo_nomina = '{id_tipo_nomina}' ")
+                        else:
+                            conditions.append('md.id_tipo_nomina IN {id_tipo_nomina}')
 
                     if 'id_turno' in filter_conditions:
-                        conditions.append('md.id_turno = {id_turno}')
+                        if type(filter_conditions['id_turno']) == str:
+                            conditions.append("md.id_turno = '{id_turno}' ")
+                        else:
+                            conditions.append('md.id_turno IN {id_turno}')
 
                     if 'from' in filter_conditions:
                         conditions.append("md.fecdia >= '{from}' ")
@@ -1459,13 +1480,22 @@ class DailyMarkingRepository(SinergiaRepository):
                         conditions.append('md.cedula  = {cedula_trabajador}')
 
                     if 'id_centro_costo' in filter_conditions:
-                        conditions.append('md.id_centro_costo = {id_centro_costo}')
+                        if type(filter_conditions['id_centro_costo']) == str :
+                            conditions.append("md.id_centro_costo = '{id_centro_costo}' ")
+                        else:
+                            conditions.append('md.id_centro_costo IN {id_centro_costo}')
 
-                    if 'id_tipo_trabajador' in filter_conditions:
-                        conditions.append('md.id_tipo_trabajador = {id_tipo_trabajador}')
+                    if 'id_tipo_nomina' in filter_conditions:
+                        if type(filter_conditions['id_tipo_nomina']) == str:
+                            conditions.append("md.id_tipo_nomina = '{id_tipo_nomina}' ")
+                        else:
+                            conditions.append('md.id_tipo_nomina IN {id_tipo_nomina}')
 
                     if 'id_turno' in filter_conditions:
-                        conditions.append('md.id_turno = {id_turno}')
+                        if type(filter_conditions['id_turno']) == str:
+                            conditions.append("md.id_turno = '{id_turno}' ")
+                        else:
+                            conditions.append('md.id_turno IN {id_turno}')
 
                     if 'from' in filter_conditions:
                         conditions.append("md.fecdia >= '{from}' ")
