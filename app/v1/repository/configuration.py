@@ -20,6 +20,18 @@ from sqlalchemy.sql import text
 class HolguraRepository(SinergiaRepository):
 
     def new(self,payload):
+        user = self.getUser()
+
+        parameters = {
+            'fecha_desde': payload['fecha_desde'],
+            'fecha_hasta': payload['fecha_hasta'],
+            'minutos_tolerancia' : payload['minutos_tolerancia'],
+            'id_centro_costo' : payload['id_centro_costo'],
+            'id_tipo_nomina' : payload['id_tipo_nomina'],
+            'cedula_trabajador' : payload['cedula_trabajador'],
+            'id_user_creador' : user.id,                                 
+        }
+
         conn = alembic.op.get_bind()
         conn.execute(
             text(
@@ -27,22 +39,26 @@ class HolguraRepository(SinergiaRepository):
                     insert into integrador.holguras
                     ( 
                     fecha_desde
-                    ,fecha_hasta
-                    ,autorizado_por
-                    ,minutos_tolerancia
-                    ,centro_costo
-                    ,codigo_nomina
-                    ,cedula 
+                    , fecha_hasta
+                    , minutos_tolerancia
+                    , centro_costo
+                    , codigo_nomina
+                    , cedula 
+                    , fecha_registro 
+                    , usuario_creador
+                    , status 
                     ) 
                     values 
                     (
                     :fecha_desde
                     ,:fecha_hasta 
-                    ,:autorizado_por
                     ,:minutos_tolerancia
                     ,:id_centro_costo
                     ,:id_tipo_nomina
                     ,:cedula_trabajador
+                    , CURRENT_DATE
+                    ,:id_user_creador
+                    , 0
                     ) 
                 """
             ), 
@@ -57,20 +73,42 @@ class HolguraRepository(SinergiaRepository):
         
         sql = '''
         SELECT  
-            h.id, 
-            TO_CHAR(h.fecha_desde,'YYYY-MM-DD') fecha_desde, 
-            TO_CHAR(h.fecha_hasta,'YYYY-MM-DD') fecha_hasta, 
-            h.autorizado_por, 
-            h.minutos_tolerancia, 
-            h.centro_costo id_centro_costo, cc.descripcion nombre_centro_costo,
-            h.codigo_nomina id_tipo_nomina, tn.descripcion nombre_tipo_nomina
+            h.id
+            , TO_CHAR(h.fecha_desde,'YYYY-MM-DD') fecha_desde
+            , TO_CHAR(h.fecha_hasta,'YYYY-MM-DD') fecha_hasta
+            , h.autorizado_por
+            , h.minutos_tolerancia
+            , h.centro_costo id_centro_costo
+            , cc.descripcion nombre_centro_costo
+            , h.codigo_nomina id_tipo_nomina
+            , tn.descripcion nombre_tipo_nomina
+            , TO_CHAR(h.fecha_registro,'YYYY-MM-DD') fecha_registro
+            , h.usuario_creador id_usuario_creador
+            , se1.name nombre_usuario_creador
+            , COALESCE( TO_CHAR(h.fecha_aprobacion,'YYYY-MM-DD'), '' ) fecha_aprobacion
+            , COALESCE( h.usuario_aprobador,0) id_usuario_aprobador
+            , COALESCE( se2.name, '') nombre_usuario_aprobador
         FROM integrador.holguras h 
-        LEFT JOIN integrador.centro_costo cc 
-        ON h.centro_costo = cc.codigo 
-        LEFT JOIN integrador.tipos_de_nomina tn
-        ON h.codigo_nomina = tn.codigo 
-        LEFT JOIN integrador.trabajadores t 
-        ON h.cedula = t.cedula 
+        LEFT JOIN 
+            integrador.centro_costo cc 
+        ON 
+            h.centro_costo = cc.codigo 
+        LEFT JOIN 
+            integrador.tipos_de_nomina tn
+        ON 
+            h.codigo_nomina = tn.codigo 
+        LEFT JOIN 
+            integrador.trabajadores t 
+        ON 
+            h.cedula = t.cedula 
+        LEFT JOIN 
+            public.securityelement se1
+        ON 
+            h.usuario_creador = se1.id
+        LEFT JOIN 
+            public.securityelement se2
+        ON  
+            h.usuario_aprobador = se2.id
         WHERE 
             h.id = {id}
         '''
@@ -87,12 +125,12 @@ class HolguraRepository(SinergiaRepository):
 
     #Validar que las horas extras se aprueba en el periodo de semanas definidos para la aplicacion
     def approve(self,id):
-        overtime_event = self.getById(id)
+        holgura = self.getById(id)
         user = self.getUser()
 
         parameters = {
             'id': id,
-            'user_aprobador': user.name
+            'id_user_aprobador': user.id
         }
 
         conn = alembic.op.get_bind()
@@ -101,7 +139,9 @@ class HolguraRepository(SinergiaRepository):
                 """
                     UPDATE integrador.holguras
                     SET 
-                    autorizado_por = :user_aprobador
+                    usuario_aprobador = :id_user_aprobador
+                    , fecha_aprobacion =  CURRENT_DATE
+                    , status = 1
                     WHERE 
                         id = :id
                 """
@@ -110,6 +150,20 @@ class HolguraRepository(SinergiaRepository):
         )
 
     def save(self,payload):
+        holgura = self.getById(id)
+        user = self.getUser()
+
+        parameters = {
+            'id' : id,
+            'fecha_desde': payload['fecha_desde'],
+            'fecha_hasta': payload['fecha_hasta'],
+            'minutos_tolerancia' : payload['minutos_tolerancia'],
+            'id_centro_costo' : payload['id_centro_costo'],
+            'id_tipo_nomina' : payload['id_tipo_nomina'],
+            'cedula_trabajador' : payload['cedula_trabajador'],
+            'id_user_creador' : user.id,                                 
+        }
+
         conn = alembic.op.get_bind()
         conn.execute(
             text(
@@ -118,11 +172,11 @@ class HolguraRepository(SinergiaRepository):
                     SET 
                     fecha_desde = :fecha_desde
                     ,fecha_hasta = :fecha_hasta
-                    ,autorizado_por = :autorizado_por
                     ,minutos_tolerancia = :minutos_tolerancia
                     ,centro_costo = :id_centro_costo 
                     ,codigo_nomina = :id_tipo_nomina  
                     ,cedula = :cedula_trabajador
+                    ,usuario_creador = :id_user_creador
                     WHERE id = :id
                 """
             ), 
@@ -146,33 +200,63 @@ class HolguraRepository(SinergiaRepository):
     def get(self,query_params):
         sql = '''
         SELECT  
-            h.id, 
-            TO_CHAR(h.fecha_desde,'YYYY-MM-DD') fecha_desde, 
-            TO_CHAR(h.fecha_hasta,'YYYY-MM-DD') fecha_hasta, 
-            h.autorizado_por, 
-            h.minutos_tolerancia, 
-            h.centro_costo id_centro_costo, cc.descripcion nombre_centro_costo,
-            h.codigo_nomina id_tipo_nomina, tn.descripcion nombre_tipo_nomina
+            h.id
+            , TO_CHAR(h.fecha_desde,'YYYY-MM-DD') fecha_desde
+            , TO_CHAR(h.fecha_hasta,'YYYY-MM-DD') fecha_hasta
+            , h.autorizado_por
+            , h.minutos_tolerancia
+            , h.centro_costo id_centro_costo
+            , cc.descripcion nombre_centro_costo
+            , h.codigo_nomina id_tipo_nomina
+            , tn.descripcion nombre_tipo_nomina
+            , TO_CHAR(h.fecha_registro,'YYYY-MM-DD') fecha_registro
+            , h.usuario_creador id_usuario_creador
+            , se1.name nombre_usuario_creador
+            , COALESCE( TO_CHAR(h.fecha_aprobacion,'YYYY-MM-DD'), '' ) fecha_aprobacion
+            , COALESCE( h.usuario_aprobador,0) id_usuario_aprobador
+            , COALESCE( se2.name, '') nombre_usuario_aprobador
         FROM integrador.holguras h 
-        LEFT JOIN integrador.centro_costo cc 
-        ON h.centro_costo = cc.codigo 
-        LEFT JOIN integrador.tipos_de_nomina tn
-        ON h.codigo_nomina = tn.codigo 
-        LEFT JOIN integrador.trabajadores t 
-        ON h.cedula = t.cedula 
+        LEFT JOIN 
+            integrador.centro_costo cc 
+        ON 
+            h.centro_costo = cc.codigo 
+        LEFT JOIN 
+            integrador.tipos_de_nomina tn
+        ON 
+            h.codigo_nomina = tn.codigo 
+        LEFT JOIN 
+            integrador.trabajadores t 
+        ON 
+            h.cedula = t.cedula 
+        LEFT JOIN 
+            public.securityelement se1
+        ON 
+            h.usuario_creador = se1.id
+        LEFT JOIN 
+            public.securityelement se2
+        ON  
+            h.usuario_aprobador = se2.id
         {conditions}
         {order_by}
         {limits_offset}
         '''
+
         count_sql = '''
         SELECT COUNT(*) count_rows 
-        FROM integrador.holguras h 
-        LEFT JOIN integrador.centro_costo cc 
-        ON h.centro_costo = cc.codigo 
-        LEFT JOIN integrador.tipos_de_nomina tn
-        ON h.codigo_nomina = tn.codigo 
-        LEFT JOIN integrador.trabajadores t 
-        ON h.cedula = t.cedula 
+        FROM 
+            integrador.holguras h 
+        LEFT JOIN 
+            integrador.centro_costo cc 
+        ON 
+            h.centro_costo = cc.codigo 
+        LEFT JOIN 
+            integrador.tipos_de_nomina tn
+        ON 
+            h.codigo_nomina = tn.codigo 
+        LEFT JOIN 
+            integrador.trabajadores t 
+        ON 
+            h.cedula = t.cedula 
         {conditions}
         '''
         parameters = {'conditions' : '', 'order_by': '', 'limits_offset': ''}
