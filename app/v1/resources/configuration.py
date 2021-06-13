@@ -27,7 +27,6 @@ HolguraStruct = v1_api.model('HolguraStruct', {
 NewHolguraStruct = v1_api.model('NewHolguraStruct', { 
     'fecha_desde' : fields.String(required=True,format='date-time'),   
     'fecha_hasta' : fields.String(required=True,format='date-time'),   
-    'autorizado_por' : fields.String(required=True),  
     'minutos_tolerancia' : fields.Integer(required=True), 
     'id_centro_costo' : fields.String(required=True),  
     'id_tipo_nomina' : fields.String(required=True),  
@@ -38,7 +37,6 @@ SaveHolguraStruct = v1_api.model('SaveHolguraStruct', {
     'id' : fields.Integer(), 
     'fecha_desde' : fields.String(required=True,format='date-time'),   
     'fecha_hasta' : fields.String(required=True,format='date-time'),   
-    'autorizado_por' : fields.String(required=True),  
     'minutos_tolerancia' : fields.Integer(required=True), 
     'id_centro_costo' : fields.String(required=True),  
     'id_tipo_nomina' : fields.String(required=True),  
@@ -80,7 +78,7 @@ class HolguraResource(ProxySecureResource):
     @configuration_ns.doc('Get Holgura List')
     @v1_api.expect(queryParams)    
     @jwt_required    
-    @v1_api.marshal_with(GetHolguraListStruct) 
+    # @v1_api.marshal_with(GetHolguraListStruct) 
     def get(self):
         security_credentials = self.checkCredentials()
         # security_credentials = {'username': 'prueba'}
@@ -147,7 +145,7 @@ class ApproveHolguraResource(ProxySecureResource):
     
     @configuration_ns.doc('Approve Holgura')
     @jwt_required    
-    def put(self,id):
+    def put (self,id):
         security_credentials = self.checkCredentials()
         # security_credentials = {'username': 'guest'}
         ApproveHolguraUseCase().execute(security_credentials,id)
