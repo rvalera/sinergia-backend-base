@@ -87,6 +87,7 @@ class HolguraRepository(SinergiaRepository):
             , COALESCE( TO_CHAR(h.fecha_aprobacion,'YYYY-MM-DD'), '' ) fecha_aprobacion
             , COALESCE( h.usuario_aprobador,0) id_usuario_aprobador
             , COALESCE( se2.name, '') nombre_usuario_aprobador
+            , h.status estatus            
         FROM integrador.holguras h 
         LEFT JOIN 
             integrador.centro_costo cc 
@@ -213,6 +214,7 @@ class HolguraRepository(SinergiaRepository):
             , COALESCE( TO_CHAR(h.fecha_aprobacion,'YYYY-MM-DD'), '' ) fecha_aprobacion
             , COALESCE( h.usuario_aprobador,0) id_usuario_aprobador
             , COALESCE( se2.name, '') nombre_usuario_aprobador
+            , h.status estatus            
         FROM integrador.holguras h 
         LEFT JOIN 
             integrador.centro_costo cc 
