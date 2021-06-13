@@ -694,9 +694,9 @@ class BatchJustificationAbsenceRepository(SinergiaRepository):
                 , ta.descripcion nombre_justificacion_ausencia
                 , am.usuario_creador id_usuario_creador
                 , se1.name nombre_usuario_creador
-                , TO_CHAR(am.fecha_aprobacion,'YYYY-MM-DD') fecha_aprobacion
-                , am.usuario_aprobador id_usuario_aprobador
-                , se2.name nombre_usuario_aprobador
+                , COALESCE( TO_CHAR(am.fecha_aprobacion,'YYYY-MM-DD'), '' ) fecha_aprobacion
+                , COALESCE( am.usuario_aprobador,0) id_usuario_aprobador
+                , COALESCE( se2.name, '') nombre_usuario_aprobador
                 , am.observaciones observaciones
                 , am.status estatus 
             FROM             
@@ -877,12 +877,12 @@ class BatchOvertimeRepository(SinergiaRepository):
             , am.tipo_de_hora tipo_hora
             , am.usuario_creador id_usuario_creador
             , se1.name nombre_usuario_creador
-            , TO_CHAR(am.fecha_aprobacion,'YYYY-MM-DD') fecha_aprobacion
-            , am.usuario_aprobador id_usuario_aprobador
-            , se2.name nombre_usuario_aprobador
+            , COALESCE( TO_CHAR(am.fecha_aprobacion,'YYYY-MM-DD'), '' ) fecha_aprobacion
+            , COALESCE( am.usuario_aprobador,0) id_usuario_aprobador
+            , COALESCE( se2.name, '') nombre_usuario_aprobador
             , am.observaciones observaciones
             , am.status estatus 
-        FROM             
+        FROM              
             integrador.horas_exmasivas am 
         JOIN  
             integrador.horas_exmasivas_trabajador amt 
