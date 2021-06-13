@@ -76,7 +76,6 @@ class HolguraRepository(SinergiaRepository):
             h.id
             , TO_CHAR(h.fecha_desde,'YYYY-MM-DD') fecha_desde
             , TO_CHAR(h.fecha_hasta,'YYYY-MM-DD') fecha_hasta
-            , h.autorizado_por
             , h.minutos_tolerancia
             , h.centro_costo id_centro_costo
             , cc.descripcion nombre_centro_costo
@@ -203,7 +202,6 @@ class HolguraRepository(SinergiaRepository):
             h.id
             , TO_CHAR(h.fecha_desde,'YYYY-MM-DD') fecha_desde
             , TO_CHAR(h.fecha_hasta,'YYYY-MM-DD') fecha_hasta
-            , h.autorizado_por
             , h.minutos_tolerancia
             , h.centro_costo id_centro_costo
             , cc.descripcion nombre_centro_costo
