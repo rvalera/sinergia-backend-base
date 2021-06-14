@@ -19,7 +19,7 @@ HolguraStruct = v1_api.model('HolguraStruct', {
     'nombre_centro_costo' : fields.String(),  
     'id_tipo_nomina' : fields.String(),  
     'nombre_tipo_nomina' : fields.String(),
-    'cedula_trabajador' : fields.String(required=True),  
+    'cedula_trabajador' : fields.Integer(required=True),  
     'apellidos' : fields.String(required=True),  
     'nombres' : fields.String(required=True),  
 }) 
@@ -30,7 +30,7 @@ NewHolguraStruct = v1_api.model('NewHolguraStruct', {
     'minutos_tolerancia' : fields.Integer(required=True), 
     'id_centro_costo' : fields.String(required=True),  
     'id_tipo_nomina' : fields.String(required=True),  
-    'cedula_trabajador' : fields.String(required=True),  
+    'cedula_trabajador' : fields.Integer(required=True),  
 }) 
 
 SaveHolguraStruct = v1_api.model('SaveHolguraStruct', { 
@@ -40,7 +40,7 @@ SaveHolguraStruct = v1_api.model('SaveHolguraStruct', {
     'minutos_tolerancia' : fields.Integer(required=True), 
     'id_centro_costo' : fields.String(required=True),  
     'id_tipo_nomina' : fields.String(required=True),  
-    'cedula_trabajador' : fields.String(required=True),  
+    'cedula_trabajador' : fields.Integer(required=True),  
 }) 
 
 

@@ -12,7 +12,8 @@ from requests.exceptions import HTTPError
 from app.exceptions.base import CryptoPOSException, ConnectionException,NotImplementedException,RepositoryUnknownException
 from .base import SinergiaRepository
 
-
+import json
+ 
 import pandas as pd
 
 from sqlalchemy.sql import text
@@ -26,11 +27,34 @@ class HolguraRepository(SinergiaRepository):
             'fecha_desde': payload['fecha_desde'],
             'fecha_hasta': payload['fecha_hasta'],
             'minutos_tolerancia' : payload['minutos_tolerancia'],
-            'id_centro_costo' : payload['id_centro_costo'],
-            'id_tipo_nomina' : payload['id_tipo_nomina'],
-            'cedula_trabajador' : payload['cedula_trabajador'],
             'id_user_creador' : user.id,                                 
         }
+
+        if 'id_centro_costo' in payload:
+            if payload['id_centro_costo']:
+                parameters['id_centro_costo'] = payload['id_centro_costo']
+            else:
+                parameters['id_centro_costo'] = None
+        else:
+            parameters['id_centro_costo'] = None
+
+        if 'id_tipo_nomina' in payload:
+            if payload['id_tipo_nomina']:
+                parameters['id_tipo_nomina'] = payload['id_tipo_nomina']
+            else:
+                parameters['id_tipo_nomina'] = None
+        else:
+            parameters['id_tipo_nomina'] = None
+
+       
+
+        if 'cedula_trabajador' in payload:
+            if payload['cedula_trabajador']:
+                parameters['cedula_trabajador'] = payload['cedula_trabajador']
+            else:
+                parameters['cedula_trabajador'] = None
+        else:
+            parameters['cedula_trabajador'] = None
 
         conn = alembic.op.get_bind()
         conn.execute(
@@ -62,7 +86,7 @@ class HolguraRepository(SinergiaRepository):
                     ) 
                 """
             ), 
-            **payload
+            **parameters
         )
 
     def getById(self,id):
@@ -158,11 +182,19 @@ class HolguraRepository(SinergiaRepository):
             'fecha_desde': payload['fecha_desde'],
             'fecha_hasta': payload['fecha_hasta'],
             'minutos_tolerancia' : payload['minutos_tolerancia'],
-            'id_centro_costo' : payload['id_centro_costo'],
-            'id_tipo_nomina' : payload['id_tipo_nomina'],
-            'cedula_trabajador' : payload['cedula_trabajador'],
-            'id_user_creador' : user.id,                                 
+            'id_user_creador' : user.id,                                            
         }
+
+        if 'id_centro_costo' in payload and not payload['id_centro_costo']:
+            parameters['id_centro_costo'] = payload['id_centro_costo']
+
+        if 'id_tipo_nomina' in payload and not payload['id_tipo_nomina']:
+            parameters['id_tipo_nomina'] = payload['id_tipo_nomina']
+
+        if 'cedula_trabajador' in payload and not payload['cedula_trabajador']:
+            parameters['cedula_trabajador'] = payload['cedula_trabajador']
+
+
 
         conn = alembic.op.get_bind()
         conn.execute(

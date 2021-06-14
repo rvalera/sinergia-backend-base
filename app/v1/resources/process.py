@@ -15,20 +15,20 @@ process_ns = v1_api.namespace('process', description='Process Services')
 
 NewManualMarkingStruct = v1_api.model('NewManualMarkingStruct', { 
     'fecha' : fields.String(required=True,format='date'),   
-    'cedula' : fields.String(required=True),   
+    'cedula' : fields.Integer(required=True),   
     'observaciones' : fields.String(required=True), 
     'id_turno' : fields.String(required=True), 
-    'tipo_evento' : fields.String(required=True,description = "1: Entrada, 2:Salida"), 
+    'tipo_evento' : fields.Integer(required=True,description = "1: Entrada, 2:Salida"), 
     'fecha_hora_evento' : fields.String(required=True,description = "Formato YYYY-MM-DD HH24:MI:SS"), 
 }) 
 
 SaveManualMarkingStruct = v1_api.model('SaveManualMarkingStruct', { 
     'id' : fields.Integer(required=True), 
     'fecha' : fields.String(required=True,format='date'),   
-    'cedula' : fields.String(required=True),   
+    'cedula' : fields.Integer(required=True),   
     'observaciones' : fields.String(required=True), 
     'id_turno' : fields.String(required=True), 
-    'tipo_evento' : fields.String(required=True,description = "1: Entrada, 2:Salida"), 
+    'tipo_evento' : fields.Integer(required=True,description = "1: Entrada, 2:Salida"), 
     'fecha_hora_evento' : fields.String(required=True,description = "Formato YYYY-MM-DD HH24:MI:SS"), 
 }) 
 
@@ -93,15 +93,15 @@ SaveAbsenceJustificationStruct = v1_api.model('SaveAbsenceJustificationStruct', 
 
 
 @process_ns.route('/daily_marking')
-@v1_api.expect(secureHeader)
+# @v1_api.expect(secureHeader)
 class DailyMarkingResource(ProxySecureResource): 
 
     @process_ns.doc('Get Marcajes Diarios')
     @v1_api.expect(queryParams)
-    @jwt_required    
+    # @jwt_required    
     def get(self):
-        security_credentials = self.checkCredentials()
-        # security_credentials = {'username': 'guest'}
+        # security_credentials = self.checkCredentials()
+        security_credentials = {'username': 'guest'}
         query_params = {}
         request_payload =  {}        
         if 'filter' in  request.args and request.args['filter']:
@@ -454,7 +454,7 @@ class ManualMarkingResource(ProxySecureResource):
 @process_ns.param('event_date', 'Fecha Evento')
 @process_ns.param('cedula', 'Cedula Trabajador')
 @process_ns.param('id', 'Identificador')
-@v1_api.expect(secureHeader)
+# @v1_api.expect(secureHeader)
 class  DetailManualMarkingResource(ProxySecureResource):
 
     @process_ns.doc('Eliminar Marcaje Manual')
@@ -468,8 +468,8 @@ class  DetailManualMarkingResource(ProxySecureResource):
     @process_ns.doc('Get Marcaje Manual')
     # @jwt_required
     def get(self,event_date,cedula,id):
-        security_credentials = self.checkCredentials()
-        # security_credentials = {'username': 'prueba'}        
+        # security_credentials = self.checkCredentials()
+        security_credentials = {'username': 'prueba'}        
         data = GetDetailManualMarkingUseCase().execute(security_credentials,event_date,cedula,id)
         return  { 'ok': 1, 'data' : data } , 200
 

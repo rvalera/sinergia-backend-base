@@ -1761,7 +1761,7 @@ class ManualMarkingRepository(SinergiaRepository):
                 fecdia = :fecha
                 AND cedula  = :cedula """   %  (field_to_update)
         conn = alembic.op.get_bind()
-        conn.execute(text(update_sentence),**parameters)
+        conn.execute(text(update_sentence),**payload)
 
 
     def calcularSobretiempoYAusencia(self,payload):
@@ -1792,7 +1792,6 @@ class ManualMarkingRepository(SinergiaRepository):
             'id_user_creador' : user.id,
             'observaciones' : payload['observaciones'],
             'id_turno' : payload['id_turno'],
-            'id_tipo_marcaje' : payload['id_tipo_marcaje'], 
             'tipo_evento' : payload['tipo_evento'], 
             'fecha_hora_evento' : payload['fecha_hora_evento'],
         }
@@ -1805,18 +1804,16 @@ class ManualMarkingRepository(SinergiaRepository):
                 ,tipo_evento
                 ,fechaevento
                 ,observaciones
-                ,tipo_de_marcaje
                 ,turno
-                ,user_creador
+                ,usuario_creador
                 ,tipo_de_marcaje
-                ,fecha_registro 
+                ,fecharegistro 
             ) VALUES (
                 :fecha
                 , :cedula
                 , :tipo_evento
                 , :fecha_hora_evento
                 , :observaciones
-                , :id_tipo_marcaje
                 , :id_turno
                 , :id_user_creador
                 , 99
@@ -1878,9 +1875,9 @@ class ManualMarkingRepository(SinergiaRepository):
             ON
                 s.id = mdm.usuario_creador  
             WHERE 
-                mda.serial = {id}
-                AND mda.fecdia = '{event_date}'         
-                AND mda.cedula  = {cedula}
+                mdm.serial = {id}
+                AND mdm.fecdia = '{event_date}'         
+                AND mdm.cedula  = {cedula}
         '''
 
         sql = sql.format(**parameters)
@@ -1906,7 +1903,7 @@ class ManualMarkingRepository(SinergiaRepository):
             'id_user_creador' : user.id,
             'observaciones' : payload['observaciones'],
             'id_turno' : payload['id_turno'],
-            'id_tipo_marcaje' : 99, #99 Marcaje Manual 
+            # 'id_tipo_marcaje' : 99, #99 Marcaje Manual 
             'tipo_evento' : payload['tipo_evento'], #1 Entrada #2 Salida
             'fecha_hora_evento' : payload['fecha_hora_evento'],
         }
@@ -1914,27 +1911,23 @@ class ManualMarkingRepository(SinergiaRepository):
         # Reflejar el Cambio en la Tabla de Marcajes Diario
         self.sincronizarAsistenciaDiaria(parameters)
 
-        conn = alembic.op.get_bind()
-        conn.execute(
-            text(
-                """
+        update_sentence = """
                 UPDATE integrador.marcaciones_dia_manual
                 SET tipo_evento = :tipo_evento
                     , fechaevento = :fecha_hora_evento
                     , observaciones = :observaciones
-                    , tipo_de_marcaje = :id_tipo_marcaje 
                     , turno = :id_turno
-                    , user_creador = :id_user_creador
+                    , usuario_creador = :id_user_creador
                     , tipo_de_marcaje = 99
-                    , fecha_registro = CURRENT_DATE
+                    , fecharegistro = CURRENT_DATE
                 WHERE 
                     serial = :id
                     AND fecdia = :fecha
                     AND cedula  = :cedula 
                 """
-            ), 
-            **parameters
-        )
+
+        conn = alembic.op.get_bind()
+        conn.execute(text( update_sentence),**parameters)
 
     def get(self,query_params):
         sql = '''
@@ -2060,10 +2053,10 @@ class ManualMarkingRepository(SinergiaRepository):
                                 conditions.append("mdm.turno = '{id_turno}'") 
 
                     if 'from' in filter_conditions:
-                        conditions.append("h.fecha_desde >= '{from}' ")
+                        conditions.append("vmd.fecdia >= '{from}' ")
 
                     if 'to' in filter_conditions:
-                        conditions.append("h.fecha_hasta <= '{to}' ")
+                        conditions.append("vmd.fecdia <= '{to}' ")
 
                     where_clausule = 'WHERE ' + ' AND '.join(conditions)
                     where_clausule = where_clausule.format(**filter_conditions)
@@ -2113,6 +2106,22 @@ class ManualMarkingRepository(SinergiaRepository):
             'id': id,
             'fecha': event_date,
             'cedula' : cedula,
+        }        
+
+        field_to_update = 'fecha_inicio_dia' if manual_marking['tipo_evento'] == 1 else 'fecha_fin_dia'
+        update_sentence = """ 
+            UPDATE integrador.marcaciones_dia 
+            SET %s   = NULL
+            WHERE 
+                fecdia = :fecha
+                AND cedula  = :cedula """   %  (field_to_update)
+        conn = alembic.op.get_bind()
+        conn.execute(text(update_sentence),**parameters)
+
+        parameters = {
+            'id': id,
+            'fecha': event_date,
+            'cedula' : cedula,
         }
 
         delete_sentence  = """
@@ -2121,7 +2130,6 @@ class ManualMarkingRepository(SinergiaRepository):
                     serial = :id
                     AND fecdia = :fecha
                     AND cedula  = :cedula
-                """
-
+        """
         conn = alembic.op.get_bind()
         conn.execute(text(delete_sentence),**parameters)
