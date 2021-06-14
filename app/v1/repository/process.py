@@ -1501,8 +1501,6 @@ class DailyMarkingRepository(SinergiaRepository):
 
         sql = sql.format(**parameters)
 
-        print(sql)
-
         table_df = pd.read_sql_query(sql,con=db.engine)
         return table_df
 
