@@ -7,10 +7,32 @@ from app.v1.use_cases.process import GetDailyMarkingListUseCase,GetOvertimeEvent
     GetBatchAbsenceJustificationUseCase,NewBatchAbsenceJustificationUseCase,SaveBatchAbsenceJustificationUseCase,DeleteBatchAbsenceJustificationUseCase,ApproveBatchAbsenceJustificationUseCase,\
     GetBatchOvertimeUseCase,NewBatchOvertimeUseCase,SaveBatchOvertimeUseCase,DeleteBatchOvertimeUseCase,ApproveBatchOvertimeUseCase,\
     GetDetailBatchAbsenceJustificationUseCase,GetDetailBatchOvertimeUseCase
+from app.v1.use_cases.process import GetManualMarkingUseCase, GetDetailManualMarkingUseCase, NewManualMarkingUseCase, SaveManualMarkingUseCase, DeleteManualMarkingUseCase
 from flask.globals import request    
 import json 
 
 process_ns = v1_api.namespace('process', description='Process Services')
+
+NewManualMarkingStruct = v1_api.model('NewManualMarkingStruct', { 
+    'fecha' : fields.String(required=True,format='date'),   
+    'cedula' : fields.String(required=True),   
+    'observaciones' : fields.String(required=True), 
+    'id_turno' : fields.String(required=True), 
+    'tipo_evento' : fields.String(required=True,description = "1: Entrada, 2:Salida"), 
+    'fecha_hora_evento' : fields.String(required=True,description = "Formato YYYY-MM-DD HH24:MI:SS"), 
+}) 
+
+SaveManualMarkingStruct = v1_api.model('SaveManualMarkingStruct', { 
+    'id' : fields.Integer(required=True), 
+    'fecha' : fields.String(required=True,format='date'),   
+    'cedula' : fields.String(required=True),   
+    'observaciones' : fields.String(required=True), 
+    'id_turno' : fields.String(required=True), 
+    'tipo_evento' : fields.String(required=True,description = "1: Entrada, 2:Salida"), 
+    'fecha_hora_evento' : fields.String(required=True,description = "Formato YYYY-MM-DD HH24:MI:SS"), 
+}) 
+
+###############################################################################################33
 
 NewBatchAbsenceJustificationStruct = v1_api.model('NewBatchAbsenceJustificationStruct', { 
     'fecha_inicio' : fields.String(required=True,format='date'),   
@@ -375,3 +397,79 @@ class  DetailBatchOvertimeResource(ProxySecureResource):
         # security_credentials = {'username': 'prueba'}        
         data = GetDetailBatchOvertimeUseCase().execute(security_credentials,id)
         return  { 'ok': 1, 'data' : data } , 200
+
+#############################################################################################################
+
+@process_ns.route('/manual_marking')
+# @v1_api.expect(secureHeader)
+class ManualMarkingResource(ProxySecureResource): 
+
+    @process_ns.doc('Get Marcajes Manuales')
+    @v1_api.expect(queryParams)
+    # @jwt_required    
+    def get(self):
+        # security_credentials = self.checkCredentials()
+        security_credentials = {'username': 'prueba'}
+        query_params = {}
+        request_payload =  {}        
+        if 'filter' in  request.args and request.args['filter']:
+            filter = eval(request.args['filter'])
+            request_payload = filter
+            query_params['filter'] = request_payload
+
+        if 'order' in  request.args and request.args['order']:
+            order = eval(request.args['order'])
+            query_params['order'] = order
+        
+        if 'range' in  request.args and request.args['range']:
+            range = eval(request.args['range'])
+            query_params['range'] = range
+        
+        data = GetManualMarkingUseCase().execute(security_credentials,query_params)
+        data['ok']= 1
+        return  data , 200    
+
+    @process_ns.doc('New Marcaje Manual')
+    @v1_api.expect(NewManualMarkingStruct)    
+    # @jwt_required
+    def post(self):
+        payload = request.json        
+        # security_credentials = self.checkCredentials()
+        security_credentials = {'username': 'prueba'}
+        NewManualMarkingUseCase().execute(security_credentials,payload)
+        return  {'ok': 1}, 200
+
+    @process_ns.doc('Update Marcaje Manual')
+    @v1_api.expect(SaveManualMarkingStruct)    
+    # @jwt_required
+    def put(self):
+        payload = request.json        
+        # security_credentials = self.checkCredentials()
+        security_credentials = {'username': 'prueba'}
+        SaveManualMarkingUseCase().execute(security_credentials,payload)
+        return  {'ok': 1}, 200
+    
+
+@process_ns.route('/manual_marking/<event_date>/<cedula>/<id>')
+@process_ns.param('event_date', 'Fecha Evento')
+@process_ns.param('cedula', 'Cedula Trabajador')
+@process_ns.param('id', 'Identificador')
+@v1_api.expect(secureHeader)
+class  DetailManualMarkingResource(ProxySecureResource):
+
+    @process_ns.doc('Eliminar Marcaje Manual')
+    # @jwt_required
+    def delete(self,event_date,cedula,id):
+        # security_credentials = self.checkCredentials()
+        security_credentials = {'username': 'prueba'}        
+        data = DeleteManualMarkingUseCase().execute(security_credentials,event_date,cedula,id)
+        return  { 'ok': 1 } , 200
+
+    @process_ns.doc('Get Marcaje Manual')
+    # @jwt_required
+    def get(self,event_date,cedula,id):
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username': 'prueba'}        
+        data = GetDetailManualMarkingUseCase().execute(security_credentials,event_date,cedula,id)
+        return  { 'ok': 1, 'data' : data } , 200
+

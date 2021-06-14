@@ -4,7 +4,7 @@ Created on 17 dic. 2019
 @author: ramon
 '''
 from app.v1.repository.process import DailyMarkingRepository,OvertimeEventRepository,AbsenceEventRepository,JustificationAbsenceRepository,\
-    BatchJustificationAbsenceRepository,BatchOvertimeRepository
+    BatchJustificationAbsenceRepository,BatchOvertimeRepository,ManualMarkingRepository
 
 class GetDailyMarkingListUseCase(object):
     def execute(self,security_credentials,query_params):
@@ -91,3 +91,24 @@ class ApproveBatchOvertimeUseCase(object):
         return BatchOvertimeRepository(username=security_credentials['username']).approve(id)  
 
 #################################################################################################################################
+
+
+class GetManualMarkingUseCase(object):
+    def execute(self,security_credentials,query_params):
+        return ManualMarkingRepository(username=security_credentials['username']).get(query_params)        
+
+class NewManualMarkingUseCase(object):
+    def execute(self,security_credentials,payload):
+        return ManualMarkingRepository(username=security_credentials['username']).new(payload)        
+
+class SaveManualMarkingUseCase(object):
+    def execute(self,security_credentials,payload):
+        return ManualMarkingRepository(username=security_credentials['username']).save(payload)        
+
+class DeleteManualMarkingUseCase(object):
+    def execute(self,security_credentials,event_date,cedula,id):
+        return ManualMarkingRepository(username=security_credentials['username']).delete(event_date,cedula,id)        
+
+class GetDetailManualMarkingUseCase(object):
+    def execute(self,security_credentials,event_date,cedula,id):
+        return ManualMarkingRepository(username=security_credentials['username']).getById(event_date,cedula,id)        

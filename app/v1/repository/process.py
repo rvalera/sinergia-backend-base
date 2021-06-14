@@ -17,6 +17,7 @@ from app.exceptions.base import RepositoryUnknownException
 import pandas as pd
 
 from sqlalchemy.sql import text
+from datetime import datetime, timedelta
 
 class AbsenceEventRepository(SinergiaRepository):
 
@@ -484,9 +485,9 @@ class BatchJustificationAbsenceRepository(SinergiaRepository):
                 , ta.descripcion nombre_justificacion_ausencia
                 , am.usuario_creador id_usuario_creador
                 , se1.name nombre_usuario_creador
-                , TO_CHAR(am.fecha_aprobacion,'YYYY-MM-DD') fecha_aprobacion
-                , am.usuario_aprobador id_usuario_aprobador
-                , se2.name nombre_usuario_aprobador
+                , COALESCE( TO_CHAR(am.fecha_aprobacion,'YYYY-MM-DD'), '' ) fecha_aprobacion
+                , COALESCE( am.usuario_aprobador,0) id_usuario_aprobador
+                , COALESCE( se2.name, '') nombre_usuario_aprobador
                 , am.observaciones observaciones
                 , am.status estatus 
             FROM             
@@ -1264,11 +1265,13 @@ class DailyMarkingRepository(SinergiaRepository):
             
             ausencia_dataset.append(ausencia_df)
 
-        ausencias_para_aplicar = pd.concat(ausencia_dataset)
-
-        ausencias_para_aplicar = ausencias_para_aplicar.reset_index()
-        ausencias_depuradas = ausencias_para_aplicar.loc[ausencias_para_aplicar.groupby(['cedula','fecdia']).horas_ausencia_lote.idxmax()].reset_index(drop=True)
-        ausencias_depuradas = ausencias_depuradas[['fecdia','cedula','horas_ausencia_lote','id_tipo_ausencia','nombre_tipo_ausencia']] 
+        columns = ['fecdia','cedula','horas_ausencia_lote','id_tipo_ausencia','nombre_tipo_ausencia']        
+        ausencias_depuradas = pd.DataFrame([],columns=columns)
+        if len(ausencia_dataset) > 0:
+            ausencias_para_aplicar = pd.concat(ausencia_dataset)
+            ausencias_para_aplicar = ausencias_para_aplicar.reset_index()
+            ausencias_depuradas = ausencias_para_aplicar.loc[ausencias_para_aplicar.groupby(['cedula','fecdia']).horas_ausencia_lote.idxmax()].reset_index(drop=True)
+            ausencias_depuradas = ausencias_depuradas[['fecdia','cedula','horas_ausencia_lote','id_tipo_ausencia','nombre_tipo_ausencia']] 
 
         return ausencias_depuradas
 
@@ -1298,12 +1301,14 @@ class DailyMarkingRepository(SinergiaRepository):
             
             horas_extras_diurnas_dataset.append(horasextras_diurnas_df)
 
+        columns = ['fecdia','cedula','horas_diurnas_lote']
+        horasextras_diurnas_depuradas = pd.DataFrame([],columns=columns)
+        if len(horas_extras_diurnas_dataset) > 0 :        
+            horasextras_diurnas_para_aplicar = pd.concat(horas_extras_diurnas_dataset)
 
-        horasextras_diurnas_para_aplicar = pd.concat(horas_extras_diurnas_dataset)
-
-        horasextras_diurnas_para_aplicar = horasextras_diurnas_para_aplicar.reset_index()
-        horasextras_diurnas_depuradas = horasextras_diurnas_para_aplicar.loc[horasextras_diurnas_para_aplicar.groupby(['cedula','fecdia']).horas_diurnas_lote.idxmax()].reset_index(drop=True)
-        horasextras_diurnas_depuradas = horasextras_diurnas_depuradas[['fecdia','cedula','horas_diurnas_lote']]
+            horasextras_diurnas_para_aplicar = horasextras_diurnas_para_aplicar.reset_index()
+            horasextras_diurnas_depuradas = horasextras_diurnas_para_aplicar.loc[horasextras_diurnas_para_aplicar.groupby(['cedula','fecdia']).horas_diurnas_lote.idxmax()].reset_index(drop=True)
+            horasextras_diurnas_depuradas = horasextras_diurnas_depuradas[['fecdia','cedula','horas_diurnas_lote']]
 
         return horasextras_diurnas_depuradas
 
@@ -1332,12 +1337,14 @@ class DailyMarkingRepository(SinergiaRepository):
             
             horas_extras_nocturnas_dataset.append(horasextras_nocturnas_df)
 
+        columns = ['fecdia','cedula','horas_nocturnas_lote']
+        horasextras_nocturnas_depuradas = pd.DataFrame([],columns=columns)
+        if len(horas_extras_nocturnas_dataset) > 0 :
+            horasextras_nocturnas_para_aplicar = pd.concat(horas_extras_nocturnas_dataset)
 
-        horasextras_nocturnas_para_aplicar = pd.concat(horas_extras_nocturnas_dataset)
-
-        horasextras_nocturnas_para_aplicar = horasextras_nocturnas_para_aplicar.reset_index()
-        horasextras_nocturnas_depuradas = horasextras_nocturnas_para_aplicar.loc[horasextras_nocturnas_para_aplicar.groupby(['cedula','fecdia']).horas_nocturnas_lote.idxmax()].reset_index(drop=True)
-        horasextras_nocturnas_depuradas = horasextras_nocturnas_depuradas[['fecdia','cedula','horas_nocturnas_lote']]
+            horasextras_nocturnas_para_aplicar = horasextras_nocturnas_para_aplicar.reset_index()
+            horasextras_nocturnas_depuradas = horasextras_nocturnas_para_aplicar.loc[horasextras_nocturnas_para_aplicar.groupby(['cedula','fecdia']).horas_nocturnas_lote.idxmax()].reset_index(drop=True)
+            horasextras_nocturnas_depuradas = horasextras_nocturnas_depuradas[['fecdia','cedula','horas_nocturnas_lote']]
 
         return horasextras_nocturnas_depuradas
 
@@ -1568,11 +1575,489 @@ class DailyMarkingRepository(SinergiaRepository):
                 raise RepositoryUnknownException()                
 
         else:  # No se ha enviado el payload de condiciones para desarrollar la consulta
-            raise RepositoryUnknownException()                
+            raise RepositoryUnknownException()
 
-    def new(self,payload):
+class ManualMarkingRepository(SinergiaRepository):
+
+    def getAsistenciaDiaria(self,event_date,cedula):
+        parameters = {
+            'event_date' : event_date,
+            'cedula' : cedula
+        }
+
+        sql = '''
+        SELECT *
+        FROM 
+            integrador.vw_marcajes_dia_con_totales md 
+        WHERE 
+            md.fecdia = '{event_date}'        
+            AND md.cedula  = {cedula}
+        '''
+        sql = sql.format(**parameters)
+
+        table_df = pd.read_sql_query(sql,con=db.engine)
+        rows = table_df.to_dict('records')
+        
+        return rows[0] if len(rows) > 0  else None
+
+
+    def getAsistenciaPlanificada(self,event_date,cedula):
+        parameters = {
+            'event_date' : event_date,
+            'cedula' : cedula
+        }
+
+        sql = '''
+        SELECT *
+        FROM 
+            integrador.hojas_tiempo
+        WHERE 
+            md.fecha = '{event_date}'        
+            AND md.cedula  = {cedula}
+        '''
+        sql = sql.format(**parameters)
+
+        table_df = pd.read_sql_query(sql,con=db.engine)
+        rows = table_df.to_dict('records')
+
+        return rows[0] if len(rows) > 0  else None
+
+
+    def getTurno(self,codigo):
+        parameters = {
+            'codigo' : codigo,
+        }
+
+        sql = '''
+        SELECT *
+        FROM 
+            integrador.turnos
+        WHERE 
+            codigo = '{codigo}'        
+        '''
+        sql = sql.format(**parameters)
+
+        table_df = pd.read_sql_query(sql,con=db.engine)
+        rows = table_df.to_dict('records')
+
+        return rows[0] if len(rows) > 0  else None
+
+
+    def crearAsistenciaDiaria(self,payload,planificacion):
+        
+        parameters = {
+            'fecha' : payload['fecha'],
+            'cedula' : payload['cedula'],
+            'id_turno': payload['id_turno'],
+            'inicio_planificado': None,
+            'fin_planificado': None,
+            'horas_planificadas': None
+        }
+
+        # La planificacion existe usar lo planificado 
+        if not planificacion is None:
+            fecha_inicio_str = parameters['fecha']
+            fecha_inicio = datetime.strptime(fecha_inicio_str, '%y-%m-%d')
+            fechahora_inicio = datetime.combine(fecha_inicio,planificacion['hora_inicio'])
+            fechahora_fin = datetime.combine(fecha_inicio,planificacion['hora_final'])
+            parameters['inicio_planificado'] = fechahora_inicio
+            parameters['fin_planificado'] = fechahora_fin
+            parameters['horas_planificadas'] = fechahora_fin - fechahora_inicio
+        else:
+            turno = self.getTurno()
+            if not turno is None:
+                fecha_inicio_str = parameters['fecha']
+                fecha_inicio = datetime.strptime(fecha_inicio_str, '%y-%m-%d')
+
+                fechahora_inicio = datetime.combine(fecha_inicio,turno['hora_inicio'])
+                fechahora_fin = datetime.combine(fecha_inicio,turno['hora_final'])
+                parameters['inicio_planificado'] = fechahora_inicio
+                parameters['fin_planificado'] = fechahora_fin
+                parameters['horas_planificadas'] = fechahora_fin - fechahora_inicio
+
+        update_sentence = """ 
+            INSERT INTO integrador.marcaciones_dia (
+                fecdia
+                , cedula
+                , turno
+                , hora_inicial_p
+                , hora_final_p
+                , horas_nomina_p
+                , codigo_biostar
+            ) 
+            VALUE (
+                :fecha
+                , :cedula
+                , :id_turno 
+                , :inicio_planificado
+                , :fin_planificado
+                , :horas_planificadas
+                , 99
+            )
+        """
+
+        conn = alembic.op.get_bind()
+        conn.execute(text(update_sentence),**parameters)
+
+
+    def actualizarAsistenciaDiaria(self,payload):
+
+        field_to_update = 'fecha_inicio_dia' if payload['tipo_evento'] == 1 else 'fecha_fin_dia'
+        update_sentence = """ 
+            UPDATE integrador.marcaciones_dia 
+            SET %s   = :fecha_hora_evento
+                , codigo_biostar = 99
+            WHERE 
+                fecdia = :fecha
+                AND cedula  = :cedula """   %  (field_to_update)
+        conn = alembic.op.get_bind()
+        conn.execute(text(update_sentence),**parameters)
+
+
+    def calcularSobretiempoYAusencia(self,payload):
         pass
 
 
+    def sincronizarAsistenciaDiaria(self,payload):
+        event_date = payload['fecha']
+        cedula = payload['cedula']
+
+        marcaje = self.getAsistenciaDiaria(event_date,cedula)
+        if marcaje is None:
+            planificacion = self.getAsistenciaPlanificada(event_date,cedula)
+            self.crearAsistenciaDiaria(planificacion,payload)
+            self.actualizarAsistenciaDiaria(payload)
+        else:
+            #Se actualiza la fecha de acuerdo al evento
+            self.actualizarAsistenciaDiaria(payload)
+
+        self.calcularSobretiempoYAusencia(payload)
 
 
+    def new(self,payload):
+        user = self.getUser()
+        parameters = {
+            'fecha': payload['fecha'],
+            'cedula' : payload['cedula'],
+            'id_user_creador' : user.id,
+            'observaciones' : payload['observaciones'],
+            'id_turno' : payload['id_turno'],
+            'id_tipo_marcaje' : payload['id_tipo_marcaje'], 
+            'tipo_evento' : payload['tipo_evento'], 
+            'fecha_hora_evento' : payload['fecha_hora_evento'],
+        }
+        
+        self.sincronizarAsistenciaDiaria(parameters)
+        
+        insert_sentence = ''' INSERT INTO integrador.marcaciones_dia_manual ( 
+                fecdia
+                ,cedula
+                ,tipo_evento
+                ,fechaevento
+                ,observaciones
+                ,tipo_de_marcaje
+                ,turno
+                ,user_creador
+                ,tipo_de_marcaje
+                ,fecha_registro 
+            ) VALUES (
+                :fecha
+                , :cedula
+                , :tipo_evento
+                , :fecha_hora_evento
+                , :observaciones
+                , :id_tipo_marcaje
+                , :id_turno
+                , :id_user_creador
+                , 99
+                ,CURRENT_DATE
+            )
+        '''
+        conn = alembic.op.get_bind()
+        conn.execute(text(insert_sentence),**parameters)
+
+    
+    def getById(self,event_date,cedula,id):
+        
+        parameters = {
+            'id': id,
+            'event_date' : event_date,
+            'cedula' : cedula
+        }
+        
+        sql = '''
+            SELECT 
+                mdm."serial" id
+                , TO_CHAR(vmd.fecdia,'YYYY-MM-DD') fecha_marcaje
+                , vmd.cedula 
+                , vmd.apellidos 
+                , vmd.nombres 
+                , vmd.id_centro_costo 
+                , vmd.nombre_centro_costo 
+                , vmd.id_tipo_nomina 
+                , vmd.nombre_tipo_nomina 
+                , vmd.id_cargo 
+                , vmd.nombre_cargo 
+                , mdm.turno id_turno
+                , t.descripcion  nombre_turno 
+                , TO_CHAR(mdm.fechaevento,'YYYY-MM-DD HH24:MI:SS') fecha_hora_evento	
+                , mdm.tipo_evento tipo_evento
+                , mdm.tipo_de_marcaje id_tipo_marcaje 
+                , tdm.descripcion_biostar  nombre_tipo_marcaje
+                , mdm.observaciones observaciones
+                , TO_CHAR(mdm.fecharegistro ,'YYYY-MM-DD') fecha_registro
+                , mdm.usuario_creador id_usuario_creador
+                , s."name" nombre_usuario_creador	
+            FROM 
+                integrador.vw_marcajes_dia vmd
+            JOIN 
+                integrador.marcaciones_dia_manual mdm 
+            ON 
+                vmd.fecdia = mdm.fecdia 
+                and vmd.cedula = mdm.cedula 
+            JOIN 
+                integrador.tipos_de_marcaje tdm 
+            ON 
+                tdm.codigo_biostar = mdm.tipo_de_marcaje 
+            LEFT JOIN
+                integrador.turnos t 
+            ON 
+                t.codigo  = mdm.turno 
+            LEFT JOIN
+                public.securityelement s 
+            ON
+                s.id = mdm.usuario_creador  
+            WHERE 
+                mda.serial = {id}
+                AND mda.fecdia = '{event_date}'         
+                AND mda.cedula  = {cedula}
+        '''
+
+        sql = sql.format(**parameters)
+        
+        table_df = pd.read_sql_query(sql,con=db.engine)
+        rows = table_df.to_dict('records')
+        
+        if len(rows) == 0:
+            raise RepositoryUnknownException()                
+
+        return rows[0]        
+
+
+    def save(self,payload):
+
+        manual_marking = self.getById(payload['fecha'],payload['cedula'],payload['id'])
+        user = self.getUser()  
+
+        parameters = {
+            'id': payload['id'],
+            'fecha': payload['fecha'],
+            'cedula' : payload['cedula'],
+            'id_user_creador' : user.id,
+            'observaciones' : payload['observaciones'],
+            'id_turno' : payload['id_turno'],
+            'id_tipo_marcaje' : 99, #99 Marcaje Manual 
+            'tipo_evento' : payload['tipo_evento'], #1 Entrada #2 Salida
+            'fecha_hora_evento' : payload['fecha_hora_evento'],
+        }
+
+        # Reflejar el Cambio en la Tabla de Marcajes Diario
+        self.sincronizarAsistenciaDiaria(parameters)
+
+        conn = alembic.op.get_bind()
+        conn.execute(
+            text(
+                """
+                UPDATE integrador.marcaciones_dia_manual
+                SET tipo_evento = :tipo_evento
+                    , fechaevento = :fecha_hora_evento
+                    , observaciones = :observaciones
+                    , tipo_de_marcaje = :id_tipo_marcaje 
+                    , turno = :id_turno
+                    , user_creador = :id_user_creador
+                    , tipo_de_marcaje = 99
+                    , fecha_registro = CURRENT_DATE
+                WHERE 
+                    serial = :id
+                    AND fecdia = :fecha
+                    AND cedula  = :cedula 
+                """
+            ), 
+            **parameters
+        )
+
+    def get(self,query_params):
+        sql = '''
+            SELECT 
+                mdm."serial" id
+                , TO_CHAR(vmd.fecdia,'YYYY-MM-DD') fecha_marcaje
+                , vmd.cedula 
+                , vmd.apellidos 
+                , vmd.nombres 
+                , vmd.id_centro_costo 
+                , vmd.nombre_centro_costo 
+                , vmd.id_tipo_nomina 
+                , vmd.nombre_tipo_nomina 
+                , vmd.id_cargo 
+                , vmd.nombre_cargo 
+                , mdm.turno id_turno
+                , t.descripcion  nombre_turno 
+                , TO_CHAR(mdm.fechaevento,'YYYY-MM-DD HH24:MI:SS') fecha_hora_evento	
+                , mdm.tipo_evento tipo_evento
+                , mdm.tipo_de_marcaje id_tipo_marcaje 
+                , tdm.descripcion_biostar  nombre_tipo_marcaje
+                , mdm.observaciones observaciones
+                , TO_CHAR(mdm.fecharegistro ,'YYYY-MM-DD') fecha_registro
+                , mdm.usuario_creador id_usuario_creador
+                , s."name" nombre_usuario_creador	
+            FROM 
+                integrador.vw_marcajes_dia vmd
+            JOIN 
+                integrador.marcaciones_dia_manual mdm 
+            ON 
+                vmd.fecdia = mdm.fecdia 
+                and vmd.cedula = mdm.cedula 
+            JOIN 
+                integrador.tipos_de_marcaje tdm 
+            ON 
+                tdm.codigo_biostar = mdm.tipo_de_marcaje 
+            LEFT JOIN
+                integrador.turnos t 
+            ON 
+                t.codigo  = mdm.turno 
+            LEFT JOIN
+                public.securityelement s 
+            ON
+                s.id = mdm.usuario_creador 
+        {conditions}
+        {order_by}
+        {limits_offset}
+        '''
+
+        count_sql = '''
+            SELECT COUNT(*) count_rows 
+            FROM 
+                integrador.vw_marcajes_dia vmd
+            JOIN 
+                integrador.marcaciones_dia_manual mdm 
+            ON 
+                vmd.fecdia = mdm.fecdia 
+                and vmd.cedula = mdm.cedula 
+            JOIN 
+                integrador.tipos_de_marcaje tdm 
+            ON 
+                tdm.codigo_biostar = mdm.tipo_de_marcaje 
+            LEFT JOIN
+                integrador.turnos t 
+            ON 
+                t.codigo  = mdm.turno 
+            LEFT JOIN
+                public.securityelement s 
+            ON
+                s.id = mdm.usuario_creador 
+        {conditions}
+        '''
+        parameters = {'conditions' : '', 'order_by': '', 'limits_offset': ''}
+
+
+        limit = 10
+        offset = 0        
+        if len(query_params) > 0:
+
+            if 'filter' in query_params:
+                filter_conditions = query_params['filter']
+
+                if len(filter_conditions) > 0 :
+
+                    conditions = []         
+                    if 'cedula_trabajador' in filter_conditions:
+                        conditions.append('vmd.cedula  = {cedula_trabajador}')
+
+                    if 'id_centro_costo' in filter_conditions:
+                        if type(filter_conditions['id_centro_costo']) == str :
+                            conditions.append("vmd.id_centro_costo = '{id_centro_costo}' ")
+                        else:
+                            filter_conditions['id_centro_costo'] = tuple(filter_conditions['id_centro_costo'])    
+                            conditions.append('vmd.centro_costo IN {id_centro_costo}')
+
+                    if 'id_tipo_nomina' in filter_conditions:
+                        if type(filter_conditions['id_tipo_nomina']) == str :
+                            conditions.append("vmd.id_tipo_nomina = '{id_tipo_nomina}'") 
+                        else:
+                            filter_conditions['id_tipo_nomina'] = tuple(filter_conditions['id_tipo_nomina'])    
+                            conditions.append('vmd.id_tipo_nomina IN {id_tipo_nomina}')
+
+                    if 'id_turno' in filter_conditions:
+                        if type(filter_conditions['id_turno']) == str :
+                            conditions.append("mdm.turno = '{id_turno}'") 
+                        else:
+                            filter_conditions['id_turno'] = tuple(filter_conditions['id_turno'])    
+                            conditions.append('mdm.turno IN {id_turno}')
+
+
+                    if 'from' in filter_conditions:
+                        conditions.append("h.fecha_desde >= '{from}' ")
+
+                    if 'to' in filter_conditions:
+                        conditions.append("h.fecha_hasta <= '{to}' ")
+
+                    where_clausule = 'WHERE ' + ' AND '.join(conditions)
+                    where_clausule = where_clausule.format(**filter_conditions)
+
+                    parameters['conditions'] = where_clausule
+            
+            # Definiendo order
+            if 'order' in query_params:
+                order_criteria = query_params['order']
+                order_fields = ','.join(order_criteria)
+                parameters['order_by'] = 'ORDER BY ' + order_fields
+
+
+            # Definiendo los Rangos de Paginacion
+            query_range = [0,10]
+            if 'range' in query_params:
+                query_range = query_params['range']
+                if len(query_range) >= 2:
+                    low_limit = query_range[0] 
+                    high_limit = query_range[1] 
+                else:
+                    low_limit = query_range[0]
+                    high_limit = query_range[0] 
+                limit = (high_limit - low_limit) + 1
+                offset = low_limit 
+            parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
+
+        sql = sql.format(**parameters)
+
+        table_df = pd.read_sql_query(sql,con=db.engine)
+        rows = table_df.to_dict('records')
+        count_result_rows = limit
+
+        count_sql = count_sql.format(**parameters)
+        count_df = pd.read_sql_query(count_sql,con=db.engine)
+        result_count = count_df.to_dict('records')
+        count_all_rows = result_count[0]['count_rows']
+
+        return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
+
+    def delete(self,event_date,cedula,id):
+
+        manual_marking = self.getById(event_date,cedula,id)
+        user = self.getUser()
+
+        parameters = {
+            'id': id,
+            'fecha': event_date,
+            'cedula' : cedula,
+        }
+
+        delete_sentence  = """
+                DELETE FROM integrador.marcaciones_dia_manual 
+                WHERE 
+                    serial = :id
+                    AND fecdia = :fecha
+                    AND cedula  = :cedula
+                """
+
+        conn = alembic.op.get_bind()
+        conn.execute(text(delete_sentence),**parameters)
