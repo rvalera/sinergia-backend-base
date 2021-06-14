@@ -296,24 +296,24 @@ class TrabajadorRepository(SinergiaRepository):
                         conditions.append('t.cedula  = {cedula_trabajador}')
 
                     if 'id_centro_costo' in filter_conditions:
+                        filter_conditions['id_centro_costo'] = tuple(filter_conditions['id_centro_costo'])    
                         if type(filter_conditions['id_centro_costo']) == str :
                             conditions.append("t.id_centro_costo = '{id_centro_costo}' ")
                         else:
-                            filter_conditions['id_centro_costo'] = tuple(filter_conditions['id_centro_costo'])    
                             conditions.append('t.id_centro_costo IN {id_centro_costo}')
 
                     if 'id_tipo_nomina' in filter_conditions:
+                        filter_conditions['id_tipo_nomina'] = tuple(filter_conditions['id_tipo_nomina'])   
                         if type(filter_conditions['id_tipo_nomina']) == str:
                             conditions.append("t.id_tipo_nomina = '{id_tipo_nomina}' ")
                         else:
-                            filter_conditions['id_tipo_nomina'] = tuple(filter_conditions['id_tipo_nomina'])    
                             conditions.append('t.id_tipo_nomina IN {id_tipo_nomina}')
 
                     if 'id_estatus' in filter_conditions:
+                        filter_conditions['id_estatus'] = tuple(filter_conditions['id_estatus'])   
                         if type(filter_conditions['id_estatus']) == str:
                             conditions.append("t.id_estatus = '{id_estatus}' ")
                         else:
-                            filter_conditions['id_estatus'] = tuple(filter_conditions['id_estatus'])    
                             conditions.append('t.id_estatus IN {id_estatus}')
 
                     where_clausule = 'WHERE ' + ' AND '.join(conditions)

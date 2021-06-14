@@ -559,24 +559,24 @@ class BatchJustificationAbsenceRepository(SinergiaRepository):
                         conditions.append('vt.cedula  = {cedula_trabajador}')
 
                     if 'id_centro_costo' in filter_conditions:
+                        filter_conditions['id_centro_costo'] = tuple(filter_conditions['id_centro_costo'])    
                         if type(filter_conditions['id_centro_costo']) == str :
                             conditions.append("vt.id_centro_costo = '{id_centro_costo}' ")
                         else:
-                            filter_conditions['id_centro_costo'] = tuple(filter_conditions['id_centro_costo'])    
                             conditions.append('vt.id_centro_costo IN {id_centro_costo}')
 
                     if 'id_tipo_nomina' in filter_conditions:
+                        filter_conditions['id_tipo_nomina'] = tuple(filter_conditions['id_tipo_nomina'])    
                         if type(filter_conditions['id_tipo_nomina']) == str:
                             conditions.append("vt.id_tipo_nomina = '{id_tipo_nomina}' ")
                         else:
-                            filter_conditions['id_tipo_nomina'] = tuple(filter_conditions['id_tipo_nomina'])    
                             conditions.append('vt.id_tipo_nomina IN {id_tipo_nomina}')
 
                     if 'id_tipo_justificacion_ausencia' in filter_conditions:
+                        filter_conditions['id_tipo_justificacion_ausencia'] = tuple(filter_conditions['id_tipo_justificacion_ausencia'])
                         if type(filter_conditions['id_tipo_nomina']) == int:
                             conditions.append("am.tpau = {id_tipo_justificacion_ausencia} ")
                         else:
-                            filter_conditions['id_tipo_justificacion_ausencia'] = tuple(filter_conditions['id_tipo_justificacion_ausencia'])
                             conditions.append('am.tpau IN {id_tipo_justificacion_ausencia}')
 
                     if 'from' in filter_conditions:
@@ -944,17 +944,17 @@ class BatchOvertimeRepository(SinergiaRepository):
                         conditions.append('vt.cedula  = {cedula_trabajador}')
 
                     if 'id_centro_costo' in filter_conditions:
+                        filter_conditions['id_centro_costo'] = tuple(filter_conditions['id_centro_costo'])    
                         if type(filter_conditions['id_centro_costo']) == str :
                             conditions.append("vt.id_centro_costo = '{id_centro_costo}' ")
                         else:
-                            filter_conditions['id_centro_costo'] = tuple(filter_conditions['id_centro_costo'])    
                             conditions.append('vt.id_centro_costo IN {id_centro_costo}')
 
                     if 'id_tipo_nomina' in filter_conditions:
+                        filter_conditions['id_tipo_nomina'] = tuple(filter_conditions['id_tipo_nomina'])    
                         if type(filter_conditions['id_tipo_nomina']) == str:
                             conditions.append("vt.id_tipo_nomina = '{id_tipo_nomina}' ")
                         else:
-                            filter_conditions['id_tipo_nomina'] = tuple(filter_conditions['id_tipo_nomina'])    
                             conditions.append('vt.id_tipo_nomina IN {id_tipo_nomina}')
 
                     if 'from' in filter_conditions:
@@ -1413,24 +1413,24 @@ class DailyMarkingRepository(SinergiaRepository):
                         conditions.append('md.cedula  = {cedula_trabajador}')
 
                     if 'id_centro_costo' in filter_conditions:
+                        filter_conditions['id_centro_costo'] = tuple(filter_conditions['id_centro_costo'])    
                         if type(filter_conditions['id_centro_costo']) == str :
                             conditions.append("md.id_centro_costo = '{id_centro_costo}' ")
                         else:
-                            filter_conditions['id_centro_costo'] = tuple(filter_conditions['id_centro_costo'])    
                             conditions.append('md.id_centro_costo IN {id_centro_costo}')
 
                     if 'id_tipo_nomina' in filter_conditions:
+                        filter_conditions['id_tipo_nomina'] = tuple(filter_conditions['id_tipo_nomina'])    
                         if type(filter_conditions['id_tipo_nomina']) == str:
                             conditions.append("md.id_tipo_nomina = '{id_tipo_nomina}' ")
                         else:
-                            filter_conditions['id_tipo_nomina'] = tuple(filter_conditions['id_tipo_nomina'])    
                             conditions.append('md.id_tipo_nomina IN {id_tipo_nomina}')
 
                     if 'id_turno' in filter_conditions:
+                        filter_conditions['id_turno'] = tuple(filter_conditions['id_turno'])    
                         if type(filter_conditions['id_turno']) == str:
                             conditions.append("md.id_turno = '{id_turno}' ")
                         else:
-                            filter_conditions['id_turno'] = tuple(filter_conditions['id_turno'])    
                             conditions.append('md.id_turno IN {id_turno}')
 
                     if 'from' in filter_conditions:
@@ -1495,24 +1495,24 @@ class DailyMarkingRepository(SinergiaRepository):
                         conditions.append('md.cedula  = {cedula_trabajador}')
 
                     if 'id_centro_costo' in filter_conditions:
+                        filter_conditions['id_centro_costo'] = tuple(filter_conditions['id_centro_costo'])    
                         if type(filter_conditions['id_centro_costo']) == str :
                             conditions.append("md.id_centro_costo = '{id_centro_costo}' ")
                         else:
-                            filter_conditions['id_centro_costo'] = tuple(filter_conditions['id_centro_costo'])    
                             conditions.append('md.id_centro_costo IN {id_centro_costo}')
 
                     if 'id_tipo_nomina' in filter_conditions:
+                        filter_conditions['id_tipo_nomina'] = tuple(filter_conditions['id_tipo_nomina'])    
                         if type(filter_conditions['id_tipo_nomina']) == str:
                             conditions.append("md.id_tipo_nomina = '{id_tipo_nomina}' ")
                         else:
-                            filter_conditions['id_tipo_nomina'] = tuple(filter_conditions['id_tipo_nomina'])    
                             conditions.append('md.id_tipo_nomina IN {id_tipo_nomina}')
 
                     if 'id_turno' in filter_conditions:
+                        filter_conditions['id_turno'] = tuple(filter_conditions['id_turno'])    
                         if type(filter_conditions['id_turno']) == str:
                             conditions.append("md.id_turno = '{id_turno}' ")
                         else:
-                            filter_conditions['id_turno'] = tuple(filter_conditions['id_turno'])    
                             conditions.append('md.id_turno IN {id_turno}')
 
                     if 'from' in filter_conditions:
@@ -1974,24 +1974,24 @@ class ManualMarkingRepository(SinergiaRepository):
                         conditions.append('vmd.cedula  = {cedula_trabajador}')
 
                     if 'id_centro_costo' in filter_conditions:
+                        filter_conditions['id_centro_costo'] = tuple(filter_conditions['id_centro_costo'])    
                         if type(filter_conditions['id_centro_costo']) == str :
                             conditions.append("vmd.id_centro_costo = '{id_centro_costo}' ")
                         else:
-                            filter_conditions['id_centro_costo'] = tuple(filter_conditions['id_centro_costo'])    
                             conditions.append('vmd.centro_costo IN {id_centro_costo}')
 
                     if 'id_tipo_nomina' in filter_conditions:
+                        filter_conditions['id_tipo_nomina'] = tuple(filter_conditions['id_tipo_nomina'])    
                         if type(filter_conditions['id_tipo_nomina']) == str :
                             conditions.append("vmd.id_tipo_nomina = '{id_tipo_nomina}'") 
                         else:
-                            filter_conditions['id_tipo_nomina'] = tuple(filter_conditions['id_tipo_nomina'])    
                             conditions.append('vmd.id_tipo_nomina IN {id_tipo_nomina}')
 
                     if 'id_turno' in filter_conditions:
+                        filter_conditions['id_turno'] = tuple(filter_conditions['id_turno'])    
                         if type(filter_conditions['id_turno']) == str :
                             conditions.append("mdm.turno = '{id_turno}'") 
                         else:
-                            filter_conditions['id_turno'] = tuple(filter_conditions['id_turno'])    
                             conditions.append('mdm.turno IN {id_turno}')
 
 

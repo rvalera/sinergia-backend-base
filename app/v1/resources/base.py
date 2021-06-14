@@ -181,8 +181,8 @@ queryParams.add_argument('order',type=str, location='args', help='["field1","fie
 queryParams.add_argument('range',type=str, location='args', help='[low,high]')
 
 
-ACCESS_EXPIRES = 7200
-REFRESH_EXPIRES = 86400
+ACCESS_EXPIRES = 86400
+REFRESH_EXPIRES = 172800
 
 @member_ns.route('/login')
 @v1_api.expect(publicHeader)
