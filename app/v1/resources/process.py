@@ -93,14 +93,14 @@ SaveAbsenceJustificationStruct = v1_api.model('SaveAbsenceJustificationStruct', 
 
 
 @process_ns.route('/daily_marking')
-# @v1_api.expect(secureHeader)
+@v1_api.expect(secureHeader)
 class DailyMarkingResource(ProxySecureResource): 
 
     @process_ns.doc('Get Marcajes Diarios')
     @v1_api.expect(queryParams)
-    # @jwt_required    
+    @jwt_required    
     def get(self):
-        # security_credentials = self.checkCredentials()
+        security_credentials = self.checkCredentials()
         security_credentials = {'username': 'guest'}
         query_params = {}
         request_payload =  {}        
@@ -401,15 +401,15 @@ class  DetailBatchOvertimeResource(ProxySecureResource):
 #############################################################################################################
 
 @process_ns.route('/manual_marking')
-# @v1_api.expect(secureHeader)
+@v1_api.expect(secureHeader)
 class ManualMarkingResource(ProxySecureResource): 
 
     @process_ns.doc('Get Marcajes Manuales')
     @v1_api.expect(queryParams)
-    # @jwt_required    
+    @jwt_required    
     def get(self):
-        # security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username': 'prueba'}
         query_params = {}
         request_payload =  {}        
         if 'filter' in  request.args and request.args['filter']:
@@ -431,21 +431,21 @@ class ManualMarkingResource(ProxySecureResource):
 
     @process_ns.doc('New Marcaje Manual')
     @v1_api.expect(NewManualMarkingStruct)    
-    # @jwt_required
+    @jwt_required
     def post(self):
         payload = request.json        
-        # security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username': 'prueba'}
         NewManualMarkingUseCase().execute(security_credentials,payload)
         return  {'ok': 1}, 200
 
     @process_ns.doc('Update Marcaje Manual')
     @v1_api.expect(SaveManualMarkingStruct)    
-    # @jwt_required
+    @jwt_required
     def put(self):
         payload = request.json        
-        # security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username': 'prueba'}
         SaveManualMarkingUseCase().execute(security_credentials,payload)
         return  {'ok': 1}, 200
     
@@ -454,22 +454,22 @@ class ManualMarkingResource(ProxySecureResource):
 @process_ns.param('event_date', 'Fecha Evento')
 @process_ns.param('cedula', 'Cedula Trabajador')
 @process_ns.param('id', 'Identificador')
-# @v1_api.expect(secureHeader)
+@v1_api.expect(secureHeader)
 class  DetailManualMarkingResource(ProxySecureResource):
 
     @process_ns.doc('Eliminar Marcaje Manual')
-    # @jwt_required
+    @jwt_required
     def delete(self,event_date,cedula,id):
-        # security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}        
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username': 'prueba'}        
         data = DeleteManualMarkingUseCase().execute(security_credentials,event_date,cedula,id)
         return  { 'ok': 1 } , 200
 
     @process_ns.doc('Get Marcaje Manual')
-    # @jwt_required
+    @jwt_required
     def get(self,event_date,cedula,id):
-        # security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}        
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username': 'prueba'}        
         data = GetDetailManualMarkingUseCase().execute(security_credentials,event_date,cedula,id)
         return  { 'ok': 1, 'data' : data } , 200
 

@@ -211,7 +211,7 @@ class TrabajadorResource(ProxySecureResource):
     @entities_ns.doc('Trabajador')
     @v1_api.expect(queryParams)    
     @jwt_required    
-    # @v1_api.marshal_with(GetTrabajadorListStruct) 
+    @v1_api.marshal_with(GetTrabajadorListStruct) 
     def get(self):
         security_credentials = self.checkCredentials()
         # security_credentials = {'username': 'prueba'}
@@ -241,7 +241,7 @@ class TrabajadorResource(ProxySecureResource):
 class OneTrabajadorResource(ProxySecureResource):
 
     @entities_ns.doc('Get Trabajador')
-    # @v1_api.marshal_with(GetTrabajadorStruct) 
+    @v1_api.marshal_with(GetTrabajadorStruct) 
     @jwt_required    
     def get(self,cedula):
         security_credentials = self.checkCredentials()

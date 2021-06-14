@@ -18,6 +18,9 @@ from app.exceptions.base import RepositoryUnknownException
 import pandas as pd
 import logging
 
+from sqlalchemy import text    
+from sqlalchemy import select 
+
 class CargoRepository(SinergiaRepository):
     def get(self,query_params):
         sql = '''
@@ -358,32 +361,22 @@ class TrabajadorRepository(SinergiaRepository):
             parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
 
         sql = sql.format(**parameters)
-
-        table_df = pd.read_sql_query(sql,con=db.engine)
-        rows = table_df.to_dict('records')
-        count_result_rows = limit
+        textual_sql = text(sql)
+        rows = db.session.query(Trabajador).from_statement(textual_sql).all()
+        count_result_rows = len(rows)
 
         count_sql = count_sql.format(**parameters)
         count_df = pd.read_sql_query(count_sql,con=db.engine)
         result_count = count_df.to_dict('records')
         count_all_rows = result_count[0]['count_rows']
 
-        return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
+        return { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows} 
 
     def getByCedula(self,cedula):
-        sql = '''
-        SELECT  * 
-        FROM integrador.vw_trabajador t
-        WHERE cedula = %s
-        ''' % cedula  
-
-        table_df = pd.read_sql_query(sql,con=db.engine)
-        rows = table_df.to_dict('records')
-
-        if len(rows) > 0:
-            raise RepositoryUnknownException()            
-
-        return  rows[0]
+        trabajador = Trabajador.query.filter(Trabajador.cedula == cedula).first()
+        if trabajador is None:
+            raise RepositoryUnknownException()
+        return trabajador
 
 
 class TipoTrabajadorRepository(SinergiaRepository):

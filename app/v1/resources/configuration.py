@@ -73,11 +73,10 @@ GetTurnoListStruct = v1_api.model('GetTurnoListStruct', {
 @configuration_ns.route('/holgura')
 @v1_api.expect(secureHeader)
 class HolguraResource(ProxySecureResource): 
-# class HolguraResource(Resource): 
 
     @configuration_ns.doc('Get Holgura List')
     @v1_api.expect(queryParams)    
-    @jwt_required    
+    @jwt_required
     # @v1_api.marshal_with(GetHolguraListStruct) 
     def get(self):
         security_credentials = self.checkCredentials()
@@ -126,7 +125,6 @@ class HolguraResource(ProxySecureResource):
 @configuration_ns.param('id', 'Holgura Id')
 @v1_api.expect(secureHeader)
 class DeleteHolguraResource(ProxySecureResource):
-# class DeleteHolguraResource(Resource):
     
     @configuration_ns.doc('Remove Holgura')
     @jwt_required    
@@ -141,7 +139,6 @@ class DeleteHolguraResource(ProxySecureResource):
 @configuration_ns.param('id', 'Holgura Id')
 @v1_api.expect(secureHeader)
 class ApproveHolguraResource(ProxySecureResource):
-# class DeleteHolguraResource(Resource):
     
     @configuration_ns.doc('Approve Holgura')
     @jwt_required    
@@ -203,7 +200,6 @@ class TurnoResource(ProxySecureResource):
         # security_credentials = {'username': 'guest'}
         SaveTurnoUseCase().execute(security_credentials,payload)
         return  {'ok': 1}, 200
-
 
 
 @configuration_ns.route('/turno/<codigo>')
