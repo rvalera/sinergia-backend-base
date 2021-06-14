@@ -82,19 +82,28 @@ class MemberRepository(SinergiaRepository):
                     if 'last_name' in filter_conditions:
                         conditions.append("pe.last_name LIKE '%{last_name}%' ")
 
-                    if 'id_centro_costo' in filter_conditions:
-                        filter_conditions['id_centro_costo'] = tuple(filter_conditions['id_centro_costo']) 
+                    if 'id_centro_costo' in filter_conditions:                       
                         if type(filter_conditions['id_centro_costo']) == str :
                             conditions.append("uc.centro_costo = '{id_centro_costo}' ")
                         else:
-                            conditions.append('uc.centro_costo IN {id_centro_costo}')
+                            if type(filter_conditions['id_centro_costo'] is list) and len(filter_conditions['id_centro_costo']) > 1:
+                                filter_conditions['id_centro_costo'] = tuple(filter_conditions['id_centro_costo']) 
+                                conditions.append('uc.centro_costo IN {id_centro_costo}')
+                            else:
+                                filter_conditions['id_centro_costo'] = (filter_conditions['id_centro_costo'][0])
+                                conditions.append("uc.centro_costo = '{id_centro_costo}' ")
+                            
 
                     if 'rolname' in filter_conditions:
-                        filter_conditions['rolname'] = tuple(filter_conditions['rolname'])    
                         if type(filter_conditions['rolname']) == str:
                             conditions.append("r.name = '{rolname}' ")
                         else:
-                            conditions.append('r.name IN {rolname}')
+                            if type(filter_conditions['rolname'] is list) and len(filter_conditions['rolname']) > 1:
+                                filter_conditions['rolname'] = tuple(filter_conditions['rolname'])    
+                                conditions.append('r.name IN {rolname}')
+                            else:
+                                filter_conditions['rolname'] = (filter_conditions['rolname'][0])
+                                conditions.append("r.name = '{rolname}' ")
 
                     where_clausule = 'WHERE ' + ' AND '.join(conditions)
                     where_clausule = where_clausule.format(**filter_conditions)

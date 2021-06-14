@@ -243,11 +243,11 @@ class MemberLoginResource(Resource):
         payload['person_id'] = None            
         payload['person_extension_id'] = user.person_extension_id
 
-        redis_client.set(access_jti, json.dumps(payload), int(ACCESS_EXPIRES * 1.2))
-        redis_client.set(refresh_jti, json.dumps(payload), int(REFRESH_EXPIRES * 1.2))
+        redis_client.set(access_jti, json.dumps(payload), ex=int(ACCESS_EXPIRES * 1.2))
+        redis_client.set(refresh_jti, json.dumps(payload), ex=int(REFRESH_EXPIRES * 1.2))
 
         userTokens = {'access_token' : access_jti,'refresh_token': refresh_jti}
-        redis_client.set(username, json.dumps(userTokens), int(REFRESH_EXPIRES * 1.2))
+        redis_client.set(username, json.dumps(userTokens), ex=int(REFRESH_EXPIRES * 1.2))
 
         # Use create_access_token() and create_refresh_token() to create our
         # access and refresh tokens
@@ -285,17 +285,17 @@ class MemberLogoutResource(Resource):
             payload = redis_client.get(access_token_jti)    
             json_payload = json.loads(payload)
             json_payload["session_expired"] = 'true' 
-            redis_client.set(access_token_jti, json.dumps(json_payload), int(ACCESS_EXPIRES * 1.2))
+            redis_client.set(access_token_jti, json.dumps(json_payload), ex=int(ACCESS_EXPIRES * 1.2))
         else:
-            redis_client.set(access_token_jti, json.dumps({"session_expired" : 'true'}), int(ACCESS_EXPIRES * 1.2))            
+            redis_client.set(access_token_jti, json.dumps({"session_expired" : 'true'}), ex=int(ACCESS_EXPIRES * 1.2))            
 
         if redis_client.get(refresh_token_jti):
             payload = redis_client.get(refresh_token_jti)
             json_payload = json.loads(payload)
             json_payload["session_expired"] = 'true' 
-            redis_client.set(refresh_token_jti, json.dumps(json_payload), int(ACCESS_EXPIRES * 1.2))
+            redis_client.set(refresh_token_jti, json.dumps(json_payload), ex=int(ACCESS_EXPIRES * 1.2))
         else:
-            redis_client.set(refresh_token_jti, json.dumps({"session_expired" : 'true'}), int(ACCESS_EXPIRES * 1.2))            
+            redis_client.set(refresh_token_jti, json.dumps({"session_expired" : 'true'}), ex=int(ACCESS_EXPIRES * 1.2))            
 
         return { 'ok' : 1, 
                 'message' : { 

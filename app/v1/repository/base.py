@@ -22,7 +22,7 @@ class CacheRepository(object):
 
     def save(self,key,payload,expired_time = int(DEFAULT_EXPIRED_TIME)):
         json_payload = json.dumps(payload)
-        redis_client.set(key, json_payload,expired_time)
+        redis_client.set(key, json_payload,ex=expired_time)
 
 class SinergiaRepository(object):
 
