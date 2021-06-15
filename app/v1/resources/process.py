@@ -412,15 +412,15 @@ class  DetailBatchOvertimeResource(ProxySecureResource):
 #############################################################################################################
 
 @process_ns.route('/manual_marking')
-# @v1_api.expect(secureHeader)
+@v1_api.expect(secureHeader)
 class ManualMarkingResource(ProxySecureResource): 
 
     @process_ns.doc('Get Marcajes Manuales')
     @v1_api.expect(queryParams)
-    # @jwt_required    
+    @jwt_required    
     def get(self):
-        # security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username': 'prueba'}
         query_params = {}
         request_payload =  {}        
         if 'filter' in  request.args and request.args['filter']:
@@ -442,21 +442,21 @@ class ManualMarkingResource(ProxySecureResource):
 
     @process_ns.doc('New Marcaje Manual')
     @v1_api.expect(NewManualMarkingStruct)
-    # @jwt_required
+    @jwt_required
     def post(self):
         payload = request.json        
-        # security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username': 'prueba'}
         NewManualMarkingUseCase().execute(security_credentials,payload)
         return  {'ok': 1}, 200
 
     @process_ns.doc('Update Marcaje Manual')
     @v1_api.expect(SaveManualMarkingStruct)    
-    # @jwt_required
+    @jwt_required
     def put(self):
         payload = request.json        
-        # security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username': 'prueba'}
         SaveManualMarkingUseCase().execute(security_credentials,payload)
         return  {'ok': 1}, 200
     
