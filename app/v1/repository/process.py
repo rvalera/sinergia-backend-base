@@ -1787,6 +1787,18 @@ class ManualMarkingRepository(SinergiaRepository):
         conn = alembic.op.get_bind()
         conn.execute(text(update_sentence),**payload)
 
+        update_sentence = """ 
+            UPDATE integrador.marcaciones_dia 
+            SET  horas_nomina_p = hora_fin_p - hora_inicial_p
+            WHERE 
+                fecdia = :fecha
+                AND cedula  = :cedula 
+                AND NOT hora_fin_p IS NULL 
+                AND NOT hora_inicial_p IS NULL """  
+        conn = alembic.op.get_bind()
+        conn.execute(text(update_sentence),**payload)
+
+
     def calcularPrioridad(self,row):
         if not pd.isnull(row["centro_costo"]):
             return 3
