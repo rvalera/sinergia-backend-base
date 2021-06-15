@@ -111,7 +111,10 @@ class HolguraRepository(SinergiaRepository):
             , COALESCE( TO_CHAR(h.fecha_aprobacion,'YYYY-MM-DD'), '' ) fecha_aprobacion
             , COALESCE( h.usuario_aprobador,0) id_usuario_aprobador
             , COALESCE( se2.name, '') nombre_usuario_aprobador
-            , h.status estatus            
+            , h.status estatus 
+            , t.cedula
+            , t.apellidos
+            , t.nombres      
         FROM integrador.holguras h 
         LEFT JOIN 
             integrador.centro_costo cc 
@@ -122,7 +125,7 @@ class HolguraRepository(SinergiaRepository):
         ON 
             h.codigo_nomina = tn.codigo 
         LEFT JOIN 
-            integrador.trabajadores t 
+            integrador.vw_trabajador t 
         ON 
             h.cedula = t.cedula 
         LEFT JOIN 
@@ -259,7 +262,10 @@ class HolguraRepository(SinergiaRepository):
             , COALESCE( TO_CHAR(h.fecha_aprobacion,'YYYY-MM-DD'), '' ) fecha_aprobacion
             , COALESCE( h.usuario_aprobador,0) id_usuario_aprobador
             , COALESCE( se2.name, '') nombre_usuario_aprobador
-            , h.status estatus            
+            , h.status estatus 
+            , t.cedula
+            , t.apellidos
+            , t.nombres      
         FROM integrador.holguras h 
         LEFT JOIN 
             integrador.centro_costo cc 
@@ -270,7 +276,7 @@ class HolguraRepository(SinergiaRepository):
         ON 
             h.codigo_nomina = tn.codigo 
         LEFT JOIN 
-            integrador.trabajadores t 
+            integrador.vw_trabajador t 
         ON 
             h.cedula = t.cedula 
         LEFT JOIN 
