@@ -1772,6 +1772,21 @@ class ManualMarkingRepository(SinergiaRepository):
         conn = alembic.op.get_bind()
         conn.execute(text(update_sentence),**payload)
 
+        update_sentence = """ 
+            UPDATE integrador.marcaciones_dia 
+            SET  total_horas_marcaje = fecha_fin_dia - fecha_inicio_dia
+                , horas_ext_gen = 0
+                , horas_ext_aproba = 0
+                , horas_ausencias = 0
+                , horas_ausencias_aprob = 0
+            WHERE 
+                fecdia = :fecha
+                AND cedula  = :cedula 
+                AND NOT fecha_fin_dia IS NULL 
+                AND NOT fecha_inicio_dia IS NULL """  
+        conn = alembic.op.get_bind()
+        conn.execute(text(update_sentence),**payload)
+
 
     def calcularSobretiempoYAusencia(self,payload):
         pass

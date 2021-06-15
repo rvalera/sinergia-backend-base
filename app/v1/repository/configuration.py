@@ -101,10 +101,10 @@ class HolguraRepository(SinergiaRepository):
             , TO_CHAR(h.fecha_desde,'YYYY-MM-DD') fecha_desde
             , TO_CHAR(h.fecha_hasta,'YYYY-MM-DD') fecha_hasta
             , h.minutos_tolerancia
-            , h.centro_costo id_centro_costo
-            , cc.descripcion nombre_centro_costo
-            , h.codigo_nomina id_tipo_nomina
-            , tn.descripcion nombre_tipo_nomina
+            , COALESCE( h.centro_costo,'' ) id_centro_costo 
+            , COALESCE( cc.descripcion,'' ) nombre_centro_costo
+            , COALESCE( h.codigo_nomina,'' ) id_tipo_nomina 
+            , COALESCE( tn.descripcion,'' ) nombre_tipo_nomina
             , TO_CHAR(h.fecha_registro,'YYYY-MM-DD') fecha_registro
             , h.usuario_creador id_usuario_creador
             , se1.name nombre_usuario_creador
@@ -112,9 +112,9 @@ class HolguraRepository(SinergiaRepository):
             , COALESCE( h.usuario_aprobador,0) id_usuario_aprobador
             , COALESCE( se2.name, '') nombre_usuario_aprobador
             , h.status estatus 
-            , t.cedula
-            , t.apellidos
-            , t.nombres      
+            , COALESCE( t.cedula,0 ) cedula 
+            , COALESCE( t.apellidos,0 ) apellidos
+            , COALESCE( t.nombres,0 ) nombres
         FROM integrador.holguras h 
         LEFT JOIN 
             integrador.centro_costo cc 
@@ -252,10 +252,10 @@ class HolguraRepository(SinergiaRepository):
             , TO_CHAR(h.fecha_desde,'YYYY-MM-DD') fecha_desde
             , TO_CHAR(h.fecha_hasta,'YYYY-MM-DD') fecha_hasta
             , h.minutos_tolerancia
-            , h.centro_costo id_centro_costo
-            , cc.descripcion nombre_centro_costo
-            , h.codigo_nomina id_tipo_nomina
-            , tn.descripcion nombre_tipo_nomina
+            , COALESCE( h.centro_costo,'' ) id_centro_costo 
+            , COALESCE( cc.descripcion,'' ) nombre_centro_costo
+            , COALESCE( h.codigo_nomina,'' ) id_tipo_nomina 
+            , COALESCE( tn.descripcion,'' ) nombre_tipo_nomina
             , TO_CHAR(h.fecha_registro,'YYYY-MM-DD') fecha_registro
             , h.usuario_creador id_usuario_creador
             , se1.name nombre_usuario_creador
@@ -263,9 +263,9 @@ class HolguraRepository(SinergiaRepository):
             , COALESCE( h.usuario_aprobador,0) id_usuario_aprobador
             , COALESCE( se2.name, '') nombre_usuario_aprobador
             , h.status estatus 
-            , t.cedula
-            , t.apellidos
-            , t.nombres      
+            , COALESCE( t.cedula,0 ) cedula 
+            , COALESCE( t.apellidos,'' ) apellidos
+            , COALESCE( t.nombres,'' ) nombres
         FROM integrador.holguras h 
         LEFT JOIN 
             integrador.centro_costo cc 
