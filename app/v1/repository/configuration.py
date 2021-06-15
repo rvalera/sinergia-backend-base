@@ -113,8 +113,8 @@ class HolguraRepository(SinergiaRepository):
             , COALESCE( se2.name, '') nombre_usuario_aprobador
             , h.status estatus 
             , COALESCE( t.cedula,0 ) cedula 
-            , COALESCE( t.apellidos,0 ) apellidos
-            , COALESCE( t.nombres,0 ) nombres
+            , COALESCE( t.apellidos,'' ) apellidos
+            , COALESCE( t.nombres,'' ) nombres
         FROM integrador.holguras h 
         LEFT JOIN 
             integrador.centro_costo cc 
