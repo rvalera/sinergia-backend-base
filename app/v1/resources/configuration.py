@@ -91,6 +91,7 @@ class HolguraResource(ProxySecureResource):
         if 'order' in  request.args and request.args['order']:
             order = eval(request.args['order'])
             query_params['order'] = order
+        query_params['order'] = ['fecha_desde ASC','fecha_hasta ASC','id ASC']
         
         if 'range' in  request.args and request.args['range']:
             range = eval(request.args['range'])
@@ -114,7 +115,7 @@ class HolguraResource(ProxySecureResource):
     @v1_api.expect(SaveHolguraStruct)    
     @jwt_required    
     def put(self):
-        payload = request.json        
+        payload = request.json
         security_credentials = self.checkCredentials()
         # security_credentials = {'username': 'prueba'}
         SaveHolguraUseCase().execute(security_credentials,payload)
@@ -144,7 +145,7 @@ class ApproveHolguraResource(ProxySecureResource):
     @jwt_required    
     def put (self,id):
         security_credentials = self.checkCredentials()
-        # security_credentials = {'username': 'guest'}
+        # security_credentials = {'username': 'prueba'}
         ApproveHolguraUseCase().execute(security_credentials,id)
         return  {'ok': 1}, 200
 
@@ -172,7 +173,8 @@ class TurnoResource(ProxySecureResource):
         if 'order' in  request.args and request.args['order']:
             order = eval(request.args['order'])
             query_params['order'] = order
-        
+        query_params['order'] = ['codigo ASC']
+
         if 'range' in  request.args and request.args['range']:
             range = eval(request.args['range'])
             query_params['range'] = range

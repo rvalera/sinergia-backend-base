@@ -1920,6 +1920,8 @@ class ManualMarkingRepository(SinergiaRepository):
                 , vmd.nombre_tipo_nomina 
                 , vmd.id_cargo 
                 , vmd.nombre_cargo 
+                , vmd.id_tipo_trabajador 
+                , vmd.nombre_tipo_trabajador
                 , mdm.turno id_turno
                 , t.descripcion  nombre_turno 
                 , TO_CHAR(mdm.fechaevento,'YYYY-MM-DD HH24:MI:SS') fecha_hora_evento	
@@ -2018,6 +2020,8 @@ class ManualMarkingRepository(SinergiaRepository):
                 , vmd.nombre_tipo_nomina 
                 , vmd.id_cargo 
                 , vmd.nombre_cargo 
+                , vmd.id_tipo_trabajador 
+                , vmd.nombre_tipo_trabajador
                 , mdm.turno id_turno
                 , t.descripcion  nombre_turno 
                 , TO_CHAR(mdm.fechaevento,'YYYY-MM-DD HH24:MI:SS') fecha_hora_evento	

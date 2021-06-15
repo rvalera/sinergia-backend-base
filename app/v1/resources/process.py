@@ -108,7 +108,7 @@ class DailyMarkingResource(ProxySecureResource):
     @jwt_required    
     def get(self):
         security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'guest'}
+        # security_credentials = {'username': 'guest'}
         query_params = {}
         request_payload =  {}        
         if 'filter' in  request.args and request.args['filter']:
@@ -119,6 +119,8 @@ class DailyMarkingResource(ProxySecureResource):
         if 'order' in  request.args and request.args['order']:
             order = eval(request.args['order'])
             query_params['order'] = order
+        query_params['order'] = ['fecdia ASC','cedula ASC']
+
         
         if 'range' in  request.args and request.args['range']:
             range = eval(request.args['range'])
@@ -257,6 +259,8 @@ class BatchAbsenceJustificationResource(ProxySecureResource):
         if 'order' in  request.args and request.args['order']:
             order = eval(request.args['order'])
             query_params['order'] = order
+        query_params['order'] = ['fecha_inicio ASC','fecha_fin ASC']
+
         
         if 'range' in  request.args and request.args['range']:
             range = eval(request.args['range'])
@@ -344,6 +348,7 @@ class BatchOvertimeResource(ProxySecureResource):
         if 'order' in  request.args and request.args['order']:
             order = eval(request.args['order'])
             query_params['order'] = order
+        query_params['order'] = ['fecha_inicio ASC','fecha_fin ASC']
         
         if 'range' in  request.args and request.args['range']:
             range = eval(request.args['range'])
@@ -431,6 +436,8 @@ class ManualMarkingResource(ProxySecureResource):
         if 'order' in  request.args and request.args['order']:
             order = eval(request.args['order'])
             query_params['order'] = order
+        query_params['order'] = ['fecha_marcaje ASC','cedula ASC']
+
         
         if 'range' in  request.args and request.args['range']:
             range = eval(request.args['range'])
@@ -444,7 +451,7 @@ class ManualMarkingResource(ProxySecureResource):
     @v1_api.expect(NewManualMarkingStruct)
     @jwt_required
     def post(self):
-        payload = request.json        
+        payload = request.json
         security_credentials = self.checkCredentials()
         # security_credentials = {'username': 'prueba'}
         NewManualMarkingUseCase().execute(security_credentials,payload)
@@ -483,4 +490,3 @@ class  DetailManualMarkingResource(ProxySecureResource):
         # security_credentials = {'username': 'prueba'}        
         data = GetDetailManualMarkingUseCase().execute(security_credentials,event_date,cedula,id)
         return  { 'ok': 1, 'data' : data } , 200
-
