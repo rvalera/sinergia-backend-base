@@ -14,6 +14,8 @@ from .base import SinergiaRepository
 
 from app.exceptions.base import RepositoryUnknownException
 
+from app.v1.models.hr import Trabajador
+
 import pandas as pd
 
 from sqlalchemy.sql import text
@@ -1548,7 +1550,6 @@ class DailyMarkingRepository(SinergiaRepository):
                                 filter_conditions['id_centro_costo'] = (filter_conditions['id_centro_costo'][0])
                                 conditions.append("md.id_centro_costo = '{id_centro_costo}' ")
 
-                            
 
                     if 'id_tipo_nomina' in filter_conditions:
                         if type(filter_conditions['id_tipo_nomina']) == str:
@@ -1758,7 +1759,6 @@ class ManualMarkingRepository(SinergiaRepository):
         conn = alembic.op.get_bind()
         conn.execute(text(update_sentence),**parameters)
 
-
     def actualizarAsistenciaDiaria(self,payload):
 
         field_to_update = 'fecha_inicio_dia' if payload['tipo_evento'] == 1 else 'fecha_fin_dia'
@@ -1787,10 +1787,49 @@ class ManualMarkingRepository(SinergiaRepository):
         conn = alembic.op.get_bind()
         conn.execute(text(update_sentence),**payload)
 
+    def calcularPrioridad(self,row):
+        if not pd.isnull(row["centro_costo"]):
+            return 3
+        elif not pd.isnull(row["codigo_nomina"]):
+            return 2
+        else:
+            return 1
+
+    def getTiempoHolgura(self,df):
+        df_max_prioridad = df.loc[df.prioridad.idxmax()].copy()
+        return df_max_prioridad['minutos_tolerancia']
+
+    def geTiempoHolguraParaUsuario(self,fecha,cedula):
+        params = {
+            "fecha" : fecha,
+            "cedula": cedula
+        }
+
+        trabajador = Trabajador.query.filter(Trabajador.cedula == cedula).first()
+
+        sql = '''
+        select * from integrador.holguras h 
+        where '{fecha}' >= h.fecha_desde 
+        AND '{fecha}' <= h.fecha_hasta
+        '''.format(**params)
+        holguras_df = pd.read_sql_query(sql,con=db.engine)
+        holguras_df['prioridad'] = holguras_df.apply(lambda row: self.calcularPrioridad(row) ,axis=1 )
+
+        holguras_to_apply = holguras_df.loc[ (holguras_df.centro_costo == trabajador.id_centro_costo) | \
+            (holguras_df.codigo_nomina == trabajador.id_tipo_nomina) | \
+            (holguras_df.cedula == trabajador.cedula) ].copy()
+
+        tiempo_holgura = 0
+        if len(holguras_to_apply) > 0:
+            tiempo_holgura = self.getTiempoHolgura(holguras_to_apply)
+
+        return tiempo_holgura
+
 
     def calcularSobretiempoYAusencia(self,payload):
-        pass
-
+        tiempo_holgura = self.geTiempoHolguraParaUsuario(payload['fecha'],payload['cedula'])
+        # Teniendo en cuenta la Holgura que toca al Usuario se procede a Calcular el Tiempo de Ausencia o Sobretiempo
+        
 
     def sincronizarAsistenciaDiaria(self,payload):
         event_date = payload['fecha']

@@ -152,6 +152,7 @@ class HolguraRepository(SinergiaRepository):
 
     #Validar que las horas extras se aprueba en el periodo de semanas definidos para la aplicacion
     def approve(self,id):
+        
         holgura = self.getById(id)
         user = self.getUser()
 
