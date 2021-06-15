@@ -93,6 +93,7 @@ class AbsenceEventRepository(SinergiaRepository):
                 , mda.user_aprobador id_usuario_aprobador
                 , se2.name nombre_usuario_aprobador
                 , mda.estatus estatus 
+                , mda.observaciones observaciones
             FROM integrador.marcaciones_dia_ausencias mda
             JOIN integrador.tipos_ausencias ta
             ON mda.tpau = ta.codigo
@@ -130,6 +131,7 @@ class JustificationAbsenceRepository(SinergiaRepository):
             'id_user_creador' : user.id,
             'horas_generadas' : payload['horas_generadas'],
             'id_justificacion_ausencia' : payload['id_justificacion_ausencia'],
+            'observaciones' : payload['observaciones'],
         }
 
         conn = alembic.op.get_bind()
@@ -143,6 +145,7 @@ class JustificationAbsenceRepository(SinergiaRepository):
                     ,tpau
                     ,cantidad_generada
                     ,user_creador
+                    ,observaciones
                     ,estatus
                     ) 
                 VALUES (
@@ -152,6 +155,7 @@ class JustificationAbsenceRepository(SinergiaRepository):
                     ,:id_justificacion_ausencia
                     ,:horas_generadas
                     ,:id_user_creador
+                    ,:observaciones
                     ,0
                     )
                 """
@@ -183,6 +187,7 @@ class JustificationAbsenceRepository(SinergiaRepository):
                 , mda.user_aprobador id_usuario_aprobador
                 , se2.name nombre_usuario_aprobador
                 , mda.estatus estatus 
+                , mda.observaciones observaciones
             FROM integrador.marcaciones_dia_ausencias mda
             JOIN integrador.tipos_ausencias ta
             ON mda.tpau = ta.codigo            
@@ -219,6 +224,7 @@ class JustificationAbsenceRepository(SinergiaRepository):
             'id_user_creador' : user.id,
             'horas_generadas' : payload['horas_generadas'],
             'id_justificacion_ausencia' : payload['id_justificacion_ausencia'],
+            'observaciones' : payload['observaciones'],
         }
 
         conn = alembic.op.get_bind()
@@ -229,6 +235,7 @@ class JustificationAbsenceRepository(SinergiaRepository):
                 SET tpau = :id_justificacion_ausencia
                     , cantidad_generada = :horas_generadas
                     , user_creador = :id_user_creador
+                    , observaciones = :observaciones
                 WHERE 
                     serial = :id
                     AND fecdia = :fecha
@@ -372,6 +379,7 @@ class OvertimeEventRepository(SinergiaRepository):
                 , mdh.user_aprobador id_usuario_aprobador
                 , se2.name nombre_usuario_aprobador
                 , mdh.estatus estatus 
+                , mdh.observaciones observaciones 
             FROM integrador.marcaciones_dia_he mdh
             LEFT JOIN public.securityelement se1
             ON mdh.user_creador = se1.id
@@ -417,6 +425,7 @@ class OvertimeEventRepository(SinergiaRepository):
             , mdh.user_aprobador id_usuario_aprobador
             , se2.name nombre_usuario_aprobador
             , mdh.estatus estatus 
+            , mdh.observaciones observaciones 
         FROM integrador.marcaciones_dia_he mdh
         LEFT JOIN public.securityelement se1
         ON mdh.user_creador = se1.id
@@ -439,14 +448,14 @@ class OvertimeEventRepository(SinergiaRepository):
         return rows[0]        
 
     #Validar que las horas extras se aprueba en el periodo de semanas definidos para la aplicacion
-    def approve(self,event_date,cedula,id):
-        overtime_event = self.getById(event_date,cedula,id)
+    def approve(self,payload):
+        overtime_event = self.getById(payload['event_date'],payload['cedula'],payload['id'])
         user = self.getUser()
 
         parameters = {
-            'id': id,
-            'event_date' : event_date,
-            'cedula' : cedula,
+            'id': payload['id'],
+            'event_date' : payload['event_date'],
+            'cedula' : payload['cedula'],
             'id_user_aprobador' : user.id,
         }
 

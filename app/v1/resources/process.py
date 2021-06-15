@@ -62,7 +62,8 @@ NewBatchOvertimeStruct = v1_api.model('NewBatchOvertimeStruct', {
     'tipo_hora' : fields.Integer(required=True), 
     'observaciones' : fields.String(required=True), 
     'trabajadores' : fields.List(fields.Integer()),
-}) 
+})
+
 
 SaveBatchOvertimeStruct = v1_api.model('SaveBatchOvertimeStruct', { 
     'id' : fields.Integer(required=True), 
@@ -80,7 +81,8 @@ NewAbsenceJustificationStruct = v1_api.model('NewAbsenceJustificationStruct', {
     'fecha' : fields.String(required=True,format='date'),   
     'cedula' : fields.String(required=True),   
     'horas_generadas' : fields.Float(required=True), 
-    'id_justificacion_ausencia' : fields.Integer(required=True), 
+    'id_justificacion_ausencia' : fields.Integer(required=True),
+    'observaciones' : fields.String(required=True),
 }) 
 
 SaveAbsenceJustificationStruct = v1_api.model('SaveAbsenceJustificationStruct', { 
@@ -89,8 +91,13 @@ SaveAbsenceJustificationStruct = v1_api.model('SaveAbsenceJustificationStruct', 
     'cedula' : fields.String(required=True),   
     'horas_generadas' : fields.Float(required=True), 
     'id_justificacion_ausencia' : fields.Integer(required=True), 
+    'observaciones' : fields.String(required=True),    
 }) 
 
+
+ApproveOvertimeStruct = v1_api.model('ApproveOvertimeStruct', { 
+    'observaciones' : fields.String(required=True),    
+}) 
 
 @process_ns.route('/daily_marking')
 @v1_api.expect(secureHeader)
@@ -148,8 +155,12 @@ class  ApproveOvertimeEventResource(ProxySecureResource):
     @jwt_required
     def put(self,event_date,cedula,id):
         security_credentials = self.checkCredentials()
-        # security_credentials = {'username': 'prueba'}        
-        data = ApproveOvertimeEventUseCase().execute(security_credentials,event_date,cedula,id)
+        # security_credentials = {'username': 'prueba'}  
+        payload = request.json    
+        payload['event_date'] = event_date
+        payload['cedula'] = cedula
+        payload['id'] = id
+        data = ApproveOvertimeEventUseCase().execute(security_credentials,payload)
         return  { 'ok': 1 } , 200
   
 

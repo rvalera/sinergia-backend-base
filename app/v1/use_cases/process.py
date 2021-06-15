@@ -15,8 +15,8 @@ class GetOvertimeEventUseCase(object):
         return OvertimeEventRepository(username=security_credentials['username']).get(event_date,cedula)
 
 class ApproveOvertimeEventUseCase(object):
-    def execute(self,security_credentials,event_date,cedula,id):
-        return OvertimeEventRepository(username=security_credentials['username']).approve(event_date,cedula,id)                
+    def execute(self,security_credentials,payload):
+        return OvertimeEventRepository(username=security_credentials['username']).approve(payload)                
 
 class GetAbsenceEventUseCase(object):
     def execute(self,security_credentials,event_date,cedula):
