@@ -580,7 +580,7 @@ class BatchJustificationAbsenceRepository(SinergiaRepository):
                                 conditions.append('vt.id_centro_costo IN {id_centro_costo}')
                             else:
                                 filter_conditions['id_centro_costo'] = (filter_conditions['id_centro_costo'][0])
-                                conditions.append("vt.id_tipo_nomina = '{id_tipo_nomina}' ")
+                                conditions.append("vt.id_centro_costo = '{id_centro_costo}' ")
 
                     if 'id_tipo_nomina' in filter_conditions:
                         if type(filter_conditions['id_tipo_nomina']) == str:
@@ -606,10 +606,10 @@ class BatchJustificationAbsenceRepository(SinergiaRepository):
 
 
                     if 'from' in filter_conditions:
-                        conditions.append("md.hora_inicio >= '{from}' ")
+                        conditions.append("am.hora_inicio >= '{from}' ")
 
                     if 'to' in filter_conditions:
-                        conditions.append("md.hora_final <= '{to}' ")
+                        conditions.append("am.hora_final <= '{to}' ")
 
                     where_clausule = 'WHERE ' + ' AND '.join(conditions)
                     where_clausule = where_clausule.format(**filter_conditions)
@@ -993,10 +993,10 @@ class BatchOvertimeRepository(SinergiaRepository):
                                 conditions.append("vt.id_tipo_nomina = '{id_tipo_nomina}' ")                           
 
                     if 'from' in filter_conditions:
-                        conditions.append("md.hora_final >= '{from}' ")
+                        conditions.append("am.hora_inicio >= '{from}' ")
 
                     if 'to' in filter_conditions:
-                        conditions.append("md.hora_inicio <= '{to}' ")
+                        conditions.append("am.hora_final <= '{to}' ")
 
                     where_clausule = 'WHERE ' + ' AND '.join(conditions)
                     where_clausule = where_clausule.format(**filter_conditions)
