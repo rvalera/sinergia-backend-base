@@ -459,6 +459,7 @@ class OvertimeEventRepository(SinergiaRepository):
             'event_date' : payload['event_date'],
             'cedula' : payload['cedula'],
             'id_user_aprobador' : user.id,
+            'observaciones' : payload['observaciones'],
         }
 
         conn = alembic.op.get_bind()
@@ -470,6 +471,7 @@ class OvertimeEventRepository(SinergiaRepository):
                     fecha_aprobacion = CURRENT_DATE
                     ,cantidad_aprobada = cantidad_generada
                     ,user_aprobador = :id_user_aprobador
+                    ,observaciones = :observaciones 
                     ,estatus = 1
                     WHERE 
                         serial = :id

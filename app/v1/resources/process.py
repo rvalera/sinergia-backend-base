@@ -155,6 +155,7 @@ class  ApproveOvertimeEventResource(ProxySecureResource):
 
     @process_ns.doc('Aprobar Evento de Horas Extras')
     @jwt_required
+    @v1_api.expect(ApproveOvertimeStruct)
     def put(self,event_date,cedula,id):
         security_credentials = self.checkCredentials()
         # security_credentials = {'username': 'prueba'}  
@@ -217,7 +218,7 @@ class  ApproveAbsenceJustificationResource(ProxySecureResource):
     @jwt_required
     def put(self,event_date,cedula,id):
         security_credentials = self.checkCredentials()
-        # security_credentials = {'username': 'prueba'}        
+        # security_credentials = {'username': 'prueba'}                
         data = ApproveAbsenceJustificationUseCase().execute(security_credentials,event_date,cedula,id)
         return  { 'ok': 1 } , 200
 
