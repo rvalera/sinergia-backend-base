@@ -1670,10 +1670,10 @@ class ManualMarkingRepository(SinergiaRepository):
         sql = '''
         SELECT *
         FROM 
-            integrador.hojas_tiempo
+            integrador.hojas_tiempo ht
         WHERE 
-            md.fecha = '{event_date}'        
-            AND md.cedula  = {cedula}
+            ht.fecha = '{event_date}'        
+            AND ht.cedula  = {cedula}
         '''
         sql = sql.format(**parameters)
 
@@ -1703,7 +1703,7 @@ class ManualMarkingRepository(SinergiaRepository):
         return rows[0] if len(rows) > 0  else None
 
 
-    def crearAsistenciaDiaria(self,payload,planificacion):
+    def crearAsistenciaDiaria(self,planificacion,payload):
         
         parameters = {
             'fecha' : payload['fecha'],
@@ -1717,18 +1717,17 @@ class ManualMarkingRepository(SinergiaRepository):
         # La planificacion existe usar lo planificado 
         if not planificacion is None:
             fecha_inicio_str = parameters['fecha']
-            fecha_inicio = datetime.strptime(fecha_inicio_str, '%y-%m-%d')
+            fecha_inicio = datetime.strp(fecha_inicio_str, '%Y-%m-%d')
             fechahora_inicio = datetime.combine(fecha_inicio,planificacion['hora_inicio'])
             fechahora_fin = datetime.combine(fecha_inicio,planificacion['hora_final'])
             parameters['inicio_planificado'] = fechahora_inicio
             parameters['fin_planificado'] = fechahora_fin
             parameters['horas_planificadas'] = fechahora_fin - fechahora_inicio
         else:
-            turno = self.getTurno()
+            turno = self.getTurno(payload['id_turno'])
             if not turno is None:
                 fecha_inicio_str = parameters['fecha']
-                fecha_inicio = datetime.strptime(fecha_inicio_str, '%y-%m-%d')
-
+                fecha_inicio = datetime.strptime(fecha_inicio_str,'%Y-%m-%d')
                 fechahora_inicio = datetime.combine(fecha_inicio,turno['hora_inicio'])
                 fechahora_fin = datetime.combine(fecha_inicio,turno['hora_final'])
                 parameters['inicio_planificado'] = fechahora_inicio
@@ -1741,11 +1740,11 @@ class ManualMarkingRepository(SinergiaRepository):
                 , cedula
                 , turno
                 , hora_inicial_p
-                , hora_final_p
+                , hora_fin_p
                 , horas_nomina_p
                 , codigo_biostar
             ) 
-            VALUE (
+            VALUES (
                 :fecha
                 , :cedula
                 , :id_turno 
@@ -1820,8 +1819,9 @@ class ManualMarkingRepository(SinergiaRepository):
         trabajador = Trabajador.query.filter(Trabajador.cedula == cedula).first()
 
         sql = '''
-        select * from integrador.holguras h 
-        where '{fecha}' >= h.fecha_desde 
+        SELECT * 
+        FROM integrador.holguras h 
+        WHERE '{fecha}' >= h.fecha_desde 
         AND '{fecha}' <= h.fecha_hasta
         '''.format(**params)
         holguras_df = pd.read_sql_query(sql,con=db.engine)
@@ -2101,7 +2101,7 @@ class ManualMarkingRepository(SinergiaRepository):
                         else:
                             if type(filter_conditions['id_centro_costo'] is list) and len(filter_conditions['id_centro_costo']) > 1:
                                 filter_conditions['id_centro_costo'] = tuple(filter_conditions['id_centro_costo'])    
-                                conditions.append('vmd.centro_costo IN {id_centro_costo}')
+                                conditions.append('vmd.id_centro_costo IN {id_centro_costo}')
                             else:
                                 filter_conditions['id_centro_costo'] = (filter_conditions['id_centro_costo'][0])
                                 conditions.append("vmd.id_centro_costo = '{id_centro_costo}' ")
@@ -2118,7 +2118,6 @@ class ManualMarkingRepository(SinergiaRepository):
                                 filter_conditions['id_tipo_nomina'] = (filter_conditions['id_tipo_nomina'][0])
                                 conditions.append("vmd.id_tipo_nomina = '{id_tipo_nomina}'") 
 
-                            
 
                     if 'id_turno' in filter_conditions:
                         if type(filter_conditions['id_turno']) == str:
@@ -2130,6 +2129,7 @@ class ManualMarkingRepository(SinergiaRepository):
                             else:
                                 filter_conditions['id_turno'] = (filter_conditions['id_turno'][0])
                                 conditions.append("mdm.turno = '{id_turno}'") 
+
 
                     if 'from' in filter_conditions:
                         conditions.append("vmd.fecdia >= '{from}' ")
