@@ -13,7 +13,7 @@ import json
 import requests
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
-from app.exceptions.base import CryptoPOSException, ConnectionException,NotImplementedException
+from app.exceptions.base import CryptoPOSException, ConnectionException,NotImplementedException,ParametersNotFoundException,DataNotFoundException,DatabaseException,IntegrityException
 from .base import SinergiaRepository
 
 import pandas as pd
@@ -24,6 +24,7 @@ from sqlalchemy import text
 from sqlalchemy import select    
 
 from psycopg2 import OperationalError, errorcodes, errors        
+from sqlalchemy import exc
 
 class MemberRepository(SinergiaRepository):
 
@@ -138,16 +139,24 @@ class MemberRepository(SinergiaRepository):
 
         sql = sql.format(**parameters)
 
-        textual_sql = text(sql)
-        rows = db.session.query(User).from_statement(textual_sql).all()
-        count_result_rows = len(rows)
+        try:
 
-        count_sql = count_sql.format(**parameters)
-        count_df = pd.read_sql_query(count_sql,con=db.engine)
-        result_count = count_df.to_dict('records')
-        count_all_rows = result_count[0]['count_rows']
+            textual_sql = text(sql)
+            rows = db.session.query(User).from_statement(textual_sql).all()
+            count_result_rows = len(rows)
 
-        return { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows} 
+            count_sql = count_sql.format(**parameters)
+            count_df = pd.read_sql_query(count_sql,con=db.engine)
+            result_count = count_df.to_dict('records')
+            count_all_rows = result_count[0]['count_rows']
+
+            return { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows} 
+
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
     def getByUsername(self,p_username):
         user = User.query.filter(User.name == p_username).first()
@@ -306,7 +315,7 @@ class MemberRepository(SinergiaRepository):
             db.session.commit()            
         else:
             #No se proporciono el username o la contrasena, es obligatorio 
-            raise RepositoryUnknownException()
+            raise ParametersNotFoundException()
 
 class RolRepository(SinergiaRepository):
 

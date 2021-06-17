@@ -21,7 +21,10 @@ import pandas as pd
 from sqlalchemy.sql import text
 from datetime import datetime, timedelta
 
-from psycopg2 import OperationalError, errorcodes, errors        
+from psycopg2 import OperationalError, errorcodes, errors     
+from app.exceptions.base import DatabaseException,IntegrityException
+from sqlalchemy import exc
+
 
 class AbsenceEventRepository(SinergiaRepository):
 
@@ -74,52 +77,60 @@ class AbsenceEventRepository(SinergiaRepository):
         '''
 
         sql = sql.format(**parameters)
-        header_df = pd.read_sql_query(sql,con=db.engine)
-        rows = header_df.to_dict('records')
 
-        header  = None
-        if len(rows) > 0:
-            header = rows[0]
+        try:
+            header_df = pd.read_sql_query(sql,con=db.engine)
+            rows = header_df.to_dict('records')
 
-            sql = '''
-            SELECT 
-                serial id
-                , TO_CHAR(mda.fecdia,'YYYY-MM-DD') fecha
-                , mda.cedula 
-                , ta.codigo id_justificacion_ausencia
-                , ta.descripcion nombre_justificacion_ausencia
-                , TO_CHAR(mda.fecregistro,'YYYY-MM-DD') fecha_registro
-                , mda.cantidad_generada cantidad_generada
-                , mda.user_creador id_usuario_creador
-                , se1.name nombre_usuario_creador
-                , TO_CHAR(mda.fecha_aprobacion,'YYYY-MM-DD') fecha_aprobacion
-                , mda.cantidad_aprobada cantidad_aprobada
-                , mda.user_aprobador id_usuario_aprobador
-                , se2.name nombre_usuario_aprobador
-                , mda.estatus estatus 
-                , mda.observaciones observaciones
-            FROM integrador.marcaciones_dia_ausencias mda
-            JOIN integrador.tipos_ausencias ta
-            ON mda.tpau = ta.codigo
-            LEFT JOIN public.securityelement se1
-            ON mda.user_creador = se1.id
-            LEFT JOIN public.securityelement se2
-            ON  mda.user_aprobador = se2.id
-            WHERE 
-                mda.fecdia = '{event_date}'        
-                AND mda.cedula  = {cedula}
-            '''
+            header  = None
+            if len(rows) > 0:
+                header = rows[0]
 
-            sql = sql.format(**parameters)
-            details_df = pd.read_sql_query(sql,con=db.engine)
-            rows = details_df.to_dict('records')
+                sql = '''
+                SELECT 
+                    serial id
+                    , TO_CHAR(mda.fecdia,'YYYY-MM-DD') fecha
+                    , mda.cedula 
+                    , ta.codigo id_justificacion_ausencia
+                    , ta.descripcion nombre_justificacion_ausencia
+                    , TO_CHAR(mda.fecregistro,'YYYY-MM-DD') fecha_registro
+                    , mda.cantidad_generada cantidad_generada
+                    , mda.user_creador id_usuario_creador
+                    , se1.name nombre_usuario_creador
+                    , TO_CHAR(mda.fecha_aprobacion,'YYYY-MM-DD') fecha_aprobacion
+                    , mda.cantidad_aprobada cantidad_aprobada
+                    , mda.user_aprobador id_usuario_aprobador
+                    , se2.name nombre_usuario_aprobador
+                    , mda.estatus estatus 
+                    , mda.observaciones observaciones
+                FROM integrador.marcaciones_dia_ausencias mda
+                JOIN integrador.tipos_ausencias ta
+                ON mda.tpau = ta.codigo
+                LEFT JOIN public.securityelement se1
+                ON mda.user_creador = se1.id
+                LEFT JOIN public.securityelement se2
+                ON  mda.user_aprobador = se2.id
+                WHERE 
+                    mda.fecdia = '{event_date}'        
+                    AND mda.cedula  = {cedula}
+                '''
 
-            header['justificaciones_ausencia'] = rows
+                sql = sql.format(**parameters)
+                details_df = pd.read_sql_query(sql,con=db.engine)
+                rows = details_df.to_dict('records')
 
-        if header is None: #Los datos solicitados no Existen
-            raise DataNotFoundException()                
+                header['justificaciones_ausencia'] = rows
 
-        return header
+            if header is None: #Los datos solicitados no Existen
+                raise DataNotFoundException()                
+
+            return header
+
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
 
 class JustificationAbsenceRepository(SinergiaRepository):
@@ -138,34 +149,43 @@ class JustificationAbsenceRepository(SinergiaRepository):
             'observaciones' : payload['observaciones'],
         }
 
-        conn = alembic.op.get_bind()
-        conn.execute(
-            text(
-                """
-                INSERT INTO integrador.marcaciones_dia_ausencias (
-                    fecdia
-                    ,cedula
-                    ,fecregistro
-                    ,tpau
-                    ,cantidad_generada
-                    ,user_creador
-                    ,observaciones
-                    ,estatus
-                    ) 
-                VALUES (
-                    :fecha
-                    ,:cedula
-                    ,CURRENT_DATE
-                    ,:id_justificacion_ausencia
-                    ,:horas_generadas
-                    ,:id_user_creador
-                    ,:observaciones
-                    ,0
-                    )
-                """
-                        ), 
-            **parameters
-        )
+        try:
+            conn = alembic.op.get_bind()
+            conn.execute(
+                text(
+                    """
+                    INSERT INTO integrador.marcaciones_dia_ausencias (
+                        fecdia
+                        ,cedula
+                        ,fecregistro
+                        ,tpau
+                        ,cantidad_generada
+                        ,user_creador
+                        ,observaciones
+                        ,estatus
+                        ) 
+                    VALUES (
+                        :fecha
+                        ,:cedula
+                        ,CURRENT_DATE
+                        ,:id_justificacion_ausencia
+                        ,:horas_generadas
+                        ,:id_user_creador
+                        ,:observaciones
+                        ,0
+                        )
+                    """
+                            ), 
+                **parameters
+            )
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
     def getById(self,event_date,cedula,id):
 
@@ -206,14 +226,19 @@ class JustificationAbsenceRepository(SinergiaRepository):
         '''
 
         sql = sql.format(**parameters)
-        
-        table_df = pd.read_sql_query(sql,con=db.engine)
-        rows = table_df.to_dict('records')
-        
-        if len(rows) == 0:
-            raise DataNotFoundException()                
 
-        return rows[0]        
+        try:        
+            table_df = pd.read_sql_query(sql,con=db.engine)
+            rows = table_df.to_dict('records')
+            
+            if len(rows) == 0:
+                raise DataNotFoundException()                
+
+            return rows[0]        
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
     #Validar que las justificacion se hacen en el periodo de semanas definidos para la aplicacion, No Modificar si ya esta aprobada
     def save(self,payload):
@@ -231,24 +256,33 @@ class JustificationAbsenceRepository(SinergiaRepository):
             'observaciones' : payload['observaciones'],
         }
 
-        conn = alembic.op.get_bind()
-        conn.execute(
-            text(
-                """
-                UPDATE integrador.marcaciones_dia_ausencias 
-                SET tpau = :id_justificacion_ausencia
-                    , cantidad_generada = :horas_generadas
-                    , user_creador = :id_user_creador
-                    , observaciones = :observaciones
-                WHERE 
-                    serial = :id
-                    AND fecdia = :fecha
-                    AND cedula  = :cedula
+        try:
+            conn = alembic.op.get_bind()
+            conn.execute(
+                text(
+                    """
+                    UPDATE integrador.marcaciones_dia_ausencias 
+                    SET tpau = :id_justificacion_ausencia
+                        , cantidad_generada = :horas_generadas
+                        , user_creador = :id_user_creador
+                        , observaciones = :observaciones
+                    WHERE 
+                        serial = :id
+                        AND fecdia = :fecha
+                        AND cedula  = :cedula
 
-                """
-                        ), 
-            **parameters
-        )
+                    """
+                            ), 
+                **parameters
+            )
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
 
     #No Eliminar si ya esta aprobada
@@ -263,19 +297,29 @@ class JustificationAbsenceRepository(SinergiaRepository):
             'cedula' : cedula,
         }
 
-        conn = alembic.op.get_bind()
-        conn.execute(
-            text(
-                """
-                DELETE FROM integrador.marcaciones_dia_ausencias 
-                WHERE 
-                    serial = :id
-                    AND fecdia = :fecha
-                    AND cedula  = :cedula
-                """
-                        ), 
-            **parameters
-        )
+        try:
+            conn = alembic.op.get_bind()
+            conn.execute(
+                text(
+                    """
+                    DELETE FROM integrador.marcaciones_dia_ausencias 
+                    WHERE 
+                        serial = :id
+                        AND fecdia = :fecha
+                        AND cedula  = :cedula
+                    """
+                            ), 
+                **parameters
+            )
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
 
     #Validar que las justificacion de aprueba se hacen en el periodo de semanas definidos para la aplicacion, No Modificar si ya esta aprobada
@@ -290,24 +334,34 @@ class JustificationAbsenceRepository(SinergiaRepository):
             'id_user_aprobador' : user.id
         }
 
-        conn = alembic.op.get_bind()
-        conn.execute(
-            text(
-                """
-                    UPDATE integrador.marcaciones_dia_ausencias
-                    SET 
-                    fecha_aprobacion = CURRENT_DATE
-                    ,cantidad_aprobada = cantidad_generada
-                    ,user_aprobador = :id_user_aprobador
-                    ,estatus = 1
-                    WHERE 
-                        serial = :id
-                        AND fecdia = :event_date
-                        AND cedula  = :cedula
-                """
-                        ), 
-            **parameters
-        )
+        try:
+            conn = alembic.op.get_bind()
+            conn.execute(
+                text(
+                    """
+                        UPDATE integrador.marcaciones_dia_ausencias
+                        SET 
+                        fecha_aprobacion = CURRENT_DATE
+                        ,cantidad_aprobada = cantidad_generada
+                        ,user_aprobador = :id_user_aprobador
+                        ,estatus = 1
+                        WHERE 
+                            serial = :id
+                            AND fecdia = :event_date
+                            AND cedula  = :cedula
+                    """
+                            ), 
+                **parameters
+            )
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
 
 
@@ -361,50 +415,59 @@ class OvertimeEventRepository(SinergiaRepository):
         '''
 
         sql = sql.format(**parameters)
-        header_df = pd.read_sql_query(sql,con=db.engine)
-        rows = header_df.to_dict('records')
 
-        header = None
-        if len(rows) > 0:
-            header = rows[0]
+        try:  
 
-            sql = '''
-            SELECT 
-                serial id
-                , TO_CHAR(mdh.fecdia,'YYYY-MM-DD') fecha
-                , mdh.cedula 
-                , mdh.tipo tipo_hora_extra
-                , TO_CHAR(mdh.fecregistro,'YYYY-MM-DD') fecha_registro
-                , mdh.cantidad_generada cantidad_generada
-                , mdh.user_creador id_usuario_creador
-                , se1.name nombre_usuario_creador
-                , TO_CHAR(mdh.fecha_aprobacion,'YYYY-MM-DD') fecha_aprobacion
-                , mdh.cantidad_aprobada cantidad_aprobada
-                , mdh.user_aprobador id_usuario_aprobador
-                , se2.name nombre_usuario_aprobador
-                , mdh.estatus estatus 
-                , mdh.observaciones observaciones 
-            FROM integrador.marcaciones_dia_he mdh
-            LEFT JOIN public.securityelement se1
-            ON mdh.user_creador = se1.id
-            LEFT JOIN public.securityelement se2
-            ON  mdh.user_aprobador = se2.id
-            WHERE 
-                mdh.fecdia = '{event_date}'        
-                AND mdh.cedula  = {cedula}
-            '''
+            header_df = pd.read_sql_query(sql,con=db.engine)
+            rows = header_df.to_dict('records')
 
-            sql = sql.format(**parameters)
-            
-            details_df = pd.read_sql_query(sql,con=db.engine)
-            rows = details_df.to_dict('records')
+            header = None
+            if len(rows) > 0:
+                header = rows[0]
 
-            header['horas_extras_generadas'] = rows
+                sql = '''
+                SELECT 
+                    serial id
+                    , TO_CHAR(mdh.fecdia,'YYYY-MM-DD') fecha
+                    , mdh.cedula 
+                    , mdh.tipo tipo_hora_extra
+                    , TO_CHAR(mdh.fecregistro,'YYYY-MM-DD') fecha_registro
+                    , mdh.cantidad_generada cantidad_generada
+                    , mdh.user_creador id_usuario_creador
+                    , se1.name nombre_usuario_creador
+                    , TO_CHAR(mdh.fecha_aprobacion,'YYYY-MM-DD') fecha_aprobacion
+                    , mdh.cantidad_aprobada cantidad_aprobada
+                    , mdh.user_aprobador id_usuario_aprobador
+                    , se2.name nombre_usuario_aprobador
+                    , mdh.estatus estatus 
+                    , mdh.observaciones observaciones 
+                FROM integrador.marcaciones_dia_he mdh
+                LEFT JOIN public.securityelement se1
+                ON mdh.user_creador = se1.id
+                LEFT JOIN public.securityelement se2
+                ON  mdh.user_aprobador = se2.id
+                WHERE 
+                    mdh.fecdia = '{event_date}'        
+                    AND mdh.cedula  = {cedula}
+                '''
 
-        if header is None: #Los datos solicitados no Existen
-            raise DataNotFoundException()                
+                sql = sql.format(**parameters)
+                
+                details_df = pd.read_sql_query(sql,con=db.engine)
+                rows = details_df.to_dict('records')
 
-        return header
+                header['horas_extras_generadas'] = rows
+
+            if header is None: #Los datos solicitados no Existen
+                raise DataNotFoundException()                
+
+            return header
+
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
     def getById(self,event_date,cedula,id):
 
@@ -442,14 +505,22 @@ class OvertimeEventRepository(SinergiaRepository):
         '''
 
         sql = sql.format(**parameters)
-        
-        table_df = pd.read_sql_query(sql,con=db.engine)
-        rows = table_df.to_dict('records')
 
-        if len(rows) == 0:
-            raise DataNotFoundException()                
+        try:
 
-        return rows[0]        
+            table_df = pd.read_sql_query(sql,con=db.engine)
+            rows = table_df.to_dict('records')
+
+            if len(rows) == 0:
+                raise DataNotFoundException()                
+
+            return rows[0]        
+
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
     #Validar que las horas extras se aprueba en el periodo de semanas definidos para la aplicacion
     def approve(self,payload):
@@ -464,25 +535,37 @@ class OvertimeEventRepository(SinergiaRepository):
             'observaciones' : payload['observaciones'],
         }
 
-        conn = alembic.op.get_bind()
-        conn.execute(
-            text(
-                """
-                    UPDATE integrador.marcaciones_dia_he
-                    SET 
-                    fecha_aprobacion = CURRENT_DATE
-                    ,cantidad_aprobada = cantidad_generada
-                    ,user_aprobador = :id_user_aprobador
-                    ,observaciones = :observaciones 
-                    ,estatus = 1
-                    WHERE 
-                        serial = :id
-                        AND fecdia = :event_date
-                        AND cedula  = :cedula
-                """
-                        ), 
-            **parameters
-        )
+        try:
+
+            conn = alembic.op.get_bind()
+            conn.execute(
+                text(
+                    """
+                        UPDATE integrador.marcaciones_dia_he
+                        SET 
+                        fecha_aprobacion = CURRENT_DATE
+                        ,cantidad_aprobada = cantidad_generada
+                        ,user_aprobador = :id_user_aprobador
+                        ,observaciones = :observaciones 
+                        ,estatus = 1
+                        WHERE 
+                            serial = :id
+                            AND fecdia = :event_date
+                            AND cedula  = :cedula
+                    """
+                            ), 
+                **parameters
+            )
+
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
 
 
@@ -640,16 +723,23 @@ class BatchJustificationAbsenceRepository(SinergiaRepository):
             parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
 
         sql = sql.format(**parameters)
-        table_df = pd.read_sql_query(sql,con=db.engine)
-        rows = table_df.to_dict('records')
-        count_result_rows = limit
 
-        count_sql = count_sql.format(**parameters)
-        count_df = pd.read_sql_query(count_sql,con=db.engine)
-        result_count = count_df.to_dict('records')
-        count_all_rows = result_count[0]['count_rows']
+        try:
+            table_df = pd.read_sql_query(sql,con=db.engine)
+            rows = table_df.to_dict('records')
+            count_result_rows = limit
 
-        return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
+            count_sql = count_sql.format(**parameters)
+            count_df = pd.read_sql_query(count_sql,con=db.engine)
+            result_count = count_df.to_dict('records')
+            count_all_rows = result_count[0]['count_rows']
+
+            return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
 
     def new(self,payload):
@@ -664,47 +754,57 @@ class BatchJustificationAbsenceRepository(SinergiaRepository):
             'observaciones' : payload['observaciones']
         }
 
+        try:
 
-        conn = alembic.op.get_bind()
-        result = conn.execute(
-            text(
-                """
-                INSERT INTO integrador.ausencia_masivas (
-                    hora_inicio
-                    ,hora_final
-                    ,tpau
-                    ,cantidad
-                    ,fecdia
-                    ,usuario_creador
-                    ,observaciones 
-                    ,status
-                    ) 
-                VALUES (
-                    :fecha_inicio
-                    ,:fecha_fin
-                    ,:id_justificacion_ausencia
-                    ,:cantidad_horas
-                    ,CURRENT_DATE
-                    ,:id_user_creador
-                    ,:observaciones
-                    ,0
-                    ) RETURNING ausencia_masivas.serial
-                """
-            ), 
-            **parameters
-        )
-
-        header_id = result.fetchone()[0]
-
-        for cedula in payload['trabajadores']:
-            conn.execute(
+            conn = alembic.op.get_bind()
+            result = conn.execute(
                 text(
                     """
-                    INSERT INTO integrador.ausencia_masivas_trabajador (serial,cedula)
-                    VALUES (:header_id,:cedula)
-                    """), 
-                **{'header_id': header_id,'cedula': cedula}
+                    INSERT INTO integrador.ausencia_masivas (
+                        hora_inicio
+                        ,hora_final
+                        ,tpau
+                        ,cantidad
+                        ,fecdia
+                        ,usuario_creador
+                        ,observaciones 
+                        ,status
+                        ) 
+                    VALUES (
+                        :fecha_inicio
+                        ,:fecha_fin
+                        ,:id_justificacion_ausencia
+                        ,:cantidad_horas
+                        ,CURRENT_DATE
+                        ,:id_user_creador
+                        ,:observaciones
+                        ,0
+                        ) RETURNING ausencia_masivas.serial
+                    """
+                ), 
+                **parameters
             )
+
+            header_id = result.fetchone()[0]
+
+            for cedula in payload['trabajadores']:
+                conn.execute(
+                    text(
+                        """
+                        INSERT INTO integrador.ausencia_masivas_trabajador (serial,cedula)
+                        VALUES (:header_id,:cedula)
+                        """), 
+                    **{'header_id': header_id,'cedula': cedula}
+                )
+
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
 
     def getById(self,id):
@@ -755,39 +855,46 @@ class BatchJustificationAbsenceRepository(SinergiaRepository):
         '''
 
         sql = sql.format(**parameters)
+
+        try:
         
-        table_df = pd.read_sql_query(sql,con=db.engine)
-        rows = table_df.to_dict('records')
-        
-        if len(rows) == 0:
-            raise DataNotFoundException()                
+            table_df = pd.read_sql_query(sql,con=db.engine)
+            rows = table_df.to_dict('records')
+            
+            if len(rows) == 0:
+                raise DataNotFoundException()                
 
-        #######################################################################################
-        header = rows[0] 
+            #######################################################################################
+            header = rows[0] 
 
-        sql = '''
-           SELECT vt.*
-            FROM             
-                integrador.ausencia_masivas am 
-            JOIN  
-                integrador.ausencia_masivas_trabajador amt 
-            ON  
-                am."serial" = amt."serial" 
-            JOIN  
-                integrador.vw_trabajador vt 
-            ON  
-                amt.cedula = vt.cedula 
-            WHERE 
-                am.serial = {id}
-        '''
-        sql = sql.format(**parameters)
-        
-        detail_df = pd.read_sql_query(sql,con=db.engine)
-        details = detail_df.to_dict('records')
+            sql = '''
+            SELECT vt.*
+                FROM             
+                    integrador.ausencia_masivas am 
+                JOIN  
+                    integrador.ausencia_masivas_trabajador amt 
+                ON  
+                    am."serial" = amt."serial" 
+                JOIN  
+                    integrador.vw_trabajador vt 
+                ON  
+                    amt.cedula = vt.cedula 
+                WHERE 
+                    am.serial = {id}
+            '''
+            sql = sql.format(**parameters)
+            
+            detail_df = pd.read_sql_query(sql,con=db.engine)
+            details = detail_df.to_dict('records')
 
-        header['trabajadores'] = details
+            header['trabajadores'] = details
 
-        return header        
+            return header        
+
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
 
     def save(self,payload):
@@ -804,43 +911,48 @@ class BatchJustificationAbsenceRepository(SinergiaRepository):
             'observaciones' : payload['observaciones']
         }
 
-        conn = alembic.op.get_bind()
-        conn.execute(
-            text(
-                """
-                UPDATE integrador.ausencia_masivas 
-                SET hora_inicio = :fecha_inicio 
-                    , hora_final = :fecha_fin
-                    , cantidad = :cantidad_horas
-                    , tpau = :id_justificacion_ausencia
-                    , usuario_creador = :id_user_creador
-                    , observaciones = :observaciones
-                WHERE 
-                    serial = :id
-                """
-                        ), 
-            **parameters
-        )
-
-        #Actualizar los Trabajadores a los que afecta 
-        conn.execute(
-            text(
-                """
-                DELETE FROM integrador.ausencia_masivas_trabajador
-                WHERE serial = :id
-                """), 
-            **{'id': payload['id']}
-        )
-
-        for cedula in payload['trabajadores']:
+        try:
+            conn = alembic.op.get_bind()
             conn.execute(
                 text(
                     """
-                    INSERT INTO integrador.ausencia_masivas_trabajador (serial,cedula)
-                    VALUES (:header_id,:cedula)
-                    """), 
-                **{'header_id': payload['id'],'cedula': cedula}
+                    UPDATE integrador.ausencia_masivas 
+                    SET hora_inicio = :fecha_inicio 
+                        , hora_final = :fecha_fin
+                        , cantidad = :cantidad_horas
+                        , tpau = :id_justificacion_ausencia
+                        , usuario_creador = :id_user_creador
+                        , observaciones = :observaciones
+                    WHERE 
+                        serial = :id
+                    """
+                            ), 
+                **parameters
             )
+
+            #Actualizar los Trabajadores a los que afecta 
+            conn.execute(
+                text(
+                    """
+                    DELETE FROM integrador.ausencia_masivas_trabajador
+                    WHERE serial = :id
+                    """), 
+                **{'id': payload['id']}
+            )
+
+            for cedula in payload['trabajadores']:
+                conn.execute(
+                    text(
+                        """
+                        INSERT INTO integrador.ausencia_masivas_trabajador (serial,cedula)
+                        VALUES (:header_id,:cedula)
+                        """), 
+                    **{'header_id': payload['id'],'cedula': cedula}
+                )
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
 
     def delete(self,id):
@@ -851,20 +963,30 @@ class BatchJustificationAbsenceRepository(SinergiaRepository):
             'id' : id
         }
 
-        conn = alembic.op.get_bind()
-        conn.execute(
-            text(
-                """
-                DELETE FROM integrador.ausencia_masivas_trabajador
-                WHERE 
-                    serial = :id;
-                DELETE FROM integrador.ausencia_masivas 
-                WHERE 
-                    serial = :id
-                """
-            ), 
-            **parameters
-        )
+        try:
+            conn = alembic.op.get_bind()
+            conn.execute(
+                text(
+                    """
+                    DELETE FROM integrador.ausencia_masivas_trabajador
+                    WHERE 
+                        serial = :id;
+                    DELETE FROM integrador.ausencia_masivas 
+                    WHERE 
+                        serial = :id
+                    """
+                ), 
+                **parameters
+            )
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
     def approve(self,id):
         justicacion_ausencia = self.getById(id)
@@ -875,21 +997,31 @@ class BatchJustificationAbsenceRepository(SinergiaRepository):
             'id_user_aprobador' : user.id
         }
 
-        conn = alembic.op.get_bind()
-        conn.execute(
-            text(
-                """
-                UPDATE integrador.ausencia_masivas 
-                SET fecha_aprobacion = CURRENT_DATE
-                    , cantidad_aprobada = cantidad
-                    , usuario_aprobador = :id_user_aprobador
-                    , status = 1
-                WHERE 
-                    serial = :id
-                """
-                        ), 
-            **parameters
-        )
+        try:
+            conn = alembic.op.get_bind()
+            conn.execute(
+                text(
+                    """
+                    UPDATE integrador.ausencia_masivas 
+                    SET fecha_aprobacion = CURRENT_DATE
+                        , cantidad_aprobada = cantidad
+                        , usuario_aprobador = :id_user_aprobador
+                        , status = 1
+                    WHERE 
+                        serial = :id
+                    """
+                            ), 
+                **parameters
+            )
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+        
 
 
 
@@ -1028,16 +1160,24 @@ class BatchOvertimeRepository(SinergiaRepository):
 
         sql = sql.format(**parameters)
 
-        table_df = pd.read_sql_query(sql,con=db.engine)
-        rows = table_df.to_dict('records')
-        count_result_rows = limit
+        try:
 
-        count_sql = count_sql.format(**parameters)
-        count_df = pd.read_sql_query(count_sql,con=db.engine)
-        result_count = count_df.to_dict('records')
-        count_all_rows = result_count[0]['count_rows']
+            table_df = pd.read_sql_query(sql,con=db.engine)
+            rows = table_df.to_dict('records')
+            count_result_rows = limit
 
-        return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
+            count_sql = count_sql.format(**parameters)
+            count_df = pd.read_sql_query(count_sql,con=db.engine)
+            result_count = count_df.to_dict('records')
+            count_all_rows = result_count[0]['count_rows']
+
+            return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
+
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
     def new(self,payload):
         user = self.getUser()
@@ -1051,46 +1191,58 @@ class BatchOvertimeRepository(SinergiaRepository):
             'observaciones' : payload['observaciones']
         }
 
-        conn = alembic.op.get_bind()
-        result = conn.execute(
-            text(
-                """
-                INSERT INTO integrador.horas_exmasivas (
-                    hora_inicio
-                    ,hora_final
-                    ,tipo_de_hora
-                    ,cantidad
-                    ,fecdia
-                    ,usuario_creador
-                    ,observaciones 
-                    ,status
-                    ) 
-                VALUES (
-                    :fecha_inicio
-                    ,:fecha_fin
-                    ,:tipo_hora
-                    ,:cantidad_horas
-                    ,CURRENT_DATE
-                    ,:id_user_creador
-                    ,:observaciones 
-                    ,0
-                    ) RETURNING horas_exmasivas.serial
-                """
-                        ), 
-            **parameters
-        )
+        try:
 
-        header_id = result.fetchone()[0]
-
-        for cedula in payload['trabajadores']:
-            conn.execute(
+            conn = alembic.op.get_bind()
+            result = conn.execute(
                 text(
                     """
-                    INSERT INTO integrador.horas_exmasivas_trabajador (serial,cedula)
-                    VALUES (:header_id,:cedula)
-                    """), 
-                **{'header_id': header_id,'cedula': cedula}
+                    INSERT INTO integrador.horas_exmasivas (
+                        hora_inicio
+                        ,hora_final
+                        ,tipo_de_hora
+                        ,cantidad
+                        ,fecdia
+                        ,usuario_creador
+                        ,observaciones 
+                        ,status
+                        ) 
+                    VALUES (
+                        :fecha_inicio
+                        ,:fecha_fin
+                        ,:tipo_hora
+                        ,:cantidad_horas
+                        ,CURRENT_DATE
+                        ,:id_user_creador
+                        ,:observaciones 
+                        ,0
+                        ) RETURNING horas_exmasivas.serial
+                    """
+                            ), 
+                **parameters
             )
+
+            header_id = result.fetchone()[0]
+
+            for cedula in payload['trabajadores']:
+                conn.execute(
+                    text(
+                        """
+                        INSERT INTO integrador.horas_exmasivas_trabajador (serial,cedula)
+                        VALUES (:header_id,:cedula)
+                        """), 
+                    **{'header_id': header_id,'cedula': cedula}
+                )
+
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
 
     def getById(self,id):
@@ -1136,39 +1288,46 @@ class BatchOvertimeRepository(SinergiaRepository):
         '''
 
         sql = sql.format(**parameters)
-        
-        table_df = pd.read_sql_query(sql,con=db.engine)
-        rows = table_df.to_dict('records')
 
-        if len(rows) == 0:
-            raise DataNotFoundException()                
+        try:
+            table_df = pd.read_sql_query(sql,con=db.engine)
+            rows = table_df.to_dict('records')
 
-        #######################################################################################
-        header = rows[0]
+            if len(rows) == 0:
+                raise DataNotFoundException()                
 
-        sql = '''
-            SELECT vt.*
-            FROM             
-                integrador.horas_exmasivas am 
-            JOIN  
-                integrador.horas_exmasivas_trabajador amt 
-            ON  
-                am."serial" = amt."serial" 
-            JOIN  
-                integrador.vw_trabajador vt 
-            ON  
-                amt.cedula = vt.cedula 
-            WHERE 
-                am.serial = {id}
-        '''
-        sql = sql.format(**parameters)
-        
-        detail_df = pd.read_sql_query(sql,con=db.engine)
-        details = detail_df.to_dict('records')
+            #######################################################################################
+            header = rows[0]
 
-        header['trabajadores'] = details
+            sql = '''
+                SELECT vt.*
+                FROM             
+                    integrador.horas_exmasivas am 
+                JOIN  
+                    integrador.horas_exmasivas_trabajador amt 
+                ON  
+                    am."serial" = amt."serial" 
+                JOIN  
+                    integrador.vw_trabajador vt 
+                ON  
+                    amt.cedula = vt.cedula 
+                WHERE 
+                    am.serial = {id}
+            '''
+            sql = sql.format(**parameters)
+            
 
-        return header        
+            detail_df = pd.read_sql_query(sql,con=db.engine)
+            details = detail_df.to_dict('records')
+
+            header['trabajadores'] = details
+
+            return header        
+
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
 
     def save(self,payload):
@@ -1185,43 +1344,54 @@ class BatchOvertimeRepository(SinergiaRepository):
             'observaciones' : payload['observaciones']
         }
 
-        conn = alembic.op.get_bind()
-        conn.execute(
-            text(
-                """
-                UPDATE integrador.horas_exmasivas 
-                SET hora_inicio = :fecha_inicio 
-                    , hora_final = :fecha_fin
-                    , cantidad = :cantidad_horas
-                    , tipo_de_hora = :tipo_hora
-                    , usuario_creador = :id_user_creador
-                    , observaciones = :observaciones
-                WHERE 
-                    serial = :id
-                """
-                        ), 
-            **parameters
-        )
+        try:
 
-        #Actualizar los Trabajadores a los que afecta 
-        conn.execute(
-            text(
-                """
-                DELETE FROM integrador.horas_exmasivas_trabajador
-                WHERE serial = :id
-                """), 
-            **{'id': payload['id']}
-        )
-
-        for cedula in payload['trabajadores']:
+            conn = alembic.op.get_bind()
             conn.execute(
                 text(
                     """
-                    INSERT INTO integrador.horas_exmasivas_trabajador (serial,cedula)
-                    VALUES (:header_id,:cedula)
-                    """), 
-                **{'header_id': payload['id'],'cedula': cedula}
+                    UPDATE integrador.horas_exmasivas 
+                    SET hora_inicio = :fecha_inicio 
+                        , hora_final = :fecha_fin
+                        , cantidad = :cantidad_horas
+                        , tipo_de_hora = :tipo_hora
+                        , usuario_creador = :id_user_creador
+                        , observaciones = :observaciones
+                    WHERE 
+                        serial = :id
+                    """
+                            ), 
+                **parameters
             )
+
+            #Actualizar los Trabajadores a los que afecta 
+            conn.execute(
+                text(
+                    """
+                    DELETE FROM integrador.horas_exmasivas_trabajador
+                    WHERE serial = :id
+                    """), 
+                **{'id': payload['id']}
+            )
+
+            for cedula in payload['trabajadores']:
+                conn.execute(
+                    text(
+                        """
+                        INSERT INTO integrador.horas_exmasivas_trabajador (serial,cedula)
+                        VALUES (:header_id,:cedula)
+                        """), 
+                    **{'header_id': payload['id'],'cedula': cedula}
+                )
+
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
 
     def delete(self,id):
@@ -1231,20 +1401,32 @@ class BatchOvertimeRepository(SinergiaRepository):
             'id' : id
         }
 
-        conn = alembic.op.get_bind()
-        conn.execute(
-            text(
-                """
-                DELETE FROM integrador.horas_exmasivas_trabajador
-                WHERE 
-                    serial = :id;
-                DELETE FROM integrador.horas_exmasivas 
-                WHERE 
-                    serial = :id;
-                """
-            ), 
-            **parameters
-        )
+        try:
+
+            conn = alembic.op.get_bind()
+            conn.execute(
+                text(
+                    """
+                    DELETE FROM integrador.horas_exmasivas_trabajador
+                    WHERE 
+                        serial = :id;
+                    DELETE FROM integrador.horas_exmasivas 
+                    WHERE 
+                        serial = :id;
+                    """
+                ), 
+                **parameters
+            )
+
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
 
     def approve(self,id):
@@ -1256,21 +1438,33 @@ class BatchOvertimeRepository(SinergiaRepository):
             'id_user_aprobador' : user.id
         }
 
-        conn = alembic.op.get_bind()
-        conn.execute(
-            text(
-                """
-                UPDATE integrador.horas_exmasivas 
-                SET fecha_aprobacion = CURRENT_DATE 
-                    , cantidad_aprobada = cantidad 
-                    , usuario_aprobador = :id_user_aprobador 
-                    , status = 1
-                WHERE 
-                    serial = :id
-                """
-                        ), 
-            **parameters
-        )
+        try:
+
+            conn = alembic.op.get_bind()
+            conn.execute(
+                text(
+                    """
+                    UPDATE integrador.horas_exmasivas 
+                    SET fecha_aprobacion = CURRENT_DATE 
+                        , cantidad_aprobada = cantidad 
+                        , usuario_aprobador = :id_user_aprobador 
+                        , status = 1
+                    WHERE 
+                        serial = :id
+                    """
+                            ), 
+                **parameters
+            )
+
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
 
 class DailyMarkingRepository(SinergiaRepository):
@@ -1602,6 +1796,7 @@ class DailyMarkingRepository(SinergiaRepository):
         if len(query_params) > 0:
 
             if 'filter' in query_params:
+
                 filter_conditions = query_params['filter']
 
                 desde = None
@@ -1616,24 +1811,32 @@ class DailyMarkingRepository(SinergiaRepository):
                 if desde is None or hasta is None:
                     raise ParametersNotFoundException('Los campos de filtros desde y hasta son obligatorios para la consulta')                
 
-                asistencia_df = self.get_asistencia_diaria(query_params)
-                justificiaciones_df = self.get_justificaciones_ausencia(desde,hasta)
-                horas_extras_diurnas_df = self.get_horas_extras_diurnas(desde,hasta)
-                horas_extras_nocturnas_df = self.get_horas_extras_nocturnas(desde,hasta)
+                try:
 
-                analisis_empleado = pd.merge(left=asistencia_df, right=justificiaciones_df, how='left', left_on=['fecdia','cedula'], right_on=['fecdia','cedula'])
-                analisis_empleado = pd.merge(left=analisis_empleado, right=horas_extras_diurnas_df, how='left', left_on=['fecdia','cedula'], right_on=['fecdia','cedula'])
-                analisis_empleado = pd.merge(left=analisis_empleado, right=horas_extras_nocturnas_df, how='left', left_on=['fecdia','cedula'], right_on=['fecdia','cedula'])
+                    asistencia_df = self.get_asistencia_diaria(query_params)
+                    justificiaciones_df = self.get_justificaciones_ausencia(desde,hasta)
+                    horas_extras_diurnas_df = self.get_horas_extras_diurnas(desde,hasta)
+                    horas_extras_nocturnas_df = self.get_horas_extras_nocturnas(desde,hasta)
 
-                analisis_empleado["nombre_tipo_ausencia"] = analisis_empleado["nombre_tipo_ausencia"].fillna('')
-                analisis_empleado = analisis_empleado.fillna(0)
+                    analisis_empleado = pd.merge(left=asistencia_df, right=justificiaciones_df, how='left', left_on=['fecdia','cedula'], right_on=['fecdia','cedula'])
+                    analisis_empleado = pd.merge(left=analisis_empleado, right=horas_extras_diurnas_df, how='left', left_on=['fecdia','cedula'], right_on=['fecdia','cedula'])
+                    analisis_empleado = pd.merge(left=analisis_empleado, right=horas_extras_nocturnas_df, how='left', left_on=['fecdia','cedula'], right_on=['fecdia','cedula'])
 
-                rows = analisis_empleado.to_dict('records')
-                count_result_rows = len(rows)
+                    analisis_empleado["nombre_tipo_ausencia"] = analisis_empleado["nombre_tipo_ausencia"].fillna('')
+                    analisis_empleado = analisis_empleado.fillna(0)
 
-                count_all_rows = self.get_cantidad_asistencia_diaria(query_params)
+                    rows = analisis_empleado.to_dict('records')
+                    count_result_rows = len(rows)
 
-                return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
+                    count_all_rows = self.get_cantidad_asistencia_diaria(query_params)
+
+                    return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
+
+                except exc.DatabaseError as err:
+                    # pass exception to function
+                    error_description = '%s' % (err)
+                    raise DatabaseException(text=error_description)
+
 
             else: # El Filter el Obligatorio para que este servicio trabaje
                 raise ParametersNotFoundException('Los parametros de consulta son obligatorios')                
@@ -1874,33 +2077,45 @@ class ManualMarkingRepository(SinergiaRepository):
             'tipo_evento' : payload['tipo_evento'], 
             'fecha_hora_evento' : payload['fecha_hora_evento'],
         }
-        
-        self.sincronizarAsistenciaDiaria(parameters)
-        
-        insert_sentence = ''' INSERT INTO integrador.marcaciones_dia_manual ( 
-                fecdia
-                ,cedula
-                ,tipo_evento
-                ,fechaevento
-                ,observaciones
-                ,turno
-                ,usuario_creador
-                ,tipo_de_marcaje
-                ,fecharegistro 
-            ) VALUES (
-                :fecha
-                , :cedula
-                , :tipo_evento
-                , :fecha_hora_evento
-                , :observaciones
-                , :id_turno
-                , :id_user_creador
-                , 99
-                ,CURRENT_DATE
-            )
-        '''
-        conn = alembic.op.get_bind()
-        conn.execute(text(insert_sentence),**parameters)
+
+        try:
+
+            self.sincronizarAsistenciaDiaria(parameters)
+            
+            insert_sentence = ''' INSERT INTO integrador.marcaciones_dia_manual ( 
+                    fecdia
+                    ,cedula
+                    ,tipo_evento
+                    ,fechaevento
+                    ,observaciones
+                    ,turno
+                    ,usuario_creador
+                    ,tipo_de_marcaje
+                    ,fecharegistro 
+                ) VALUES (
+                    :fecha
+                    , :cedula
+                    , :tipo_evento
+                    , :fecha_hora_evento
+                    , :observaciones
+                    , :id_turno
+                    , :id_user_creador
+                    , 99
+                    ,CURRENT_DATE
+                )
+            '''
+            conn = alembic.op.get_bind()
+            conn.execute(text(insert_sentence),**parameters)
+
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
     
     def getById(self,event_date,cedula,id):
@@ -1962,14 +2177,24 @@ class ManualMarkingRepository(SinergiaRepository):
         '''
 
         sql = sql.format(**parameters)
-        
-        table_df = pd.read_sql_query(sql,con=db.engine)
-        rows = table_df.to_dict('records')
-        
-        if len(rows) == 0:
-            raise DataNotFoundException()                
 
-        return rows[0]        
+        try:        
+            table_df = pd.read_sql_query(sql,con=db.engine)
+            rows = table_df.to_dict('records')
+            
+            if len(rows) == 0:
+                raise DataNotFoundException()                
+
+            return rows[0]        
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
 
     def save(self,payload):
@@ -1990,25 +2215,37 @@ class ManualMarkingRepository(SinergiaRepository):
         }
 
         # Reflejar el Cambio en la Tabla de Marcajes Diario
-        self.sincronizarAsistenciaDiaria(parameters)
+        try:
 
-        update_sentence = """
-                UPDATE integrador.marcaciones_dia_manual
-                SET tipo_evento = :tipo_evento
-                    , fechaevento = :fecha_hora_evento
-                    , observaciones = :observaciones
-                    , turno = :id_turno
-                    , usuario_creador = :id_user_creador
-                    , tipo_de_marcaje = 99
-                    , fecharegistro = CURRENT_DATE
-                WHERE 
-                    serial = :id
-                    AND fecdia = :fecha
-                    AND cedula  = :cedula 
-                """
+            self.sincronizarAsistenciaDiaria(parameters)
 
-        conn = alembic.op.get_bind()
-        conn.execute(text( update_sentence),**parameters)
+            update_sentence = """
+                    UPDATE integrador.marcaciones_dia_manual
+                    SET tipo_evento = :tipo_evento
+                        , fechaevento = :fecha_hora_evento
+                        , observaciones = :observaciones
+                        , turno = :id_turno
+                        , usuario_creador = :id_user_creador
+                        , tipo_de_marcaje = 99
+                        , fecharegistro = CURRENT_DATE
+                    WHERE 
+                        serial = :id
+                        AND fecdia = :fecha
+                        AND cedula  = :cedula 
+                    """
+
+            conn = alembic.op.get_bind()
+            conn.execute(text( update_sentence),**parameters)
+
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
     def get(self,query_params):
         sql = '''
@@ -2169,50 +2406,68 @@ class ManualMarkingRepository(SinergiaRepository):
 
         sql = sql.format(**parameters)
 
-        table_df = pd.read_sql_query(sql,con=db.engine)
-        rows = table_df.to_dict('records')
-        count_result_rows = limit
+        try:
 
-        count_sql = count_sql.format(**parameters)
-        count_df = pd.read_sql_query(count_sql,con=db.engine)
-        result_count = count_df.to_dict('records')
-        count_all_rows = result_count[0]['count_rows']
+            table_df = pd.read_sql_query(sql,con=db.engine)
+            rows = table_df.to_dict('records')
+            count_result_rows = limit
 
-        return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
+            count_sql = count_sql.format(**parameters)
+            count_df = pd.read_sql_query(count_sql,con=db.engine)
+            result_count = count_df.to_dict('records')
+            count_all_rows = result_count[0]['count_rows']
+
+            return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
+
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
     def delete(self,event_date,cedula,id):
 
         manual_marking = self.getById(event_date,cedula,id)
         user = self.getUser()
 
-        parameters = {
-            'id': id,
-            'fecha': event_date,
-            'cedula' : cedula,
-        }        
+        try:
+            parameters = {
+                'id': id,
+                'fecha': event_date,
+                'cedula' : cedula,
+            }        
 
-        field_to_update = 'fecha_inicio_dia' if manual_marking['tipo_evento'] == 1 else 'fecha_fin_dia'
-        update_sentence = """ 
-            UPDATE integrador.marcaciones_dia 
-            SET %s   = NULL
-            WHERE 
-                fecdia = :fecha
-                AND cedula  = :cedula """   %  (field_to_update)
-        conn = alembic.op.get_bind()
-        conn.execute(text(update_sentence),**parameters)
-
-        parameters = {
-            'id': id,
-            'fecha': event_date,
-            'cedula' : cedula,
-        }
-
-        delete_sentence  = """
-                DELETE FROM integrador.marcaciones_dia_manual 
+            field_to_update = 'fecha_inicio_dia' if manual_marking['tipo_evento'] == 1 else 'fecha_fin_dia'
+            update_sentence = """ 
+                UPDATE integrador.marcaciones_dia 
+                SET %s   = NULL
                 WHERE 
-                    serial = :id
-                    AND fecdia = :fecha
-                    AND cedula  = :cedula
-        """
-        conn = alembic.op.get_bind()
-        conn.execute(text(delete_sentence),**parameters)
+                    fecdia = :fecha
+                    AND cedula  = :cedula """   %  (field_to_update)
+            conn = alembic.op.get_bind()
+            conn.execute(text(update_sentence),**parameters)
+
+            parameters = {
+                'id': id,
+                'fecha': event_date,
+                'cedula' : cedula,
+            }
+
+            delete_sentence  = """
+                    DELETE FROM integrador.marcaciones_dia_manual 
+                    WHERE 
+                        serial = :id
+                        AND fecdia = :fecha
+                        AND cedula  = :cedula
+            """
+            conn = alembic.op.get_bind()
+            conn.execute(text(delete_sentence),**parameters)
+
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)

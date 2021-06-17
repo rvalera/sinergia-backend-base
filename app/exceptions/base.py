@@ -34,6 +34,10 @@ class UserRepeatedPasswordException(SinergiaException):
     def __init__(self,text=None):
         super(UserRepeatedPasswordException, self).__init__(code='USRPWD002',text = text)
 
+class IntegrityException(SinergiaException):
+    def __init__(self,text=None):
+        super(IntegrityException, self).__init__(code='INT001',text = text)
+
 class DatabaseException(SinergiaException):
     def __init__(self,text=None):
         super(DatabaseException, self).__init__(code='DB001',text = text)

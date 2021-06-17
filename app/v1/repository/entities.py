@@ -10,7 +10,7 @@ import json
 import requests
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
-from app.exceptions.base import CryptoPOSException, ConnectionException,NotImplementedException
+from app.exceptions.base import CryptoPOSException, ConnectionException,NotImplementedException,DatabaseException,IntegrityException
 from .base import SinergiaRepository
 
 from app.exceptions.base import RepositoryUnknownException,DataNotFoundException
@@ -21,7 +21,9 @@ import logging
 from sqlalchemy import text    
 from sqlalchemy import select 
 
-from psycopg2 import OperationalError, errorcodes, errors        
+from psycopg2 import OperationalError, errorcodes, errors    
+from sqlalchemy import exc
+
 
 class CargoRepository(SinergiaRepository):
     def get(self,query_params):
@@ -86,17 +88,21 @@ class CargoRepository(SinergiaRepository):
 
         sql = sql.format(**parameters)
 
-        table_df = pd.read_sql_query(sql,con=db.engine)
-        rows = table_df.to_dict('records')
-        count_result_rows = limit
+        try:
+            table_df = pd.read_sql_query(sql,con=db.engine)
+            rows = table_df.to_dict('records')
+            count_result_rows = limit
 
-        count_sql = count_sql.format(**parameters)
-        count_df = pd.read_sql_query(count_sql,con=db.engine)
-        result_count = count_df.to_dict('records')
-        count_all_rows = result_count[0]['count_rows']
+            count_sql = count_sql.format(**parameters)
+            count_df = pd.read_sql_query(count_sql,con=db.engine)
+            result_count = count_df.to_dict('records')
+            count_all_rows = result_count[0]['count_rows']
 
-        return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
-
+            return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
 
 class CentroCostoRepository(SinergiaRepository):
@@ -157,17 +163,23 @@ class CentroCostoRepository(SinergiaRepository):
             parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
 
         sql = sql.format(**parameters)
+        try:
+            table_df = pd.read_sql_query(sql,con=db.engine)
+            rows = table_df.to_dict('records')
+            count_result_rows = limit
 
-        table_df = pd.read_sql_query(sql,con=db.engine)
-        rows = table_df.to_dict('records')
-        count_result_rows = limit
+            count_sql = count_sql.format(**parameters)
+            count_df = pd.read_sql_query(count_sql,con=db.engine)
+            result_count = count_df.to_dict('records')
+            count_all_rows = result_count[0]['count_rows']
 
-        count_sql = count_sql.format(**parameters)
-        count_df = pd.read_sql_query(count_sql,con=db.engine)
-        result_count = count_df.to_dict('records')
-        count_all_rows = result_count[0]['count_rows']
+            return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
-        return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
+        
 
 
 class ConceptoNominaRepository(SinergiaRepository):
@@ -230,41 +242,66 @@ class ConceptoNominaRepository(SinergiaRepository):
 
         sql = sql.format(**parameters)
 
-        table_df = pd.read_sql_query(sql,con=db.engine)
-        rows = table_df.to_dict('records')
-        count_result_rows = limit
+        try:
+            table_df = pd.read_sql_query(sql,con=db.engine)
+            rows = table_df.to_dict('records')
+            count_result_rows = limit
 
-        count_sql = count_sql.format(**parameters)
-        count_df = pd.read_sql_query(count_sql,con=db.engine)
-        result_count = count_df.to_dict('records')
-        count_all_rows = result_count[0]['count_rows']
+            count_sql = count_sql.format(**parameters)
+            count_df = pd.read_sql_query(count_sql,con=db.engine)
+            result_count = count_df.to_dict('records')
+            count_all_rows = result_count[0]['count_rows']
 
-        return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
+            return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
 
 class DispositivoRepository(SinergiaRepository):
     def getAll(self):
-        table_df = pd.read_sql_query('select * from integrador.dispositivos',con=db.engine)
-        result = table_df.to_dict('records')
-        return result
+        try:
+            table_df = pd.read_sql_query('select * from integrador.dispositivos',con=db.engine)
+            result = table_df.to_dict('records')
+            return result
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
 class EstatusTrabajadorRepository(SinergiaRepository):
     def getAll(self):
-        table_df = pd.read_sql_query('select * from integrador.estatus_trabajador',con=db.engine)
-        result = table_df.to_dict('records')
-        return result
+        try:
+            table_df = pd.read_sql_query('select * from integrador.estatus_trabajador',con=db.engine)
+            result = table_df.to_dict('records')
+            return result
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
 class TipoAusenciaRepository(SinergiaRepository):
     def getAll(self):
-        table_df = pd.read_sql_query('select * from integrador.tipos_ausencias',con=db.engine)
-        result = table_df.to_dict('records')
-        return result
+        try:
+            table_df = pd.read_sql_query('select * from integrador.tipos_ausencias',con=db.engine)
+            result = table_df.to_dict('records')
+            return result
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
 class TipoNominaRepository(SinergiaRepository):
     def getAll(self):
-        table_df = pd.read_sql_query('select * from integrador.tipos_de_nomina',con=db.engine)
-        result = table_df.to_dict('records')
-        return result
+        try:
+            table_df = pd.read_sql_query('select * from integrador.tipos_de_nomina',con=db.engine)
+            result = table_df.to_dict('records')
+            return result
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
 #################################################################################################################
 
@@ -363,32 +400,53 @@ class TrabajadorRepository(SinergiaRepository):
             parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
 
         sql = sql.format(**parameters)
-        textual_sql = text(sql)
-        rows = db.session.query(Trabajador).from_statement(textual_sql).all()
-        count_result_rows = len(rows)
 
-        count_sql = count_sql.format(**parameters)
-        count_df = pd.read_sql_query(count_sql,con=db.engine)
-        result_count = count_df.to_dict('records')
-        count_all_rows = result_count[0]['count_rows']
+        try:
+            textual_sql = text(sql)
+            rows = db.session.query(Trabajador).from_statement(textual_sql).all()
+            count_result_rows = len(rows)
 
-        return { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows} 
+            count_sql = count_sql.format(**parameters)
+            count_df = pd.read_sql_query(count_sql,con=db.engine)
+            result_count = count_df.to_dict('records')
+            count_all_rows = result_count[0]['count_rows']
+
+            return { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows} 
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
     def getByCedula(self,cedula):
-        trabajador = Trabajador.query.filter(Trabajador.cedula == cedula).first()
-        if trabajador is None:
-            raise DataNotFoundException()
-        return trabajador
+        try:
+            trabajador = Trabajador.query.filter(Trabajador.cedula == cedula).first()
+            if trabajador is None:
+                raise DataNotFoundException()
+            return trabajador
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
 
 class TipoTrabajadorRepository(SinergiaRepository):
     def getAll(self):
-        table_df = pd.read_sql_query('select * from integrador.tipo_trabajador',con=db.engine)
-        result = table_df.to_dict('records')
-        return result
+        try:
+            table_df = pd.read_sql_query('select * from integrador.tipo_trabajador',con=db.engine)
+            result = table_df.to_dict('records')
+            return result
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
 class GrupoGuardiaRepository(SinergiaRepository):
     def getAll(self):
-        table_df = pd.read_sql_query('select * from integrador.grupo_guardia',con=db.engine)
-        result = table_df.to_dict('records')
-        return result
+        try:
+            table_df = pd.read_sql_query('select * from integrador.grupo_guardia',con=db.engine)
+            result = table_df.to_dict('records')
+            return result
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)

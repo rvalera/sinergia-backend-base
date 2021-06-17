@@ -9,7 +9,7 @@ import json
 import requests
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
-from app.exceptions.base import CryptoPOSException, ConnectionException,NotImplementedException,RepositoryUnknownException,DataNotFoundException
+from app.exceptions.base import CryptoPOSException, ConnectionException,NotImplementedException,RepositoryUnknownException,DataNotFoundException,IntegrityException
 from .base import SinergiaRepository
 
 import json
@@ -20,7 +20,7 @@ from sqlalchemy.sql import text
 
 from psycopg2 import OperationalError, errorcodes, errors        
 
-from app.exceptions.base import DatabaseException
+from app.exceptions.base import DatabaseException,IntegrityException
 from psycopg2 import OperationalError, errorcodes, errors
 from sqlalchemy import exc
 
@@ -52,8 +52,6 @@ class HolguraRepository(SinergiaRepository):
         else:
             parameters['id_tipo_nomina'] = None
 
-       
-
         if 'cedula_trabajador' in payload:
             if payload['cedula_trabajador']:
                 parameters['cedula_trabajador'] = payload['cedula_trabajador']
@@ -62,38 +60,48 @@ class HolguraRepository(SinergiaRepository):
         else:
             parameters['cedula_trabajador'] = None
 
-        conn = alembic.op.get_bind()
-        conn.execute(
-            text(
-                """
-                    insert into integrador.holguras
-                    ( 
-                    fecha_desde
-                    , fecha_hasta
-                    , minutos_tolerancia
-                    , centro_costo
-                    , codigo_nomina
-                    , cedula 
-                    , fecha_registro 
-                    , usuario_creador
-                    , status 
-                    ) 
-                    values 
-                    (
-                    :fecha_desde
-                    ,:fecha_hasta 
-                    ,:minutos_tolerancia
-                    ,:id_centro_costo
-                    ,:id_tipo_nomina
-                    ,:cedula_trabajador
-                    , CURRENT_DATE
-                    ,:id_user_creador
-                    , 0
-                    ) 
-                """
-            ), 
-            **parameters
-        )
+        try:
+            conn = alembic.op.get_bind()
+            conn.execute(
+                text(
+                    """
+                        insert into integrador.holguras
+                        ( 
+                        fecha_desde
+                        , fecha_hasta
+                        , minutos_tolerancia
+                        , centro_costo
+                        , codigo_nomina
+                        , cedula 
+                        , fecha_registro 
+                        , usuario_creador
+                        , status 
+                        ) 
+                        values 
+                        (
+                        :fecha_desde
+                        ,:fecha_hasta 
+                        ,:minutos_tolerancia
+                        ,:id_centro_costo
+                        ,:id_tipo_nomina
+                        ,:cedula_trabajador
+                        , CURRENT_DATE
+                        ,:id_user_creador
+                        , 0
+                        ) 
+                    """
+                ), 
+                **parameters
+            )
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
     def getById(self,id):
 
@@ -147,14 +155,20 @@ class HolguraRepository(SinergiaRepository):
         '''
 
         sql = sql.format(**parameters)
-        
-        table_df = pd.read_sql_query(sql,con=db.engine)
-        rows = table_df.to_dict('records')
+        try:
+            table_df = pd.read_sql_query(sql,con=db.engine)
+            rows = table_df.to_dict('records')
 
-        if len(rows) == 0:
-            raise DataNotFoundException()                
+            if len(rows) == 0:
+                raise DataNotFoundException()                
 
-        return rows[0]        
+            return rows[0]        
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
+
 
     #Validar que las horas extras se aprueba en el periodo de semanas definidos para la aplicacion
     def approve(self,id):
@@ -184,6 +198,10 @@ class HolguraRepository(SinergiaRepository):
                 **parameters
             )
         except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
             # pass exception to function
             error_description = '%s' % (err)
             raise DatabaseException(text=error_description)
@@ -246,7 +264,12 @@ class HolguraRepository(SinergiaRepository):
         except exc.IntegrityError as err:
             # pass exception to function
             error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
             raise DatabaseException(text=error_description)
+            
 
 
     def delete(self,query_params):
@@ -262,6 +285,10 @@ class HolguraRepository(SinergiaRepository):
                 **query_params
             )
         except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
             # pass exception to function
             error_description = '%s' % (err)
             raise DatabaseException(text=error_description)
@@ -405,16 +432,26 @@ class HolguraRepository(SinergiaRepository):
 
         sql = sql.format(**parameters)
 
-        table_df = pd.read_sql_query(sql,con=db.engine)
-        rows = table_df.to_dict('records')
-        count_result_rows = limit
+        try:
+            table_df = pd.read_sql_query(sql,con=db.engine)
+            rows = table_df.to_dict('records')
+            count_result_rows = limit
 
-        count_sql = count_sql.format(**parameters)
-        count_df = pd.read_sql_query(count_sql,con=db.engine)
-        result_count = count_df.to_dict('records')
-        count_all_rows = result_count[0]['count_rows']
+            count_sql = count_sql.format(**parameters)
+            count_df = pd.read_sql_query(count_sql,con=db.engine)
+            result_count = count_df.to_dict('records')
+            count_all_rows = result_count[0]['count_rows']
 
-        return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
+            return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
 #######################################################################################################
 
@@ -457,7 +494,12 @@ class TurnoRepository(SinergiaRepository):
         except exc.IntegrityError as err:
             # pass exception to function
             error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
             raise DatabaseException(text=error_description)
+
 
     def save(self,payload):
         try:
@@ -483,6 +525,10 @@ class TurnoRepository(SinergiaRepository):
         except exc.IntegrityError as err:
             # pass exception to function
             error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
             raise DatabaseException(text=error_description)
 
 
@@ -499,6 +545,10 @@ class TurnoRepository(SinergiaRepository):
                 **query_params
             )
         except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise IntegrityException(text=error_description)
+        except exc.DatabaseError as err:
             # pass exception to function
             error_description = '%s' % (err)
             raise DatabaseException(text=error_description)
@@ -563,15 +613,23 @@ class TurnoRepository(SinergiaRepository):
 
         sql = sql.format(**parameters)
 
-        table_df = pd.read_sql_query(sql,con=db.engine)
-        rows = table_df.to_dict('records')
-        count_result_rows = limit
+        try:
 
-        count_sql = count_sql.format(**parameters)
-        count_df = pd.read_sql_query(count_sql,con=db.engine)
-        result_count = count_df.to_dict('records')
-        count_all_rows = result_count[0]['count_rows']
+            table_df = pd.read_sql_query(sql,con=db.engine)
+            rows = table_df.to_dict('records')
+            count_result_rows = limit
 
-        return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
+            count_sql = count_sql.format(**parameters)
+            count_df = pd.read_sql_query(count_sql,con=db.engine)
+            result_count = count_df.to_dict('records')
+            count_all_rows = result_count[0]['count_rows']
+
+            return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
+
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
 
