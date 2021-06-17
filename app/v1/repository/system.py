@@ -13,13 +13,15 @@ import json
 import requests
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
-from app.exceptions.base import CryptoPOSException, ConnectionException,NotImplementedException
+from app.exceptions.base import CryptoPOSException, ConnectionException,NotImplementedException,DatabaseException
 from .base import SinergiaRepository
 
 import pandas as pd
 import hashlib
 import datetime
 from sqlalchemy.sql import text
+
+from sqlalchemy import exc
 
 
 class ApplicationRepository(SinergiaRepository):
@@ -37,14 +39,19 @@ class ApplicationRepository(SinergiaRepository):
         return  row
 
     def save(self,payload):
-        conn = alembic.op.get_bind()
-        conn.execute(
-            text(
-                """
-                    UPDATE integrador.parametros
-                    SET 
-                    semanas_de_ajustes = :semanas_de_ajustes
-                """
-            ), 
-            **payload
-        )
+        try:
+            conn = alembic.op.get_bind()
+            conn.execute(
+                text(
+                    """
+                        UPDATE integrador.parametros
+                        SET 
+                        semanas_de_ajustes = :semanas_de_ajustes
+                    """
+                ), 
+                **payload
+            )
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)

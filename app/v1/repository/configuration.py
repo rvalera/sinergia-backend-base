@@ -9,7 +9,7 @@ import json
 import requests
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
-from app.exceptions.base import CryptoPOSException, ConnectionException,NotImplementedException,RepositoryUnknownException
+from app.exceptions.base import CryptoPOSException, ConnectionException,NotImplementedException,RepositoryUnknownException,DataNotFoundException
 from .base import SinergiaRepository
 
 import json
@@ -17,6 +17,12 @@ import json
 import pandas as pd
 
 from sqlalchemy.sql import text
+
+from psycopg2 import OperationalError, errorcodes, errors        
+
+from app.exceptions.base import DatabaseException
+from psycopg2 import OperationalError, errorcodes, errors
+from sqlalchemy import exc
 
 class HolguraRepository(SinergiaRepository):
 
@@ -146,7 +152,7 @@ class HolguraRepository(SinergiaRepository):
         rows = table_df.to_dict('records')
 
         if len(rows) == 0:
-            raise RepositoryUnknownException()                
+            raise DataNotFoundException()                
 
         return rows[0]        
 
@@ -161,21 +167,26 @@ class HolguraRepository(SinergiaRepository):
             'id_user_aprobador': user.id
         }
 
-        conn = alembic.op.get_bind()
-        conn.execute(
-            text(
-                """
-                    UPDATE integrador.holguras
-                    SET 
-                    usuario_aprobador = :id_user_aprobador
-                    , fecha_aprobacion =  CURRENT_DATE
-                    , status = 1
-                    WHERE 
-                        id = :id
-                """
-                        ), 
-            **parameters
-        )
+        try:
+            conn = alembic.op.get_bind()
+            conn.execute(
+                text(
+                    """
+                        UPDATE integrador.holguras
+                        SET 
+                        usuario_aprobador = :id_user_aprobador
+                        , fecha_aprobacion =  CURRENT_DATE
+                        , status = 1
+                        WHERE 
+                            id = :id
+                    """
+                            ), 
+                **parameters
+            )
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
     def save(self,payload):
         holgura = self.getById(payload['id'])
@@ -213,37 +224,47 @@ class HolguraRepository(SinergiaRepository):
         else:
             parameters['cedula_trabajador'] = None
 
-        conn = alembic.op.get_bind()
-        conn.execute(
-            text(
-                """
-                    UPDATE integrador.holguras
-                    SET 
-                    fecha_desde = :fecha_desde
-                    ,fecha_hasta = :fecha_hasta
-                    ,minutos_tolerancia = :minutos_tolerancia
-                    ,centro_costo = :id_centro_costo 
-                    ,codigo_nomina = :id_tipo_nomina  
-                    ,cedula = :cedula_trabajador
-                    ,usuario_creador = :id_user_creador
-                    WHERE id = :id
-                """
-            ), 
-            **parameters
-        )
+        try:
+            conn = alembic.op.get_bind()
+            conn.execute(
+                text(
+                    """
+                        UPDATE integrador.holguras
+                        SET 
+                        fecha_desde = :fecha_desde
+                        ,fecha_hasta = :fecha_hasta
+                        ,minutos_tolerancia = :minutos_tolerancia
+                        ,centro_costo = :id_centro_costo 
+                        ,codigo_nomina = :id_tipo_nomina  
+                        ,cedula = :cedula_trabajador
+                        ,usuario_creador = :id_user_creador
+                        WHERE id = :id
+                    """
+                ), 
+                **parameters
+            )
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
 
     def delete(self,query_params):
-        conn = alembic.op.get_bind()
-        conn.execute(
-            text(
-                """
-                    DELETE FROM integrador.holguras
-                    WHERE id = :id
-                """
-            ), 
-            **query_params
-        )
+        try:
+            conn = alembic.op.get_bind()
+            conn.execute(
+                text(
+                    """
+                        DELETE FROM integrador.holguras
+                        WHERE id = :id
+                    """
+                ), 
+                **query_params
+            )
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
 
     def get(self,query_params):
@@ -400,72 +421,87 @@ class HolguraRepository(SinergiaRepository):
 class TurnoRepository(SinergiaRepository):
 
     def new(self,payload):
-        conn = alembic.op.get_bind()
-        conn.execute(
-            text(
-                """
-                    insert into integrador.turnos
-                    ( 
-                    codigo
-                    , descripcion
-                    , hora_inicio
-                    , hora_final
-                    , cantidad_horas_diurnas
-                    , hinicio_descanso
-                    , hfinal_descanso
-                    , horas_nocturnas
-                    , status
-                    ) 
-                    values 
-                    (
-                    :codigo
-                    , :descripcion
-                    , :hora_inicio
-                    , :hora_final
-                    , :cantidad_horas_diurnas
-                    , :hinicio_descanso
-                    , :hfinal_descanso
-                    , :horas_nocturnas
-                    , :status
-                    ) 
-                """
-            ), 
-            **payload
-        )
-
+        try:
+            conn = alembic.op.get_bind()
+            conn.execute(
+                text(
+                    """
+                        insert into integrador.turnos
+                        ( 
+                        codigo
+                        , descripcion
+                        , hora_inicio
+                        , hora_final
+                        , cantidad_horas_diurnas
+                        , hinicio_descanso
+                        , hfinal_descanso
+                        , horas_nocturnas
+                        , status
+                        ) 
+                        values 
+                        (
+                        :codigo
+                        , :descripcion
+                        , :hora_inicio
+                        , :hora_final
+                        , :cantidad_horas_diurnas
+                        , :hinicio_descanso
+                        , :hfinal_descanso
+                        , :horas_nocturnas
+                        , :status
+                        ) 
+                    """
+                ), 
+                **payload
+            )
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
     def save(self,payload):
-        conn = alembic.op.get_bind()
-        conn.execute(
-            text(
-                """
-                    UPDATE integrador.turnos
-                    SET 
-                    descripcion = :descripcion
-                    , hora_inicio = :hora_inicio
-                    , hora_final = :hora_final
-                    , cantidad_horas_diurnas = :cantidad_horas_diurnas
-                    , hinicio_descanso = :hinicio_descanso 
-                    , hfinal_descanso =  :hfinal_descanso
-                    , horas_nocturnas = :horas_nocturnas
-                    , status = :status
-                    WHERE codigo = :codigo
-                """
-            ), 
-            **payload
-        )
+        try:
+            conn = alembic.op.get_bind()
+            conn.execute(
+                text(
+                    """
+                        UPDATE integrador.turnos
+                        SET 
+                        descripcion = :descripcion
+                        , hora_inicio = :hora_inicio
+                        , hora_final = :hora_final
+                        , cantidad_horas_diurnas = :cantidad_horas_diurnas
+                        , hinicio_descanso = :hinicio_descanso 
+                        , hfinal_descanso =  :hfinal_descanso
+                        , horas_nocturnas = :horas_nocturnas
+                        , status = :status
+                        WHERE codigo = :codigo
+                    """
+                ), 
+                **payload
+            )
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
     def delete(self,query_params):
-        conn = alembic.op.get_bind()
-        conn.execute(
-            text(
-                """
-                    DELETE FROM integrador.turnos
-                    WHERE codigo = :codigo
-                """
-            ), 
-            **query_params
-        )
+        try:
+            conn = alembic.op.get_bind()
+            conn.execute(
+                text(
+                    """
+                        DELETE FROM integrador.turnos
+                        WHERE codigo = :codigo
+                    """
+                ), 
+                **query_params
+            )
+        except exc.IntegrityError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
 
     def get(self,query_params):

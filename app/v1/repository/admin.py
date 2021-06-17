@@ -8,7 +8,7 @@ from app.v1.models.hr import Trabajador,CentroCosto,TipoAusencia
 from app.v1.models.constant import *
 
 from app import redis_client, db
-from app.exceptions.base import UserCurrentPasswordException,UserRepeatedPasswordException,RepositoryUnknownException
+from app.exceptions.base import UserCurrentPasswordException,UserRepeatedPasswordException,RepositoryUnknownException,DataNotFoundException,ParametersNotFoundException
 import json
 import requests
 from requests.auth import HTTPBasicAuth
@@ -23,6 +23,7 @@ import datetime
 from sqlalchemy import text    
 from sqlalchemy import select    
 
+from psycopg2 import OperationalError, errorcodes, errors        
 
 class MemberRepository(SinergiaRepository):
 
@@ -73,8 +74,12 @@ class MemberRepository(SinergiaRepository):
                 if len(filter_conditions) > 0 :
 
                     conditions = []         
+
                     if 'username' in filter_conditions:
                         conditions.append('s.name  = {username}')
+
+                    if 'cedula_trabajador' in filter_conditions:
+                        conditions.append('pe.cedula  = {cedula_trabajador}')
 
                     if 'first_name' in filter_conditions:
                         conditions.append("pe.first_name LIKE '%{first_name}%' ")
@@ -147,7 +152,7 @@ class MemberRepository(SinergiaRepository):
     def getByUsername(self,p_username):
         user = User.query.filter(User.name == p_username).first()
         if user is None:
-            raise RepositoryUnknownException()
+            raise DataNotFoundException()
         return user
 
     def deleteByUsername(self,p_username):
@@ -178,7 +183,7 @@ class MemberRepository(SinergiaRepository):
             user = User.query.filter(User.name == username).first()
             if not user is None:
                 #Se arroja excepcion, el usuario ya esta creado
-                raise RepositoryUnknownException()
+                raise DataNotFoundException()
 
             user = User()
             user.name = username
@@ -235,7 +240,7 @@ class MemberRepository(SinergiaRepository):
             db.session.commit()            
         else:
             #No se proporciono el username o la contrasena, es obligatorio 
-            raise RepositoryUnknownException()
+            raise ParametersNotFoundException('El nombre de usuario y contrasena son obligatorios')
 
     def save(self,payload):
         username = payload['name'] if 'name' in payload else None
@@ -246,10 +251,10 @@ class MemberRepository(SinergiaRepository):
             user = User.query.filter(User.name == username).first()
             if user is None:
                 #Se arroja excepcion, el usuario ya esta creado
-                raise RepositoryUnknownException()
+                raise DataNotFoundException()
 
             if not password:
-                raise RepositoryUnknownException()
+                raise ParametersNotFoundException('Debe proporcionar una contrasena de Usuario')
 
             user.hash_password(password)
             user.register_date = datetime.datetime.now() 
@@ -330,7 +335,7 @@ class RolRepository(SinergiaRepository):
         if rol_name:
             rol = Rol.query.filter(Rol.name == rol_name).first()
             if rol is None:
-                raise RepositoryUnknownException()
+                raise DataNotFoundException()
 
             tipos_ausencias = self.get_tipos_ausencias(payload)
             if len(tipos_ausencias):
@@ -343,5 +348,5 @@ class RolRepository(SinergiaRepository):
             db.session.add(rol)
             db.session.commit()
         else:
-            raise RepositoryUnknownException()
+            raise DataNotFoundException()
 

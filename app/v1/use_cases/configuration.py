@@ -44,4 +44,6 @@ class DeleteTurnoUseCase(object):
     def execute(self,security_credentials,query_params):
         TurnoRepository(username=security_credentials['username']).delete(query_params)           
 
+
+
              

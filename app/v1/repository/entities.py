@@ -13,13 +13,15 @@ from requests.exceptions import HTTPError
 from app.exceptions.base import CryptoPOSException, ConnectionException,NotImplementedException
 from .base import SinergiaRepository
 
-from app.exceptions.base import RepositoryUnknownException
+from app.exceptions.base import RepositoryUnknownException,DataNotFoundException
 
 import pandas as pd
 import logging
 
 from sqlalchemy import text    
 from sqlalchemy import select 
+
+from psycopg2 import OperationalError, errorcodes, errors        
 
 class CargoRepository(SinergiaRepository):
     def get(self,query_params):
@@ -375,7 +377,7 @@ class TrabajadorRepository(SinergiaRepository):
     def getByCedula(self,cedula):
         trabajador = Trabajador.query.filter(Trabajador.cedula == cedula).first()
         if trabajador is None:
-            raise RepositoryUnknownException()
+            raise DataNotFoundException()
         return trabajador
 
 

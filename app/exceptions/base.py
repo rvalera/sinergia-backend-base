@@ -34,6 +34,18 @@ class UserRepeatedPasswordException(SinergiaException):
     def __init__(self,text=None):
         super(UserRepeatedPasswordException, self).__init__(code='USRPWD002',text = text)
 
+class DatabaseException(SinergiaException):
+    def __init__(self,text=None):
+        super(DatabaseException, self).__init__(code='DB001',text = text)
+
+class DataNotFoundException(SinergiaException):
+    def __init__(self,text=None):
+        super(DataNotFoundException, self).__init__(code='DAT001',text = text)
+
+class ParametersNotFoundException(SinergiaException):
+    def __init__(self,text=None):
+        super(ParametersNotFoundException, self).__init__(code='PAR001',text = text)
+
 class RepositoryUnknownException(SinergiaException):
     def __init__(self,text=None):
         super(RepositoryUnknownException, self).__init__(code='REP001',text = text)

@@ -12,7 +12,7 @@ from requests.exceptions import HTTPError
 from app.exceptions.base import CryptoPOSException, ConnectionException,NotImplementedException
 from .base import SinergiaRepository
 
-from app.exceptions.base import RepositoryUnknownException
+from app.exceptions.base import RepositoryUnknownException,DataNotFoundException,ParametersNotFoundException
 
 from app.v1.models.hr import Trabajador
 
@@ -20,6 +20,8 @@ import pandas as pd
 
 from sqlalchemy.sql import text
 from datetime import datetime, timedelta
+
+from psycopg2 import OperationalError, errorcodes, errors        
 
 class AbsenceEventRepository(SinergiaRepository):
 
@@ -115,7 +117,7 @@ class AbsenceEventRepository(SinergiaRepository):
             header['justificaciones_ausencia'] = rows
 
         if header is None: #Los datos solicitados no Existen
-            raise RepositoryUnknownException()                
+            raise DataNotFoundException()                
 
         return header
 
@@ -209,7 +211,7 @@ class JustificationAbsenceRepository(SinergiaRepository):
         rows = table_df.to_dict('records')
         
         if len(rows) == 0:
-            raise RepositoryUnknownException()                
+            raise DataNotFoundException()                
 
         return rows[0]        
 
@@ -400,7 +402,7 @@ class OvertimeEventRepository(SinergiaRepository):
             header['horas_extras_generadas'] = rows
 
         if header is None: #Los datos solicitados no Existen
-            raise RepositoryUnknownException()                
+            raise DataNotFoundException()                
 
         return header
 
@@ -445,7 +447,7 @@ class OvertimeEventRepository(SinergiaRepository):
         rows = table_df.to_dict('records')
 
         if len(rows) == 0:
-            raise RepositoryUnknownException()                
+            raise DataNotFoundException()                
 
         return rows[0]        
 
@@ -758,7 +760,7 @@ class BatchJustificationAbsenceRepository(SinergiaRepository):
         rows = table_df.to_dict('records')
         
         if len(rows) == 0:
-            raise RepositoryUnknownException()                
+            raise DataNotFoundException()                
 
         #######################################################################################
         header = rows[0] 
@@ -1139,7 +1141,7 @@ class BatchOvertimeRepository(SinergiaRepository):
         rows = table_df.to_dict('records')
 
         if len(rows) == 0:
-            raise RepositoryUnknownException()                
+            raise DataNotFoundException()                
 
         #######################################################################################
         header = rows[0]
@@ -1612,7 +1614,7 @@ class DailyMarkingRepository(SinergiaRepository):
                     hasta =  filter_conditions['to']
 
                 if desde is None or hasta is None:
-                    raise RepositoryUnknownException()                
+                    raise ParametersNotFoundException('Los campos de filtros desde y hasta son obligatorios para la consulta')                
 
                 asistencia_df = self.get_asistencia_diaria(query_params)
                 justificiaciones_df = self.get_justificaciones_ausencia(desde,hasta)
@@ -1634,10 +1636,10 @@ class DailyMarkingRepository(SinergiaRepository):
                 return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
 
             else: # El Filter el Obligatorio para que este servicio trabaje
-                raise RepositoryUnknownException()                
+                raise ParametersNotFoundException('Los parametros de consulta son obligatorios')                
 
         else:  # No se ha enviado el payload de condiciones para desarrollar la consulta
-            raise RepositoryUnknownException()
+            raise ParametersNotFoundException('Los parametros de consulta son obligatorios')
 
 class ManualMarkingRepository(SinergiaRepository):
 
@@ -1965,7 +1967,7 @@ class ManualMarkingRepository(SinergiaRepository):
         rows = table_df.to_dict('records')
         
         if len(rows) == 0:
-            raise RepositoryUnknownException()                
+            raise DataNotFoundException()                
 
         return rows[0]        
 
