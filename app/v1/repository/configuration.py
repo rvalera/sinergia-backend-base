@@ -416,19 +416,19 @@ class HolguraRepository(SinergiaRepository):
                 parameters['order_by'] = 'ORDER BY ' + order_fields
 
 
-            # Definiendo los Rangos de Paginacion
-            query_range = [0,10]
-            if 'range' in query_params:
-                query_range = query_params['range']
-                if len(query_range) >= 2:
-                    low_limit = query_range[0] 
-                    high_limit = query_range[1] 
-                else:
-                    low_limit = query_range[0]
-                    high_limit = query_range[0] 
-                limit = (high_limit - low_limit) + 1
-                offset = low_limit 
-            parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
+        # Definiendo los Rangos de Paginacion
+        query_range = [0,10]
+        if 'range' in query_params:
+            query_range = query_params['range']
+            if len(query_range) >= 2:
+                low_limit = query_range[0] 
+                high_limit = query_range[1] 
+            else:
+                low_limit = query_range[0]
+                high_limit = query_range[0] 
+            limit = (high_limit - low_limit) + 1
+            offset = low_limit 
+        parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
 
         sql = sql.format(**parameters)
 
@@ -597,19 +597,19 @@ class TurnoRepository(SinergiaRepository):
                 parameters['order_by'] = 'ORDER BY ' + order_fields
 
 
-            # Definiendo los Rangos de Paginacion
-            query_range = [0,10]
-            if 'range' in query_params:
-                query_range = query_params['range']
-                if len(query_range) >= 2:
-                    low_limit = query_range[0] 
-                    high_limit = query_range[1] 
-                else:
-                    low_limit = query_range[0]
-                    high_limit = query_range[0] 
-                limit = (high_limit - low_limit) + 1
-                offset = low_limit 
-            parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
+        # Definiendo los Rangos de Paginacion
+        query_range = [0,10]
+        if 'range' in query_params:
+            query_range = query_params['range']
+            if len(query_range) >= 2:
+                low_limit = query_range[0] 
+                high_limit = query_range[1] 
+            else:
+                low_limit = query_range[0]
+                high_limit = query_range[0] 
+            limit = (high_limit - low_limit) + 1
+            offset = low_limit 
+        parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
 
         sql = sql.format(**parameters)
 

@@ -72,19 +72,19 @@ class CargoRepository(SinergiaRepository):
                 parameters['order_by'] = 'ORDER BY ' + order_fields
 
 
-            # Definiendo los Rangos de Paginacion
-            query_range = [0,10]
-            if 'range' in query_params:
-                query_range = query_params['range']
-                if len(query_range) >= 2:
-                    low_limit = query_range[0] 
-                    high_limit = query_range[1] 
-                else:
-                    low_limit = query_range[0]
-                    high_limit = query_range[0] 
-                limit = (high_limit - low_limit) + 1
-                offset = low_limit 
-            parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
+        # Definiendo los Rangos de Paginacion
+        query_range = [0,10]
+        if 'range' in query_params:
+            query_range = query_params['range']
+            if len(query_range) >= 2:
+                low_limit = query_range[0] 
+                high_limit = query_range[1] 
+            else:
+                low_limit = query_range[0]
+                high_limit = query_range[0] 
+            limit = (high_limit - low_limit) + 1
+            offset = low_limit 
+        parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
 
         sql = sql.format(**parameters)
 
@@ -148,19 +148,19 @@ class CentroCostoRepository(SinergiaRepository):
                 parameters['order_by'] = 'ORDER BY ' + order_fields
 
 
-            # Definiendo los Rangos de Paginacion
-            query_range = [0,10]
-            if 'range' in query_params:
-                query_range = query_params['range']
-                if len(query_range) >= 2:
-                    low_limit = query_range[0] 
-                    high_limit = query_range[1] 
-                else:
-                    low_limit = query_range[0]
-                    high_limit = query_range[0] 
-                limit = (high_limit - low_limit) + 1
-                offset = low_limit 
-            parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
+        # Definiendo los Rangos de Paginacion
+        query_range = [0,10]
+        if 'range' in query_params:
+            query_range = query_params['range']
+            if len(query_range) >= 2:
+                low_limit = query_range[0] 
+                high_limit = query_range[1] 
+            else:
+                low_limit = query_range[0]
+                high_limit = query_range[0] 
+            limit = (high_limit - low_limit) + 1
+            offset = low_limit 
+        parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
 
         sql = sql.format(**parameters)
         try:
@@ -226,19 +226,19 @@ class ConceptoNominaRepository(SinergiaRepository):
                 parameters['order_by'] = 'ORDER BY ' + order_fields
 
 
-            # Definiendo los Rangos de Paginacion
-            query_range = [0,10]
-            if 'range' in query_params:
-                query_range = query_params['range']
-                if len(query_range) >= 2:
-                    low_limit = query_range[0] 
-                    high_limit = query_range[1] 
-                else:
-                    low_limit = query_range[0]
-                    high_limit = query_range[0] 
-                limit = (high_limit - low_limit) + 1
-                offset = low_limit 
-            parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
+        # Definiendo los Rangos de Paginacion
+        query_range = [0,10]
+        if 'range' in query_params:
+            query_range = query_params['range']
+            if len(query_range) >= 2:
+                low_limit = query_range[0] 
+                high_limit = query_range[1] 
+            else:
+                low_limit = query_range[0]
+                high_limit = query_range[0] 
+            limit = (high_limit - low_limit) + 1
+            offset = low_limit 
+        parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
 
         sql = sql.format(**parameters)
 
@@ -385,37 +385,41 @@ class TrabajadorRepository(SinergiaRepository):
                 parameters['order_by'] = 'ORDER BY ' + order_fields
 
 
-            # Definiendo los Rangos de Paginacion
-            query_range = [0,10]
-            if 'range' in query_params:
-                query_range = query_params['range']
-                if len(query_range) >= 2:
-                    low_limit = query_range[0] 
-                    high_limit = query_range[1] 
-                else:
-                    low_limit = query_range[0]
-                    high_limit = query_range[0] 
-                limit = (high_limit - low_limit) + 1
-                offset = low_limit 
-            parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
+        # Definiendo los Rangos de Paginacion
+        query_range = [0,10]
+        if 'range' in query_params:
+            query_range = query_params['range']
+            if len(query_range) >= 2:
+                low_limit = query_range[0] 
+                high_limit = query_range[1] 
+            else:
+                low_limit = query_range[0]
+                high_limit = query_range[0] 
+            limit = (high_limit - low_limit) + 1
+            offset = low_limit 
+        parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
 
         sql = sql.format(**parameters)
 
-        try:
-            textual_sql = text(sql)
-            rows = db.session.query(Trabajador).from_statement(textual_sql).all()
-            count_result_rows = len(rows)
+        print(sql)
+        textual_sql = text(sql)
+        rows = db.session.query(Trabajador).from_statement(textual_sql).all()
+        count_result_rows = len(rows)
 
-            count_sql = count_sql.format(**parameters)
-            count_df = pd.read_sql_query(count_sql,con=db.engine)
-            result_count = count_df.to_dict('records')
-            count_all_rows = result_count[0]['count_rows']
+        count_sql = count_sql.format(**parameters)
+        count_df = pd.read_sql_query(count_sql,con=db.engine)
+        result_count = count_df.to_dict('records')
+        count_all_rows = result_count[0]['count_rows']
 
-            return { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows} 
-        except exc.DatabaseError as err:
-            # pass exception to function
-            error_description = '%s' % (err)
-            raise DatabaseException(text=error_description)
+        return { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows} 
+
+
+        # try:
+        #     pass
+        # except exc.DatabaseError as err:
+        #     # pass exception to function
+        #     error_description = '%s' % (err)
+        #     raise DatabaseException(text=error_description)
 
     def getByCedula(self,cedula):
         try:
