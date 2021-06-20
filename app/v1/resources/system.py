@@ -72,8 +72,7 @@ class ImportDataResource(ProxySecureResource):
     @jwt_required
     def get(self):
         security_credentials = self.checkCredentials()
-        # data = GetLastImportStatusUseCase().execute(security_credentials)
-        data = {"state" : "running"}
+        data = GetLastImportStatusUseCase().execute(security_credentials)
         return  {'ok':1, 'data': data} , 200
 
     @system_ns.doc('Execute Import')
@@ -82,7 +81,7 @@ class ImportDataResource(ProxySecureResource):
     def post(self):
         security_credentials = self.checkCredentials()
         payload = request.json
-        # ExecuteImportUseCase().execute(security_credentials,payload)
+        ExecuteImportUseCase().execute(security_credentials,payload)
         return  {'ok':1} , 200
 
 @system_ns.route('/application/export')
@@ -94,7 +93,6 @@ class ExportDataResource(ProxySecureResource):
     def get(self):
         security_credentials = self.checkCredentials()
         data = GetLastExportStatusUseCase().execute(security_credentials)
-        # data = {"state" : "running"}
         return  {'ok':1, 'data': data} , 200
 
     @system_ns.doc('Execute Export')
