@@ -16,12 +16,20 @@ class SaveApplicationUseCase(object):
     def execute(self,security_credentials,payload):
         ApplicationRepository(username=security_credentials['username']).save(payload)
 
-class GetLastSyncStatusUseCase(object):
+class GetLastImportStatusUseCase(object):
     def execute(self,security_credentials):
-        response = AirflowUtils().get_last_sync()
+        response = AirflowUtils().get_last_import()
         return response
 
-class ExecuteSyncUseCase(object):
+class ExecuteImportUseCase(object):
     def execute(self,security_credentials,payload):
-        AirflowUtils().execute_sync(payload)
+        AirflowUtils().execute_import(payload)
 
+class GetLastExportStatusUseCase(object):
+    def execute(self,security_credentials):
+        response = AirflowUtils().get_last_export()
+        return response
+
+class ExecuteExportUseCase(object):
+    def execute(self,security_credentials,payload):
+        AirflowUtils().execute_export(payload)

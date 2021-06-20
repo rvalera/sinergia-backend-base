@@ -92,8 +92,8 @@ class RESTClient(object):
 
 class AirflowUtils(RESTClient):
 
-    SYNC_DAG = configuration.get('AIRFLOW','SYNC_DAG')
-    UPDATE_DAG = configuration.get('AIRFLOW','SYNC_DAG')
+    IMPORT_DAG = configuration.get('AIRFLOW','IMPORT_DAG')
+    EXPORT_DAG = configuration.get('AIRFLOW','EXPORT_DAG')
 
     def __init__(self):
         super().__init__(host_uri=configuration.get('AIRFLOW','HOST_URI'),username=configuration.get('AIRFLOW','USERNAME'),password=configuration.get('AIRFLOW','PASSWORD'))
@@ -104,8 +104,8 @@ class AirflowUtils(RESTClient):
         scheduler_status = response['scheduler']['status'] == "healthy" 
         return metadatabase_status and scheduler_status 
 
-    def get_last_sync(self):
-        query_path = '/api/v1/dags/{dag_id}/dagRuns'.format(dag_id = self.SYNC_DAG)        
+    def get_last_import(self):
+        query_path = '/api/v1/dags/{dag_id}/dagRuns'.format(dag_id = self.IMPORT_DAG)        
 
         today = datetime.now()
         two_week_ago = today - timedelta(weeks=2)
@@ -121,16 +121,46 @@ class AirflowUtils(RESTClient):
 
         return last_run
 
-    def is_running_sync(self):
-        last_run = self.get_last_sync()
+    def is_running_import(self):
+        last_run = self.get_last_import()
         return last_run['state'] == 'running'
 
-    def execute_sync(self,payload):
-        query_path = '/api/v1/dags/{dag_id}/dagRuns'.format(dag_id = self.SYNC_DAG)
+    def execute_import(self,payload):
+        query_path = '/api/v1/dags/{dag_id}/dagRuns'.format(dag_id = self.IMPORT_DAG)
 
         today = datetime.now()
         today_str = today.strftime("%Y-%m-%dT%H:%M:%S.000Z")
         airflow_payload = { 'conf': payload , 'execution_date' :  today_str }
 
         response = self.post(query_path,airflow_payload)
- 
+
+    def get_last_export(self):
+        query_path = '/api/v1/dags/{dag_id}/dagRuns'.format(dag_id = self.EXPORT_DAG)        
+
+        today = datetime.now()
+        two_week_ago = today - timedelta(weeks=2)
+        two_week_ago_str = two_week_ago.strftime("%Y-%m-%d")
+
+        response = self.get(query_path, { 'execution_date_gte' : two_week_ago_str } )
+        dag_runs = response["dag_runs"] if "dag_runs" in response else []
+
+        last_run = None
+        if len(dag_runs) > 0:
+            sorted_dag_runs = sorted(dag_runs, key=lambda k: k['start_date'], reverse=True)
+            last_run = sorted_dag_runs[0]
+
+        return last_run
+
+    def is_running_export(self):
+        last_run = self.get_last_export()
+        return last_run['state'] == 'running'        
+
+    def execute_export(self,payload):
+        query_path = '/api/v1/dags/{dag_id}/dagRuns'.format(dag_id = self.EXPORT_DAG)
+
+        today = datetime.now()
+        today_str = today.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+        airflow_payload = { 'conf': payload , 'execution_date' :  today_str }
+
+        response = self.post(query_path,airflow_payload)
+

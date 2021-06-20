@@ -28,7 +28,7 @@ from app.tools.response_tools import make_template_response
 
 from app.v1.use_cases.admin import GetAdminMemberListUseCase,GetAdminMemberUseCase,\
     DeleteAdminMemberUseCase,CreateAdminMemberUseCase,SaveAdminMemberUseCase,GetRolListUseCase
-from app.v1.use_cases.system import GetApplicationUseCase,SaveApplicationUseCase,ExecuteSyncUseCase,GetLastSyncStatusUseCase
+from app.v1.use_cases.system import GetApplicationUseCase,SaveApplicationUseCase,ExecuteImportUseCase,ExecuteExportUseCase,GetLastExportStatusUseCase,GetLastImportStatusUseCase
 
 
 system_ns = v1_api.namespace('system', description='System Services')
@@ -64,22 +64,44 @@ class AdminMemberResource(ProxySecureResource):
         SaveApplicationUseCase().execute(security_credentials,payload)
         return  {'ok':1} , 200
 
-@system_ns.route('/application/synchronize')
+@system_ns.route('/application/import')
 @v1_api.expect(secureHeader)
-class SynchronizeResource(ProxySecureResource): 
+class ImportDataResource(ProxySecureResource): 
 
-    @system_ns.doc('Check Last Sync Process')
+    @system_ns.doc('Check Last Import Process')
     @jwt_required
     def get(self):
         security_credentials = self.checkCredentials()
-        data = GetLastSyncStatusUseCase().execute(security_credentials)
+        # data = GetLastImportStatusUseCase().execute(security_credentials)
+        data = {"state" : "running"}
         return  {'ok':1, 'data': data} , 200
 
-    @system_ns.doc('Execute Sync')
+    @system_ns.doc('Execute Import')
     @v1_api.expect(DateRangeStruct)    
     @jwt_required
     def post(self):
         security_credentials = self.checkCredentials()
         payload = request.json
-        ExecuteSyncUseCase().execute(security_credentials,payload)
+        # ExecuteImportUseCase().execute(security_credentials,payload)
+        return  {'ok':1} , 200
+
+@system_ns.route('/application/export')
+@v1_api.expect(secureHeader)
+class ExportDataResource(ProxySecureResource): 
+
+    @system_ns.doc('Check Last Export Process')
+    @jwt_required
+    def get(self):
+        security_credentials = self.checkCredentials()
+        # data = GetLastExportStatusUseCase().execute(security_credentials)
+        data = {"state" : "running"}
+        return  {'ok':1, 'data': data} , 200
+
+    @system_ns.doc('Execute Export')
+    @v1_api.expect(DateRangeStruct)    
+    @jwt_required
+    def post(self):
+        security_credentials = self.checkCredentials()
+        payload = request.json
+        # ExecuteExportUseCase().execute(security_credentials,payload)
         return  {'ok':1} , 200
