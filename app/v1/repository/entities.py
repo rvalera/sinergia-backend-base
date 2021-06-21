@@ -263,8 +263,8 @@ class DispositivoRepository(SinergiaRepository):
     def getAll(self):
         try:
             table_df = pd.read_sql_query('select * from integrador.dispositivos',con=db.engine)
+            table_df = table_df.fillna('')
             result = table_df.to_dict('records')
-            result = result.fillna('')
             return result
         except exc.DatabaseError as err:
             # pass exception to function
@@ -275,8 +275,8 @@ class EstatusTrabajadorRepository(SinergiaRepository):
     def getAll(self):
         try:
             table_df = pd.read_sql_query('select * from integrador.estatus_trabajador',con=db.engine)
+            table_df = table_df.fillna('')
             result = table_df.to_dict('records')
-            result = result.fillna('')
             return result
         except exc.DatabaseError as err:
             # pass exception to function
@@ -287,8 +287,8 @@ class TipoAusenciaRepository(SinergiaRepository):
     def getAll(self):
         try:
             table_df = pd.read_sql_query('select * from integrador.tipos_ausencias',con=db.engine)
+            table_df = table_df.fillna('')
             result = table_df.to_dict('records')
-            result = result.fillna('')
             return result
         except exc.DatabaseError as err:
             # pass exception to function
@@ -299,8 +299,8 @@ class TipoNominaRepository(SinergiaRepository):
     def getAll(self):
         try:
             table_df = pd.read_sql_query('select * from integrador.tipos_de_nomina',con=db.engine)
+            table_df = table_df.fillna('')
             result = table_df.to_dict('records')
-            result = result.fillna('')
             return result
         except exc.DatabaseError as err:
             # pass exception to function
@@ -441,8 +441,8 @@ class TipoTrabajadorRepository(SinergiaRepository):
     def getAll(self):
         try:
             table_df = pd.read_sql_query('select * from integrador.tipo_trabajador',con=db.engine)
+            table_df = table_df.fillna('')
             result = table_df.to_dict('records')
-            result = result.fillna('')
             return result
         except exc.DatabaseError as err:
             # pass exception to function
@@ -453,8 +453,8 @@ class GrupoGuardiaRepository(SinergiaRepository):
     def getAll(self):
         try:
             table_df = pd.read_sql_query('select * from integrador.grupo_guardia',con=db.engine)
+            table_df = table_df.fillna('')
             result = table_df.to_dict('records')
-            result = result.fillna('')
             return result
         except exc.DatabaseError as err:
             # pass exception to function
