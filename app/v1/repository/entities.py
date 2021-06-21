@@ -264,6 +264,7 @@ class DispositivoRepository(SinergiaRepository):
         try:
             table_df = pd.read_sql_query('select * from integrador.dispositivos',con=db.engine)
             result = table_df.to_dict('records')
+            result = result.fillna('')
             return result
         except exc.DatabaseError as err:
             # pass exception to function
@@ -275,6 +276,7 @@ class EstatusTrabajadorRepository(SinergiaRepository):
         try:
             table_df = pd.read_sql_query('select * from integrador.estatus_trabajador',con=db.engine)
             result = table_df.to_dict('records')
+            result = result.fillna('')
             return result
         except exc.DatabaseError as err:
             # pass exception to function
@@ -286,6 +288,7 @@ class TipoAusenciaRepository(SinergiaRepository):
         try:
             table_df = pd.read_sql_query('select * from integrador.tipos_ausencias',con=db.engine)
             result = table_df.to_dict('records')
+            result = result.fillna('')
             return result
         except exc.DatabaseError as err:
             # pass exception to function
@@ -297,6 +300,7 @@ class TipoNominaRepository(SinergiaRepository):
         try:
             table_df = pd.read_sql_query('select * from integrador.tipos_de_nomina',con=db.engine)
             result = table_df.to_dict('records')
+            result = result.fillna('')
             return result
         except exc.DatabaseError as err:
             # pass exception to function
@@ -438,6 +442,7 @@ class TipoTrabajadorRepository(SinergiaRepository):
         try:
             table_df = pd.read_sql_query('select * from integrador.tipo_trabajador',con=db.engine)
             result = table_df.to_dict('records')
+            result = result.fillna('')
             return result
         except exc.DatabaseError as err:
             # pass exception to function
@@ -449,6 +454,7 @@ class GrupoGuardiaRepository(SinergiaRepository):
         try:
             table_df = pd.read_sql_query('select * from integrador.grupo_guardia',con=db.engine)
             result = table_df.to_dict('records')
+            result = result.fillna('')
             return result
         except exc.DatabaseError as err:
             # pass exception to function
