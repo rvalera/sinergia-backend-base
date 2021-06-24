@@ -10,6 +10,10 @@ class GetDailyMarkingListUseCase(object):
     def execute(self,security_credentials,query_params):
         return DailyMarkingRepository(username=security_credentials['username']).get(query_params)
 
+class GetDailyMarkingDetailUseCase(object):
+    def execute(self,security_credentials,event_date,cedula):
+        return DailyMarkingRepository(username=security_credentials['username']).getById(event_date,cedula)        
+
 class GetOvertimeEventUseCase(object):
     def execute(self,security_credentials,event_date,cedula):
         return OvertimeEventRepository(username=security_credentials['username']).get(event_date,cedula)
@@ -112,3 +116,4 @@ class DeleteManualMarkingUseCase(object):
 class GetDetailManualMarkingUseCase(object):
     def execute(self,security_credentials,event_date,cedula,id):
         return ManualMarkingRepository(username=security_credentials['username']).getById(event_date,cedula,id)        
+

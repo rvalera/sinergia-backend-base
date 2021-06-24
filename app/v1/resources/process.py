@@ -7,7 +7,8 @@ from app.v1.use_cases.process import GetDailyMarkingListUseCase,GetOvertimeEvent
     GetBatchAbsenceJustificationUseCase,NewBatchAbsenceJustificationUseCase,SaveBatchAbsenceJustificationUseCase,DeleteBatchAbsenceJustificationUseCase,ApproveBatchAbsenceJustificationUseCase,\
     GetBatchOvertimeUseCase,NewBatchOvertimeUseCase,SaveBatchOvertimeUseCase,DeleteBatchOvertimeUseCase,ApproveBatchOvertimeUseCase,\
     GetDetailBatchAbsenceJustificationUseCase,GetDetailBatchOvertimeUseCase
-from app.v1.use_cases.process import GetManualMarkingUseCase, GetDetailManualMarkingUseCase, NewManualMarkingUseCase, SaveManualMarkingUseCase, DeleteManualMarkingUseCase
+from app.v1.use_cases.process import GetManualMarkingUseCase, GetDetailManualMarkingUseCase, NewManualMarkingUseCase, SaveManualMarkingUseCase, DeleteManualMarkingUseCase, \
+    GetDailyMarkingDetailUseCase
 from flask.globals import request    
 import json 
 
@@ -129,6 +130,21 @@ class DailyMarkingResource(ProxySecureResource):
         data = GetDailyMarkingListUseCase().execute(security_credentials,query_params)
         data['ok']= 1
         return  data , 200
+
+
+@process_ns.route('/daily_marking/<event_date>/<cedula>')
+@process_ns.param('event_date', 'Fecha Evento')
+@process_ns.param('cedula', 'Cedula Trabajador')
+@v1_api.expect(secureHeader)
+class GetDailyMarkingDetailResource(ProxySecureResource): 
+
+    @process_ns.doc('Get Detalles de Marcaje Diario')
+    @jwt_required
+    def get(self,event_date,cedula):
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username': 'guest'}
+        data = GetDailyMarkingDetailUseCase().execute(security_credentials,event_date,cedula)
+        return  {'ok':1, 'data': data} , 200
 
 
 @process_ns.route('/daily_marking/overtime/<event_date>/<cedula>')

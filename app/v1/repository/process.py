@@ -1812,7 +1812,6 @@ class DailyMarkingRepository(SinergiaRepository):
                     raise ParametersNotFoundException('Los campos de filtros desde y hasta son obligatorios para la consulta')                
 
                 try:
-
                     asistencia_df = self.get_asistencia_diaria(query_params)
                     justificiaciones_df = self.get_justificaciones_ausencia(desde,hasta)
                     horas_extras_diurnas_df = self.get_horas_extras_diurnas(desde,hasta)
@@ -1831,7 +1830,6 @@ class DailyMarkingRepository(SinergiaRepository):
                     count_all_rows = self.get_cantidad_asistencia_diaria(query_params)
 
                     return  { 'count': count_result_rows, 'total':  count_all_rows  ,'data' : rows}
-
                 except exc.DatabaseError as err:
                     # pass exception to function
                     error_description = '%s' % (err)
@@ -1843,6 +1841,145 @@ class DailyMarkingRepository(SinergiaRepository):
 
         else:  # No se ha enviado el payload de condiciones para desarrollar la consulta
             raise ParametersNotFoundException('Los parametros de consulta son obligatorios')
+
+
+    def getById(self,event_date,cedula):
+
+        try:
+            query_params = { 'cedula_trabajador' : cedula, "from" : event_date, "to" : event_date }
+
+            asistencia_df = self.get_asistencia_diaria(query_params)
+            justificiaciones_df = self.get_justificaciones_ausencia(event_date,event_date)
+            horas_extras_diurnas_df = self.get_horas_extras_diurnas(event_date,event_date)
+            horas_extras_nocturnas_df = self.get_horas_extras_nocturnas(event_date,event_date)
+
+            analisis_empleado = pd.merge(left=asistencia_df, right=justificiaciones_df, how='left', left_on=['fecdia','cedula'], right_on=['fecdia','cedula'])
+            analisis_empleado = pd.merge(left=analisis_empleado, right=horas_extras_diurnas_df, how='left', left_on=['fecdia','cedula'], right_on=['fecdia','cedula'])
+            analisis_empleado = pd.merge(left=analisis_empleado, right=horas_extras_nocturnas_df, how='left', left_on=['fecdia','cedula'], right_on=['fecdia','cedula'])
+
+            analisis_empleado["nombre_tipo_ausencia"] = analisis_empleado["nombre_tipo_ausencia"].fillna('')
+            analisis_empleado = analisis_empleado.fillna(0)
+
+            rows = analisis_empleado.to_dict('records')
+            # count_result_rows = len(rows)
+            # count_all_rows = self.get_cantidad_asistencia_diaria(query_params)
+
+            if len(rows) == 0:
+                raise DataNotFoundException() 
+
+
+            header = rows[0]
+
+
+            ################################################################################
+            ###### Detalles de Horas Extras 
+
+            parameters = { 'cedula' : cedula, "event_date" : event_date }            
+
+            sql = '''
+            SELECT 
+                serial id
+                , TO_CHAR(mdh.fecdia,'YYYY-MM-DD') fecha
+                , mdh.cedula 
+                , mdh.tipo tipo_hora_extra
+                , TO_CHAR(mdh.fecregistro,'YYYY-MM-DD') fecha_registro
+                , mdh.cantidad_generada cantidad_generada
+                , mdh.user_creador id_usuario_creador
+                , se1.name nombre_usuario_creador
+                , TO_CHAR(mdh.fecha_aprobacion,'YYYY-MM-DD') fecha_aprobacion
+                , mdh.cantidad_aprobada cantidad_aprobada
+                , mdh.user_aprobador id_usuario_aprobador
+                , se2.name nombre_usuario_aprobador
+                , mdh.estatus estatus 
+                , mdh.observaciones observaciones 
+            FROM integrador.marcaciones_dia_he mdh
+            LEFT JOIN public.securityelement se1
+            ON mdh.user_creador = se1.id
+            LEFT JOIN public.securityelement se2
+            ON  mdh.user_aprobador = se2.id
+            WHERE 
+                mdh.fecdia = '{event_date}'        
+                AND mdh.cedula  = {cedula}
+            '''
+
+            sql = sql.format(**parameters)
+            
+            details_df = pd.read_sql_query(sql,con=db.engine)
+            rows = details_df.to_dict('records')
+            header['horas_extras_generadas'] = rows
+
+
+            ################################################################################
+            ###### Detalles de Justificaciones de Ausencia 
+
+            sql = '''
+            SELECT 
+                serial id
+                , TO_CHAR(mda.fecdia,'YYYY-MM-DD') fecha
+                , mda.cedula 
+                , ta.codigo id_justificacion_ausencia
+                , ta.descripcion nombre_justificacion_ausencia
+                , TO_CHAR(mda.fecregistro,'YYYY-MM-DD') fecha_registro
+                , mda.cantidad_generada cantidad_generada
+                , mda.user_creador id_usuario_creador
+                , se1.name nombre_usuario_creador
+                , TO_CHAR(mda.fecha_aprobacion,'YYYY-MM-DD') fecha_aprobacion
+                , mda.cantidad_aprobada cantidad_aprobada
+                , mda.user_aprobador id_usuario_aprobador
+                , se2.name nombre_usuario_aprobador
+                , mda.estatus estatus 
+                , mda.observaciones observaciones
+            FROM integrador.marcaciones_dia_ausencias mda
+            JOIN integrador.tipos_ausencias ta
+            ON mda.tpau = ta.codigo
+            LEFT JOIN public.securityelement se1
+            ON mda.user_creador = se1.id
+            LEFT JOIN public.securityelement se2
+            ON  mda.user_aprobador = se2.id
+            WHERE 
+                mda.fecdia = '{event_date}'        
+                AND mda.cedula  = {cedula}
+            '''
+
+            sql = sql.format(**parameters)
+            details_df = pd.read_sql_query(sql,con=db.engine)
+            rows = details_df.to_dict('records')
+
+            header['justificaciones_ausencia'] = rows
+
+            ################################################################################
+            ###### Marcaciones Detalladas 
+
+
+            sql = '''
+            SELECT 
+                md.cedula
+                ,TO_CHAR(md.fecha,'YYYY-MM-DD HH24:MI:SS') fecha_hora
+                , md.id_dispositivo 
+                , md.evento 
+                , TO_CHAR(md.fecha_carga,'YYYY-MM-DD HH24:MI:SS') fecha_carga 
+            FROM integrador.marcaciones_detalladas md
+            WHERE 
+                TO_CHAR(md.fecha_carga,'YYYY-MM-DD') = '{event_date}'        
+                AND md.cedula  = {cedula}
+            '''
+
+            sql = sql.format(**parameters)
+            details_df = pd.read_sql_query(sql,con=db.engine)
+            rows = details_df.to_dict('records')
+
+            header['marcaciones_detalladas'] = rows
+
+
+            return header
+
+
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
+
 
 class ManualMarkingRepository(SinergiaRepository):
 
@@ -2471,3 +2608,4 @@ class ManualMarkingRepository(SinergiaRepository):
             # pass exception to function
             error_description = '%s' % (err)
             raise DatabaseException(text=error_description)
+
