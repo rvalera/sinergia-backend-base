@@ -1812,6 +1812,7 @@ class DailyMarkingRepository(SinergiaRepository):
                     raise ParametersNotFoundException('Los campos de filtros desde y hasta son obligatorios para la consulta')                
 
                 try:
+
                     asistencia_df = self.get_asistencia_diaria(query_params)
                     justificiaciones_df = self.get_justificaciones_ausencia(desde,hasta)
                     horas_extras_diurnas_df = self.get_horas_extras_diurnas(desde,hasta)
@@ -1846,7 +1847,8 @@ class DailyMarkingRepository(SinergiaRepository):
     def getById(self,event_date,cedula):
 
         try:
-            query_params = { 'cedula_trabajador' : cedula, "from" : event_date, "to" : event_date }
+            filters = { 'cedula_trabajador' : cedula, "from" : event_date, "to" : event_date }
+            query_params = {'filter' : filters}
 
             asistencia_df = self.get_asistencia_diaria(query_params)
             justificiaciones_df = self.get_justificaciones_ausencia(event_date,event_date)
