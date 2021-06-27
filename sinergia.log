@@ -1,162 +1,80 @@
-Host: 0.0.0.0:5000
+Host: localhost:5000
 Connection: keep-alive
-Content-Length: 69
+Sec-Ch-Ua: "Google Chrome";v="89", "Chromium";v="89", ";Not A Brand";v="99"
 Accept: application/json
-Authorization: Bearer  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MjAxODE1NzksIm5iZiI6MTYyMDE4MTU3OSwianRpIjoiMThlNjgzOTQtMWM4OC00ZTlhLWJiODYtODkxYWQ2MDBlZTdiIiwiZXhwIjoxNjIwMTgyNDc5LCJpZGVudGl0eSI6InJhbW9uLnZhbGVyYUBnbWFpbC5jb20iLCJmcmVzaCI6ZmFsc2UsInR5cGUiOiJhY2Nlc3MifQ.B5skjKLOs78KRo323VQBVd3Mjd31pDr-Y4fMieDMyNg
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MjQ1Njg3OTUsIm5iZiI6MTYyNDU2ODc5NSwianRpIjoiNWVhZTdlMzYtNzFjYi00Mzc1LWFmMmEtMTk2ZDhiMzdlZjFjIiwiZXhwIjoxNjI0NTY5Njk1LCJpZGVudGl0eSI6InBydWViYSIsImZyZXNoIjpmYWxzZSwidHlwZSI6ImFjY2VzcyJ9.NqPlcKNlqBNBcjry6-EFR08h4VzO0mztW6t9NCjyXuI
+Sec-Ch-Ua-Mobile: ?0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36
-Content-Type: application/json
-Origin: http://0.0.0.0:5000
-Referer: http://0.0.0.0:5000/api/v1/
-Accept-Encoding: gzip, deflate
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: cors
+Sec-Fetch-Dest: empty
+Referer: http://localhost:5000/api/v1/
+Accept-Encoding: gzip, deflate, br
 Accept-Language: es-ES,es;q=0.9,en;q=0.8
+Cookie: _xsrf=2|d8ec897f|97093d17fa029d62bca27ea3198fed67|1622610452; username-localhost-8888="2|1:0|10:1622941704|23:username-localhost-8888|44:Mzg3MDVjNGZmNGFjNDVmZWJkNjkyOGZlMWFmNjgwOGI=|7b4ba250ca894431056aaba31c13f6ac418943e8c8b47cc1c934c445dd38a51f"; session=.eJyNkctOBCEQRf-F9ZjmVdB0YvwQYwiPoqdjD0yAXkyM_y5qTNyYcQmcOtybeiM2VWxnsvR64InYLZKFgOQxOVBx5h6FSSGZGL2SPopogHMXIwYKoCQDxrmIQgBTQVE58-QDQ-WUpExKA17NDNRM5wBMG8XVuPZeB0rp7KjmgQXPQaBw1BgjVeAKKBlBrlgvLmPuP9FCq8n28op5JDQamRz_gncCQAOjIB0HSMClVk5ikolqjcMU3Wpbd_1oNm17xzrG3b6Pl70Et-M4DuWJXN2K9ry1XuqNLM_k3Pt1maYv6FxaX9hoYaahq0ee9gFOY-oPai_rPeR_olByxtC3cpf87Xuyae9W2M_uW3zccse1utHsIV3KQ7vlQF5O5GhYvxfOyPsHzTOjNA.YM6XZA.50DRmkQw43ZE3lqtfJF9A6YpIZM
 
 
-Host: 0.0.0.0:5000
+Host: localhost:5000
 Connection: keep-alive
-Content-Length: 69
+Sec-Ch-Ua: "Google Chrome";v="89", "Chromium";v="89", ";Not A Brand";v="99"
 Accept: application/json
-Authorization: Bearer  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MjAxODE2MzIsIm5iZiI6MTYyMDE4MTYzMiwianRpIjoiYWYwYmFjNzYtZDAzMi00N2MxLTkyMTQtZGI5ZDQ1MWFlMTY4IiwiZXhwIjoxNjIwMTgyNTMyLCJpZGVudGl0eSI6InJhbW9uLnZhbGVyYUBnbWFpbC5jb20iLCJmcmVzaCI6ZmFsc2UsInR5cGUiOiJhY2Nlc3MifQ.0qtkLU_5xyLcNuyIbaoBLgt2No-rMhN67kJ5P5_r_G4
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MjQ1Njg3OTUsIm5iZiI6MTYyNDU2ODc5NSwianRpIjoiNWVhZTdlMzYtNzFjYi00Mzc1LWFmMmEtMTk2ZDhiMzdlZjFjIiwiZXhwIjoxNjI0NTY5Njk1LCJpZGVudGl0eSI6InBydWViYSIsImZyZXNoIjpmYWxzZSwidHlwZSI6ImFjY2VzcyJ9.NqPlcKNlqBNBcjry6-EFR08h4VzO0mztW6t9NCjyXuI
+Sec-Ch-Ua-Mobile: ?0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36
-Content-Type: application/json
-Origin: http://0.0.0.0:5000
-Referer: http://0.0.0.0:5000/api/v1/
-Accept-Encoding: gzip, deflate
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: cors
+Sec-Fetch-Dest: empty
+Referer: http://localhost:5000/api/v1/
+Accept-Encoding: gzip, deflate, br
 Accept-Language: es-ES,es;q=0.9,en;q=0.8
+Cookie: _xsrf=2|d8ec897f|97093d17fa029d62bca27ea3198fed67|1622610452; username-localhost-8888="2|1:0|10:1622941704|23:username-localhost-8888|44:Mzg3MDVjNGZmNGFjNDVmZWJkNjkyOGZlMWFmNjgwOGI=|7b4ba250ca894431056aaba31c13f6ac418943e8c8b47cc1c934c445dd38a51f"; session=.eJyNkctOBCEQRf-F9ZjmVdB0YvwQYwiPoqdjD0yAXkyM_y5qTNyYcQmcOtybeiM2VWxnsvR64InYLZKFgOQxOVBx5h6FSSGZGL2SPopogHMXIwYKoCQDxrmIQgBTQVE58-QDQ-WUpExKA17NDNRM5wBMG8XVuPZeB0rp7KjmgQXPQaBw1BgjVeAKKBlBrlgvLmPuP9FCq8n28op5JDQamRz_gncCQAOjIB0HSMClVk5ikolqjcMU3Wpbd_1oNm17xzrG3b6Pl70Et-M4DuWJXN2K9ry1XuqNLM_k3Pt1maYv6FxaX9hoYaahq0ee9gFOY-oPai_rPeR_olByxtC3cpf87Xuyae9W2M_uW3zccse1utHsIV3KQ7vlQF5O5GhYvxfOyPsHzTOjNA.YM6XZA.50DRmkQw43ZE3lqtfJF9A6YpIZM
 
 
-Host: 0.0.0.0:5000
+Host: localhost:5000
 Connection: keep-alive
+Sec-Ch-Ua: "Google Chrome";v="89", "Chromium";v="89", ";Not A Brand";v="99"
 Accept: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MjAzMzk2MzAsIm5iZiI6MTYyMDMzOTYzMCwianRpIjoiYWM4NDliOGMtNGQwNS00YTZmLWE4YTUtOWJjMzEyNDkxYWY1IiwiZXhwIjoxNjIwMzQwNTMwLCJpZGVudGl0eSI6InJhbW9uLnZhbGVyYUBnbWFpbC5jb20iLCJmcmVzaCI6ZmFsc2UsInR5cGUiOiJhY2Nlc3MifQ.MfZqxW76NBQo1zxvYZ7etIIesR7k1NG6KiUbcEjWGhY
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MjQ1Njg3OTUsIm5iZiI6MTYyNDU2ODc5NSwianRpIjoiNWVhZTdlMzYtNzFjYi00Mzc1LWFmMmEtMTk2ZDhiMzdlZjFjIiwiZXhwIjoxNjI0NTY5Njk1LCJpZGVudGl0eSI6InBydWViYSIsImZyZXNoIjpmYWxzZSwidHlwZSI6ImFjY2VzcyJ9.NqPlcKNlqBNBcjry6-EFR08h4VzO0mztW6t9NCjyXuI
+Sec-Ch-Ua-Mobile: ?0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36
-Referer: http://0.0.0.0:5000/api/v1/
-Accept-Encoding: gzip, deflate
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: cors
+Sec-Fetch-Dest: empty
+Referer: http://localhost:5000/api/v1/
+Accept-Encoding: gzip, deflate, br
 Accept-Language: es-ES,es;q=0.9,en;q=0.8
+Cookie: _xsrf=2|d8ec897f|97093d17fa029d62bca27ea3198fed67|1622610452; username-localhost-8888="2|1:0|10:1622941704|23:username-localhost-8888|44:Mzg3MDVjNGZmNGFjNDVmZWJkNjkyOGZlMWFmNjgwOGI=|7b4ba250ca894431056aaba31c13f6ac418943e8c8b47cc1c934c445dd38a51f"; session=.eJyNkctOBCEQRf-F9ZjmVdB0YvwQYwiPoqdjD0yAXkyM_y5qTNyYcQmcOtybeiM2VWxnsvR64InYLZKFgOQxOVBx5h6FSSGZGL2SPopogHMXIwYKoCQDxrmIQgBTQVE58-QDQ-WUpExKA17NDNRM5wBMG8XVuPZeB0rp7KjmgQXPQaBw1BgjVeAKKBlBrlgvLmPuP9FCq8n28op5JDQamRz_gncCQAOjIB0HSMClVk5ikolqjcMU3Wpbd_1oNm17xzrG3b6Pl70Et-M4DuWJXN2K9ry1XuqNLM_k3Pt1maYv6FxaX9hoYaahq0ee9gFOY-oPai_rPeR_olByxtC3cpf87Xuyae9W2M_uW3zccse1utHsIV3KQ7vlQF5O5GhYvxfOyPsHzTOjNA.YM6XZA.50DRmkQw43ZE3lqtfJF9A6YpIZM
 
 
-Host: 0.0.0.0:5000
+Host: localhost:5000
 Connection: keep-alive
+Sec-Ch-Ua: "Google Chrome";v="89", "Chromium";v="89", ";Not A Brand";v="99"
 Accept: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MjAzMzk2MzAsIm5iZiI6MTYyMDMzOTYzMCwianRpIjoiYWM4NDliOGMtNGQwNS00YTZmLWE4YTUtOWJjMzEyNDkxYWY1IiwiZXhwIjoxNjIwMzQwNTMwLCJpZGVudGl0eSI6InJhbW9uLnZhbGVyYUBnbWFpbC5jb20iLCJmcmVzaCI6ZmFsc2UsInR5cGUiOiJhY2Nlc3MifQ.MfZqxW76NBQo1zxvYZ7etIIesR7k1NG6KiUbcEjWGhY
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MjQ1Njg3OTUsIm5iZiI6MTYyNDU2ODc5NSwianRpIjoiNWVhZTdlMzYtNzFjYi00Mzc1LWFmMmEtMTk2ZDhiMzdlZjFjIiwiZXhwIjoxNjI0NTY5Njk1LCJpZGVudGl0eSI6InBydWViYSIsImZyZXNoIjpmYWxzZSwidHlwZSI6ImFjY2VzcyJ9.NqPlcKNlqBNBcjry6-EFR08h4VzO0mztW6t9NCjyXuI
+Sec-Ch-Ua-Mobile: ?0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36
-Referer: http://0.0.0.0:5000/api/v1/
-Accept-Encoding: gzip, deflate
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: cors
+Sec-Fetch-Dest: empty
+Referer: http://localhost:5000/api/v1/
+Accept-Encoding: gzip, deflate, br
 Accept-Language: es-ES,es;q=0.9,en;q=0.8
+Cookie: _xsrf=2|d8ec897f|97093d17fa029d62bca27ea3198fed67|1622610452; username-localhost-8888="2|1:0|10:1622941704|23:username-localhost-8888|44:Mzg3MDVjNGZmNGFjNDVmZWJkNjkyOGZlMWFmNjgwOGI=|7b4ba250ca894431056aaba31c13f6ac418943e8c8b47cc1c934c445dd38a51f"; session=.eJyNkctOBCEQRf-F9ZjmVdB0YvwQYwiPoqdjD0yAXkyM_y5qTNyYcQmcOtybeiM2VWxnsvR64InYLZKFgOQxOVBx5h6FSSGZGL2SPopogHMXIwYKoCQDxrmIQgBTQVE58-QDQ-WUpExKA17NDNRM5wBMG8XVuPZeB0rp7KjmgQXPQaBw1BgjVeAKKBlBrlgvLmPuP9FCq8n28op5JDQamRz_gncCQAOjIB0HSMClVk5ikolqjcMU3Wpbd_1oNm17xzrG3b6Pl70Et-M4DuWJXN2K9ry1XuqNLM_k3Pt1maYv6FxaX9hoYaahq0ee9gFOY-oPai_rPeR_olByxtC3cpf87Xuyae9W2M_uW3zccse1utHsIV3KQ7vlQF5O5GhYvxfOyPsHzTOjNA.YM6XZA.50DRmkQw43ZE3lqtfJF9A6YpIZM
 
 
-Host: 0.0.0.0:5000
+Host: localhost:5000
 Connection: keep-alive
+Sec-Ch-Ua: "Google Chrome";v="89", "Chromium";v="89", ";Not A Brand";v="99"
 Accept: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MjAzMzk2MzAsIm5iZiI6MTYyMDMzOTYzMCwianRpIjoiYWM4NDliOGMtNGQwNS00YTZmLWE4YTUtOWJjMzEyNDkxYWY1IiwiZXhwIjoxNjIwMzQwNTMwLCJpZGVudGl0eSI6InJhbW9uLnZhbGVyYUBnbWFpbC5jb20iLCJmcmVzaCI6ZmFsc2UsInR5cGUiOiJhY2Nlc3MifQ.MfZqxW76NBQo1zxvYZ7etIIesR7k1NG6KiUbcEjWGhY
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MjQ4MDcwNTQsIm5iZiI6MTYyNDgwNzA1NCwianRpIjoiZmU2ZjZkYWItNzA3Yi00YTI2LWJkNTMtMjczNGQ2OWZjY2VlIiwiZXhwIjoxNjI0ODA3OTU0LCJpZGVudGl0eSI6InBydWViYSIsImZyZXNoIjpmYWxzZSwidHlwZSI6ImFjY2VzcyJ9.SJ2iwjFAoKMv1vmd2BGE-O1_vaMrLU1pWZ7iEfG1mnc
+Sec-Ch-Ua-Mobile: ?0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36
-Referer: http://0.0.0.0:5000/api/v1/
-Accept-Encoding: gzip, deflate
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: cors
+Sec-Fetch-Dest: empty
+Referer: http://localhost:5000/api/v1/
+Accept-Encoding: gzip, deflate, br
 Accept-Language: es-ES,es;q=0.9,en;q=0.8
-
-
-Host: 0.0.0.0:5000
-Connection: keep-alive
-Accept: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MjAzMzk2MzAsIm5iZiI6MTYyMDMzOTYzMCwianRpIjoiYWM4NDliOGMtNGQwNS00YTZmLWE4YTUtOWJjMzEyNDkxYWY1IiwiZXhwIjoxNjIwMzQwNTMwLCJpZGVudGl0eSI6InJhbW9uLnZhbGVyYUBnbWFpbC5jb20iLCJmcmVzaCI6ZmFsc2UsInR5cGUiOiJhY2Nlc3MifQ.MfZqxW76NBQo1zxvYZ7etIIesR7k1NG6KiUbcEjWGhY
-User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36
-Referer: http://0.0.0.0:5000/api/v1/
-Accept-Encoding: gzip, deflate
-Accept-Language: es-ES,es;q=0.9,en;q=0.8
-
-
-Host: 0.0.0.0:5000
-Connection: keep-alive
-Accept: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MjAzNTk3NzAsIm5iZiI6MTYyMDM1OTc3MCwianRpIjoiYzY4ZGY3MGEtM2ZkMy00Yzg5LThkZTctYTRkNjRhZjljNzUzIiwiZXhwIjoxNjIwMzYwNjcwLCJpZGVudGl0eSI6InJhbW9uLnZhbGVyYUBnbWFpbC5jb20iLCJmcmVzaCI6ZmFsc2UsInR5cGUiOiJhY2Nlc3MifQ.kpGYVXlmL_IacPoegqLJxwN8EhkEqCtC5LDbw3M7COc
-User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36
-Referer: http://0.0.0.0:5000/api/v1/
-Accept-Encoding: gzip, deflate
-Accept-Language: es-ES,es;q=0.9,en;q=0.8
-
-
-Host: 0.0.0.0:5000
-Connection: keep-alive
-Accept: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MjAzNTk3NzAsIm5iZiI6MTYyMDM1OTc3MCwianRpIjoiYzY4ZGY3MGEtM2ZkMy00Yzg5LThkZTctYTRkNjRhZjljNzUzIiwiZXhwIjoxNjIwMzYwNjcwLCJpZGVudGl0eSI6InJhbW9uLnZhbGVyYUBnbWFpbC5jb20iLCJmcmVzaCI6ZmFsc2UsInR5cGUiOiJhY2Nlc3MifQ.kpGYVXlmL_IacPoegqLJxwN8EhkEqCtC5LDbw3M7COc
-User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36
-Referer: http://0.0.0.0:5000/api/v1/
-Accept-Encoding: gzip, deflate
-Accept-Language: es-ES,es;q=0.9,en;q=0.8
-
-
-Host: 0.0.0.0:5000
-Connection: keep-alive
-Content-Length: 189
-Accept: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MjAzNTk3NzAsIm5iZiI6MTYyMDM1OTc3MCwianRpIjoiYzY4ZGY3MGEtM2ZkMy00Yzg5LThkZTctYTRkNjRhZjljNzUzIiwiZXhwIjoxNjIwMzYwNjcwLCJpZGVudGl0eSI6InJhbW9uLnZhbGVyYUBnbWFpbC5jb20iLCJmcmVzaCI6ZmFsc2UsInR5cGUiOiJhY2Nlc3MifQ.kpGYVXlmL_IacPoegqLJxwN8EhkEqCtC5LDbw3M7COc
-User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36
-Content-Type: application/json
-Origin: http://0.0.0.0:5000
-Referer: http://0.0.0.0:5000/api/v1/
-Accept-Encoding: gzip, deflate
-Accept-Language: es-ES,es;q=0.9,en;q=0.8
-
-
-Host: 0.0.0.0:5000
-Connection: keep-alive
-Accept: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MjAzNTk3NzAsIm5iZiI6MTYyMDM1OTc3MCwianRpIjoiYzY4ZGY3MGEtM2ZkMy00Yzg5LThkZTctYTRkNjRhZjljNzUzIiwiZXhwIjoxNjIwMzYwNjcwLCJpZGVudGl0eSI6InJhbW9uLnZhbGVyYUBnbWFpbC5jb20iLCJmcmVzaCI6ZmFsc2UsInR5cGUiOiJhY2Nlc3MifQ.kpGYVXlmL_IacPoegqLJxwN8EhkEqCtC5LDbw3M7COc
-User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36
-Referer: http://0.0.0.0:5000/api/v1/
-Accept-Encoding: gzip, deflate
-Accept-Language: es-ES,es;q=0.9,en;q=0.8
-
-
-Host: 0.0.0.0:5000
-Connection: keep-alive
-Accept: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MjA0NDEyNDIsIm5iZiI6MTYyMDQ0MTI0MiwianRpIjoiODVjMzRjMGUtNjhkZi00OWZkLWIwYTQtYmMxNTQzMmUzZmRhIiwiZXhwIjoxNjIwNDQyMTQyLCJpZGVudGl0eSI6InJhbW9uLnZhbGVyYUBnbWFpbC5jb20iLCJmcmVzaCI6ZmFsc2UsInR5cGUiOiJhY2Nlc3MifQ.W0bPJkQUnC9hC3aWB1IDNllvt71f9fxOZ_AhUYI1aMw
-User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36
-Referer: http://0.0.0.0:5000/api/v1/
-Accept-Encoding: gzip, deflate
-Accept-Language: es-ES,es;q=0.9,en;q=0.8
-
-
-Host: 0.0.0.0:5000
-Connection: keep-alive
-Accept: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MjA0NDIwNDMsIm5iZiI6MTYyMDQ0MjA0MywianRpIjoiMzE5NDZmZTItMmUzMS00OTJiLWE2NDUtOTc5ZGJhZDRjM2IwIiwiZXhwIjoxNjIwNDQyOTQzLCJpZGVudGl0eSI6InJhbW9uLnZhbGVyYUBnbWFpbC5jb20iLCJmcmVzaCI6ZmFsc2UsInR5cGUiOiJhY2Nlc3MifQ.joYbfEC-ENJ2RW6iRgU21_huAr0RY8PXIIl1ihHMCFg
-User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36
-Referer: http://0.0.0.0:5000/api/v1/
-Accept-Encoding: gzip, deflate
-Accept-Language: es-ES,es;q=0.9,en;q=0.8
-
-
-Host: 0.0.0.0:5000
-Connection: keep-alive
-Content-Length: 230
-Accept: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MjA0NDIwNDMsIm5iZiI6MTYyMDQ0MjA0MywianRpIjoiMzE5NDZmZTItMmUzMS00OTJiLWE2NDUtOTc5ZGJhZDRjM2IwIiwiZXhwIjoxNjIwNDQyOTQzLCJpZGVudGl0eSI6InJhbW9uLnZhbGVyYUBnbWFpbC5jb20iLCJmcmVzaCI6ZmFsc2UsInR5cGUiOiJhY2Nlc3MifQ.joYbfEC-ENJ2RW6iRgU21_huAr0RY8PXIIl1ihHMCFg
-User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36
-Content-Type: application/json
-Origin: http://0.0.0.0:5000
-Referer: http://0.0.0.0:5000/api/v1/
-Accept-Encoding: gzip, deflate
-Accept-Language: es-ES,es;q=0.9,en;q=0.8
-
-
-Host: 0.0.0.0:5000
-Connection: keep-alive
-Accept: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MjA0NDIwNDMsIm5iZiI6MTYyMDQ0MjA0MywianRpIjoiMzE5NDZmZTItMmUzMS00OTJiLWE2NDUtOTc5ZGJhZDRjM2IwIiwiZXhwIjoxNjIwNDQyOTQzLCJpZGVudGl0eSI6InJhbW9uLnZhbGVyYUBnbWFpbC5jb20iLCJmcmVzaCI6ZmFsc2UsInR5cGUiOiJhY2Nlc3MifQ.joYbfEC-ENJ2RW6iRgU21_huAr0RY8PXIIl1ihHMCFg
-User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36
-Referer: http://0.0.0.0:5000/api/v1/
-Accept-Encoding: gzip, deflate
-Accept-Language: es-ES,es;q=0.9,en;q=0.8
-
-
-Host: 0.0.0.0:5000
-Connection: keep-alive
-Accept: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MjA0NDQ0NTUsIm5iZiI6MTYyMDQ0NDQ1NSwianRpIjoiOTFkMGRmNmMtNTcyMy00YzkxLTg2YjUtYTAzYWIyMzJkMjQ2IiwiZXhwIjoxNjIwNDQ1MzU1LCJpZGVudGl0eSI6InJhbW9uLnZhbGVyYUBnbWFpbC5jb20iLCJmcmVzaCI6ZmFsc2UsInR5cGUiOiJhY2Nlc3MifQ.mQ02AytsDDKBeczpD4q3jvju4l6uQQPVzDhwj2wya4M
-User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36
-Referer: http://0.0.0.0:5000/api/v1/
-Accept-Encoding: gzip, deflate
-Accept-Language: es-ES,es;q=0.9,en;q=0.8
+Cookie: _xsrf=2|d8ec897f|97093d17fa029d62bca27ea3198fed67|1622610452; username-localhost-8888="2|1:0|10:1622941704|23:username-localhost-8888|44:Mzg3MDVjNGZmNGFjNDVmZWJkNjkyOGZlMWFmNjgwOGI=|7b4ba250ca894431056aaba31c13f6ac418943e8c8b47cc1c934c445dd38a51f"; session=.eJyNkctOBCEQRf-F9ZjmVdB0YvwQYwiPoqdjD0yAXkyM_y5qTNyYcQmcOtybeiM2VWxnsvR64InYLZKFgOQxOVBx5h6FSSGZGL2SPopogHMXIwYKoCQDxrmIQgBTQVE58-QDQ-WUpExKA17NDNRM5wBMG8XVuPZeB0rp7KjmgQXPQaBw1BgjVeAKKBlBrlgvLmPuP9FCq8n28op5JDQamRz_gncCQAOjIB0HSMClVk5ikolqjcMU3Wpbd_1oNm17xzrG3b6Pl70Et-M4DuWJXN2K9ry1XuqNLM_k3Pt1maYv6FxaX9hoYaahq0ee9gFOY-oPai_rPeR_olByxtC3cpf87Xuyae9W2M_uW3zccse1utHsIV3KQ7vlQF5O5GhYvxfOyPsHzTOjNA.YM6XZA.50DRmkQw43ZE3lqtfJF9A6YpIZM
 
 

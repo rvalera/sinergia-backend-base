@@ -1867,7 +1867,7 @@ class DailyMarkingRepository(SinergiaRepository):
             # count_all_rows = self.get_cantidad_asistencia_diaria(query_params)
 
             if len(rows) == 0:
-                raise DataNotFoundException() 
+                raise DataNotFoundException("Los Datos solicitados NO fueron localizados") 
 
 
             header = rows[0]
@@ -1959,10 +1959,9 @@ class DailyMarkingRepository(SinergiaRepository):
                 ,TO_CHAR(md.fecha,'YYYY-MM-DD HH24:MI:SS') fecha_hora
                 , md.id_dispositivo 
                 , md.evento 
-                , TO_CHAR(md.fecha_carga,'YYYY-MM-DD HH24:MI:SS') fecha_carga 
             FROM integrador.marcaciones_detalladas md
             WHERE 
-                TO_CHAR(md.fecha_carga,'YYYY-MM-DD') = '{event_date}'        
+                TO_CHAR(md.fecha,'YYYY-MM-DD') = '{event_date}'        
                 AND md.cedula  = {cedula}
             '''
 
