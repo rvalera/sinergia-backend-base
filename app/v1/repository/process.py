@@ -1958,8 +1958,11 @@ class DailyMarkingRepository(SinergiaRepository):
                 md.cedula
                 ,TO_CHAR(md.fecha,'YYYY-MM-DD HH24:MI:SS') fecha_hora
                 , md.id_dispositivo 
+                , d.descripcion nombre_dispositivo
                 , md.evento 
             FROM integrador.marcaciones_detalladas md
+            LEFT JOIN integrador.dispositivos  d
+            ON md.id_dispositivo = d.serial
             WHERE 
                 TO_CHAR(md.fecha,'YYYY-MM-DD') = '{event_date}'        
                 AND md.cedula  = {cedula}
