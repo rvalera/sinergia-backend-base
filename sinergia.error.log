@@ -1,0 +1,320 @@
+[2022-04-24 13:50:14 +0200] [20405] [INFO] Starting gunicorn 20.1.0
+[2022-04-24 13:50:14 +0200] [20405] [INFO] Listening at: http://127.0.0.1:8084 (20405)
+[2022-04-24 13:50:14 +0200] [20405] [INFO] Using worker: sync
+[2022-04-24 13:50:14 +0200] [20407] [INFO] Booting worker with pid: 20407
+[2022-04-24 13:50:14 +0200] [20408] [INFO] Booting worker with pid: 20408
+[2022-04-24 13:50:14 +0200] [20409] [INFO] Booting worker with pid: 20409
+[2022-04-24 13:50:14 +0200] [20410] [INFO] Booting worker with pid: 20410
+[2022-04-24 13:50:15 +0200] [20411] [INFO] Booting worker with pid: 20411
+[2022-04-24 13:50:15 +0200] [20407] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/arbiter.py", line 589, in spawn_worker
+    worker.init_process()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/workers/base.py", line 134, in init_process
+    self.load_wsgi()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/workers/base.py", line 146, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/app/base.py", line 67, in wsgi
+    self.callable = self.load()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/app/wsgiapp.py", line 58, in load
+    return self.load_wsgiapp()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/app/wsgiapp.py", line 48, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/util.py", line 359, in import_app
+    mod = importlib.import_module(module)
+  File "/usr/lib/python3.8/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1014, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 991, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 975, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 671, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 848, in exec_module
+  File "<frozen importlib._bootstrap>", line 219, in _call_with_frames_removed
+  File "/home/ramon/Desarrollos/cvg/sinergia-backend-base/manage.py", line 7, in <module>
+    app = create_app(os.environ['CONFIG_TYPE'])
+  File "/home/ramon/Desarrollos/cvg/sinergia-backend-base/app/__init__.py", line 20, in create_app
+    app = Flask(__name__)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/flask/app.py", line 601, in __init__
+    self.add_url_rule(
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/flask/app.py", line 98, in wrapper_func
+    return f(self, *args, **kwargs)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/flask/app.py", line 1278, in add_url_rule
+    self.url_map.add(rule)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 1563, in add
+    rule.bind(self)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 710, in bind
+    self.compile()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 766, in compile
+    self._build = self._compile_builder(False)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 1129, in _compile_builder
+    return self.BuilderCompiler(self).compile(append_unknown)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 1120, in compile
+    co = types.CodeType(*code_args)
+TypeError: code() takes at least 14 arguments (13 given)
+[2022-04-24 13:50:15 +0200] [20407] [INFO] Worker exiting (pid: 20407)
+[2022-04-24 13:50:15 +0200] [20412] [INFO] Booting worker with pid: 20412
+[2022-04-24 13:50:15 +0200] [20408] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/arbiter.py", line 589, in spawn_worker
+    worker.init_process()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/workers/base.py", line 134, in init_process
+    self.load_wsgi()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/workers/base.py", line 146, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/app/base.py", line 67, in wsgi
+    self.callable = self.load()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/app/wsgiapp.py", line 58, in load
+    return self.load_wsgiapp()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/app/wsgiapp.py", line 48, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/util.py", line 359, in import_app
+    mod = importlib.import_module(module)
+  File "/usr/lib/python3.8/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1014, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 991, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 975, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 671, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 848, in exec_module
+  File "<frozen importlib._bootstrap>", line 219, in _call_with_frames_removed
+  File "/home/ramon/Desarrollos/cvg/sinergia-backend-base/manage.py", line 7, in <module>
+    app = create_app(os.environ['CONFIG_TYPE'])
+  File "/home/ramon/Desarrollos/cvg/sinergia-backend-base/app/__init__.py", line 20, in create_app
+    app = Flask(__name__)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/flask/app.py", line 601, in __init__
+    self.add_url_rule(
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/flask/app.py", line 98, in wrapper_func
+    return f(self, *args, **kwargs)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/flask/app.py", line 1278, in add_url_rule
+    self.url_map.add(rule)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 1563, in add
+    rule.bind(self)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 710, in bind
+    self.compile()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 766, in compile
+    self._build = self._compile_builder(False)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 1129, in _compile_builder
+    return self.BuilderCompiler(self).compile(append_unknown)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 1120, in compile
+    co = types.CodeType(*code_args)
+TypeError: code() takes at least 14 arguments (13 given)
+[2022-04-24 13:50:15 +0200] [20408] [INFO] Worker exiting (pid: 20408)
+[2022-04-24 13:50:15 +0200] [20410] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/arbiter.py", line 589, in spawn_worker
+    worker.init_process()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/workers/base.py", line 134, in init_process
+    self.load_wsgi()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/workers/base.py", line 146, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/app/base.py", line 67, in wsgi
+    self.callable = self.load()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/app/wsgiapp.py", line 58, in load
+    return self.load_wsgiapp()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/app/wsgiapp.py", line 48, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/util.py", line 359, in import_app
+    mod = importlib.import_module(module)
+  File "/usr/lib/python3.8/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1014, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 991, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 975, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 671, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 848, in exec_module
+  File "<frozen importlib._bootstrap>", line 219, in _call_with_frames_removed
+  File "/home/ramon/Desarrollos/cvg/sinergia-backend-base/manage.py", line 7, in <module>
+    app = create_app(os.environ['CONFIG_TYPE'])
+  File "/home/ramon/Desarrollos/cvg/sinergia-backend-base/app/__init__.py", line 20, in create_app
+    app = Flask(__name__)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/flask/app.py", line 601, in __init__
+    self.add_url_rule(
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/flask/app.py", line 98, in wrapper_func
+    return f(self, *args, **kwargs)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/flask/app.py", line 1278, in add_url_rule
+    self.url_map.add(rule)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 1563, in add
+    rule.bind(self)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 710, in bind
+    self.compile()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 766, in compile
+    self._build = self._compile_builder(False)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 1129, in _compile_builder
+    return self.BuilderCompiler(self).compile(append_unknown)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 1120, in compile
+    co = types.CodeType(*code_args)
+TypeError: code() takes at least 14 arguments (13 given)
+[2022-04-24 13:50:15 +0200] [20410] [INFO] Worker exiting (pid: 20410)
+[2022-04-24 13:50:15 +0200] [20409] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/arbiter.py", line 589, in spawn_worker
+    worker.init_process()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/workers/base.py", line 134, in init_process
+    self.load_wsgi()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/workers/base.py", line 146, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/app/base.py", line 67, in wsgi
+    self.callable = self.load()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/app/wsgiapp.py", line 58, in load
+    return self.load_wsgiapp()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/app/wsgiapp.py", line 48, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/util.py", line 359, in import_app
+    mod = importlib.import_module(module)
+  File "/usr/lib/python3.8/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1014, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 991, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 975, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 671, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 848, in exec_module
+  File "<frozen importlib._bootstrap>", line 219, in _call_with_frames_removed
+  File "/home/ramon/Desarrollos/cvg/sinergia-backend-base/manage.py", line 7, in <module>
+    app = create_app(os.environ['CONFIG_TYPE'])
+  File "/home/ramon/Desarrollos/cvg/sinergia-backend-base/app/__init__.py", line 20, in create_app
+    app = Flask(__name__)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/flask/app.py", line 601, in __init__
+    self.add_url_rule(
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/flask/app.py", line 98, in wrapper_func
+    return f(self, *args, **kwargs)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/flask/app.py", line 1278, in add_url_rule
+    self.url_map.add(rule)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 1563, in add
+    rule.bind(self)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 710, in bind
+    self.compile()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 766, in compile
+    self._build = self._compile_builder(False)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 1129, in _compile_builder
+    return self.BuilderCompiler(self).compile(append_unknown)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 1120, in compile
+    co = types.CodeType(*code_args)
+TypeError: code() takes at least 14 arguments (13 given)
+[2022-04-24 13:50:15 +0200] [20409] [INFO] Worker exiting (pid: 20409)
+Traceback (most recent call last):
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/arbiter.py", line 202, in run
+    self.manage_workers()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/arbiter.py", line 551, in manage_workers
+    self.spawn_workers()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/arbiter.py", line 623, in spawn_workers
+    time.sleep(0.1 * random.random())
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/arbiter.py", line 242, in handle_chld
+    self.reap_workers()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/arbiter.py", line 525, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/ramon/venv/sinergia-venv/bin/gunicorn", line 8, in <module>
+    sys.exit(run())
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/app/wsgiapp.py", line 67, in run
+    WSGIApplication("%(prog)s [OPTIONS] [APP_MODULE]").run()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/app/base.py", line 231, in run
+    super().run()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/app/base.py", line 72, in run
+    Arbiter(self).run()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/arbiter.py", line 229, in run
+    self.halt(reason=inst.reason, exit_status=inst.exit_status)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/arbiter.py", line 342, in halt
+    self.stop()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/arbiter.py", line 393, in stop
+    time.sleep(0.1)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/arbiter.py", line 242, in handle_chld
+    self.reap_workers()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/arbiter.py", line 525, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+[2022-04-24 13:50:15 +0200] [20411] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/arbiter.py", line 589, in spawn_worker
+    worker.init_process()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/workers/base.py", line 134, in init_process
+    self.load_wsgi()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/workers/base.py", line 146, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/app/base.py", line 67, in wsgi
+    self.callable = self.load()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/app/wsgiapp.py", line 58, in load
+    return self.load_wsgiapp()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/app/wsgiapp.py", line 48, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/util.py", line 359, in import_app
+    mod = importlib.import_module(module)
+  File "/usr/lib/python3.8/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1014, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 991, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 975, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 671, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 848, in exec_module
+  File "<frozen importlib._bootstrap>", line 219, in _call_with_frames_removed
+  File "/home/ramon/Desarrollos/cvg/sinergia-backend-base/manage.py", line 7, in <module>
+    app = create_app(os.environ['CONFIG_TYPE'])
+  File "/home/ramon/Desarrollos/cvg/sinergia-backend-base/app/__init__.py", line 20, in create_app
+    app = Flask(__name__)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/flask/app.py", line 601, in __init__
+    self.add_url_rule(
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/flask/app.py", line 98, in wrapper_func
+    return f(self, *args, **kwargs)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/flask/app.py", line 1278, in add_url_rule
+    self.url_map.add(rule)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 1563, in add
+    rule.bind(self)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 710, in bind
+    self.compile()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 766, in compile
+    self._build = self._compile_builder(False)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 1129, in _compile_builder
+    return self.BuilderCompiler(self).compile(append_unknown)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 1120, in compile
+    co = types.CodeType(*code_args)
+TypeError: code() takes at least 14 arguments (13 given)
+[2022-04-24 13:50:15 +0200] [20411] [INFO] Worker exiting (pid: 20411)
+[2022-04-24 13:50:15 +0200] [20412] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/arbiter.py", line 589, in spawn_worker
+    worker.init_process()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/workers/base.py", line 134, in init_process
+    self.load_wsgi()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/workers/base.py", line 146, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/app/base.py", line 67, in wsgi
+    self.callable = self.load()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/app/wsgiapp.py", line 58, in load
+    return self.load_wsgiapp()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/app/wsgiapp.py", line 48, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/gunicorn/util.py", line 359, in import_app
+    mod = importlib.import_module(module)
+  File "/usr/lib/python3.8/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1014, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 991, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 975, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 671, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 848, in exec_module
+  File "<frozen importlib._bootstrap>", line 219, in _call_with_frames_removed
+  File "/home/ramon/Desarrollos/cvg/sinergia-backend-base/manage.py", line 7, in <module>
+    app = create_app(os.environ['CONFIG_TYPE'])
+  File "/home/ramon/Desarrollos/cvg/sinergia-backend-base/app/__init__.py", line 20, in create_app
+    app = Flask(__name__)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/flask/app.py", line 601, in __init__
+    self.add_url_rule(
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/flask/app.py", line 98, in wrapper_func
+    return f(self, *args, **kwargs)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/flask/app.py", line 1278, in add_url_rule
+    self.url_map.add(rule)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 1563, in add
+    rule.bind(self)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 710, in bind
+    self.compile()
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 766, in compile
+    self._build = self._compile_builder(False)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 1129, in _compile_builder
+    return self.BuilderCompiler(self).compile(append_unknown)
+  File "/home/ramon/venv/sinergia-venv/lib/python3.8/site-packages/werkzeug/routing.py", line 1120, in compile
+    co = types.CodeType(*code_args)
+TypeError: code() takes at least 14 arguments (13 given)
+[2022-04-24 13:50:15 +0200] [20412] [INFO] Worker exiting (pid: 20412)

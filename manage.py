@@ -9,7 +9,7 @@ manager = Manager(app)
 
 
 @manager.command
-def run():
+def run(): 
     """Like a 'runserver' command but shorter, lol."""
     app.run('0.0.0.0',debug=True)
 
@@ -31,7 +31,7 @@ def debug_fix():
     app.config['PROPAGATE_EXCEPTIONS'] = True
     app.run(debug=False)
 
-
+ 
 @manager.command
 def db_init():
     db.create_all()

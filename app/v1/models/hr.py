@@ -8,96 +8,136 @@ from flask_sqlalchemy.model import Model
 from sqlalchemy import Table, Column, ForeignKey, Integer, String, Float, Boolean, DateTime, Text, Date
 from sqlalchemy.orm import relationship, backref
 
-class CentroCosto(db.Model):
-    __tablename__ = 'centro_costo'
-    __table_args__ = {'schema' : 'integrador'}
-
-    codigo = Column(String(20), primary_key=True)
-    descripcion = Column(String(100)) 
-    estatus = Column(String(1)) 
-
-class Cargo(db.Model):
-    __tablename__ = 'cargos'
-    __table_args__ = {'schema' : 'integrador'}
-
-    codigo = Column(String(15), primary_key=True)
-    descripcion = Column(String(80)) 
-    codigo_rrhh = Column(String(15))
-
-class TipoNomina(db.Model):
-    __tablename__ = 'tipos_de_nomina'
-    __table_args__ = {'schema' : 'integrador'}
+class TipoTrabajador(db.Model):
+    __tablename__ = 'tipotrabajador'
+    __table_args__ = {'schema' : 'hospitalario'}
 
     codigo = Column(String(10), primary_key=True)
-    descripcion = Column(String(80)) 
-    cantidad_de_horas = Column(Integer()) 
-    tipo_sueldo = Column(String(2)) 
-    nro_de_dias = Column(Integer()) 
-    status = Column(Integer()) 
+    nombre = Column(String(100)) 
 
 class EstatusTrabajador(db.Model):
-    __tablename__ = 'estatus_trabajador'
-    __table_args__ = {'schema' : 'integrador'}
-
-    codigo = Column(String(20), primary_key=True)
-    descripcion = Column(String(100)) 
-
-class TipoAusencia(db.Model):
-    __tablename__ = 'tipos_ausencias'
-    __table_args__ = {'schema' : 'integrador'}
-
-    codigo = Column(Integer(), primary_key=True)
-    descripcion = Column(String(200)) 
-
-class TipoTrabajador(db.Model):
-    __tablename__ = 'tipo_trabajador'
-    __table_args__ = {'schema' : 'integrador'}
-
-    codigo = Column(String(20), primary_key=True)
-    descripcion = Column(String(150)) 
-
-class GrupoGuardia(db.Model):
-    __tablename__ = 'grupo_guardia'
-    __table_args__ = {'schema' : 'integrador'}
+    __tablename__ = 'estatustrabajador'
+    __table_args__ = {'schema' : 'hospitalario'}
 
     codigo = Column(String(10), primary_key=True)
-    descripcion = Column(String(150)) 
-    cndtra = Column(String(10)) 
+    nombre = Column(String(100)) 
 
-    rotacion = Column(Integer()) 
-    origen = Column(Integer()) 
-    status = Column(Integer()) 
+class TipoNomina(db.Model):
+    __tablename__ = 'tiponomina'
+    __table_args__ = {'schema' : 'hospitalario'}
 
-class Trabajador(db.Model):
-    __tablename__ = 'trabajadores'
-    __table_args__ = {'schema' : 'integrador'}
+    codigo = Column(String(10), primary_key=True)
+    nombre = Column(String(100)) 
 
-    cedula = Column(Integer(), primary_key=True) 
-    codigo = Column(String(50))
-    nombres = Column(String(80))
-    apellidos = Column(String(80)) 
-    sexo = Column(String(2)) 
-    fecha_ingreso = Column(Date()) 
-    fecha_egreso = Column(Date()) 
+class TipoCargo(db.Model):
+    __tablename__ = 'tipocargo'
+    __table_args__ = {'schema' : 'hospitalario'}
 
-    id_cargo = Column('cargo',String(15), ForeignKey('integrador.cargos.codigo'))
-    cargo = relationship("Cargo")
+    codigo = Column(String(10), primary_key=True)
+    nombre = Column(String(100)) 
 
-    id_centro_costo = Column('centro_costo',String(20), ForeignKey('integrador.centro_costo.codigo'))
-    centro_costo = relationship("CentroCosto")
+class UbicacionLaboral(db.Model):
+    __tablename__ = 'ubicacionlaboral'
+    __table_args__ = {'schema' : 'hospitalario'}
 
-    id_tipo_nomina = Column('tipo_nomina',String(10), ForeignKey('integrador.tipos_de_nomina.codigo'))
-    tipo_nomina = relationship("TipoNomina")
+    codigo = Column(String(10), primary_key=True)
+    nombre = Column(String(100)) 
 
-    id_status_actual = Column('status_actual',String(10),ForeignKey('integrador.estatus_trabajador.codigo'))
-    status_actual = relationship("EstatusTrabajador")
+class Empresa(db.Model):
+    __tablename__ = 'empresa'
+    __table_args__ = {'schema' : 'hospitalario'}
 
-    id_tipo_trabajador = Column('tipo_de_trabajador',String(20), ForeignKey('integrador.tipo_trabajador.codigo'))
-    tipo_trabajador = relationship("TipoTabajador")
+    codigo = Column(String(10), primary_key=True)
+    nombre = Column(String(100)) 
 
-    id_grupo_guardia = Column('grupo_guardia',String(10), ForeignKey('integrador.grupo_guardia.codigo'))
-    tipo_trabajador = relationship("GrupoGuardia")
-    
-    id_tarjeta = Column(Integer()) 
-    telefono = Column(String(50))
-    correo = Column(String(150))
+
+class Estado(db.Model):
+    __tablename__ = 'estado'
+    __table_args__ = {'schema' : 'hospitalario'}
+
+    codigo = Column(String(10), primary_key=True)
+    nombre = Column(String(100)) 
+
+class Municipio(db.Model):
+    __tablename__ = 'municipio'
+    __table_args__ = {'schema' : 'hospitalario'}
+
+    codigo = Column(String(10), primary_key=True)
+    nombre = Column(String(100)) 
+
+class Persona(db.Model):
+    __tablename__ = 'persona'
+    __table_args__ = {'schema' : 'hospitalario'}
+
+    cedula = Column(String(12), primary_key=True) 
+    nombres = Column(String(100))
+    apellidos = Column(String(100)) 
+    nacionalidad = Column(String(1)) 
+    fechanacimiento = Column(Date()) 
+    sexo = Column(String(1)) 
+
+    suspendido = Column(String(100)) 
+    nivel = Column(String(100))
+    profesion = Column(String(100)) 
+
+    telefonocelular = Column(String(12))
+    telefonoresidencia = Column(String(12)) 
+    correo = Column(String(100))
+
+    codigoestado = Column('codigoestado',String(10), ForeignKey('hospitalario.estado.codigo'))
+    estado = relationship("Estado")
+
+    codigomunicipio = Column('codigomunicipio',String(10), ForeignKey('hospitalario.municipio.codigo'))
+    municipio = relationship("Municipio")
+
+    parroquia = Column(String(100))
+    sector = Column(String(100))
+    avenidacalle = Column(String(100))
+    edifcasa = Column(String(100))
+
+    discriminator = Column(String)
+
+    __mapper_args__ = {
+        'polymorphic_on':'discriminator',
+    }      
+
+
+class Trabajador(Persona):
+    __tablename__ = 'trabajador'
+    __table_args__ = {'schema' : 'hospitalario'}
+    cedula = Column(Integer, ForeignKey('hospitalario.persona.cedula'), primary_key=True)
+
+    jornada = Column(String(100))
+    ingreso = Column(Date()) 
+
+    situacion = Column(String(100))
+    condicion = Column(String(100))
+
+    camisa = Column(String(5))
+    pantalon = Column(String(5))
+    calzado = Column(String(4))
+
+    ficha = Column(String(12))
+
+    codigotipotrabajador = Column('codigotipotrabajador',String(10), ForeignKey('hospitalario.tipotrabajador.codigo'))
+    tipotrabajador = relationship("TipoTrabajador")
+
+    codigotiponomina = Column('codigotiponomina',String(10), ForeignKey('hospitalario.tiponomina.codigo'))
+    tiponomina = relationship("TipoNomina")
+
+    codigoestatustrabajador = Column('codigoestatustrabajador',String(10), ForeignKey('hospitalario.estatustrabajador.codigo'))
+    estatustrabajador = relationship("EstatusTrabajador")
+
+    codigoubicacionlaboral = Column('ubicacionlaboral',String(10), ForeignKey('hospitalario.ubicacionlaboral.codigo'))
+    ubicacionlaboral = relationship("UbicacionLaboral")
+
+    codigotipocargo = Column('codigotipocargo',String(10), ForeignKey('hospitalario.tipocargo.codigo'))
+    tipocargo = relationship("TipoCargo")
+
+    codigoempresa = Column('codigoempresa',String(10), ForeignKey('hospitalario.empresa.codigo'))
+    empresa = relationship("Empresa")
+
+    __mapper_args__ = {
+        'polymorphic_identity':'trabajador'
+    }
+

@@ -28,25 +28,18 @@ from app.tools.response_tools import make_template_response
 
 from app.v1.use_cases.admin import GetAdminMemberListUseCase,GetAdminMemberUseCase,\
     DeleteAdminMemberUseCase,CreateAdminMemberUseCase,SaveAdminMemberUseCase,GetRolListUseCase, SaveRolUseCase
-from app.v1.resources.entities import TrabajadorStruct, CentroCostoStruct,UpdateTrabajadorStruct
+from app.v1.resources.entities import PersonaStruct, UpdatePersonaStruct
 
 admin_ns = v1_api.namespace('admin', description='Admin Services')
-
-TipoAusenciaStruct = v1_api.model('TipoAusenciaStruct', { 
-    'codigo' : fields.Integer(attribute='codigo'), 
-    'descripcion' : fields.String(attribute='descripcion'), 
-})
 
 RolStruct = v1_api.model('RolStruct', { 
     'id' : fields.Integer(), 
     'name' : fields.String(), 
-    'tipos_ausencias': fields.Nested(TipoAusenciaStruct,attribute='tipos_ausencias'), #Listado de Ids de Centros de Costo
 })
 
 UpdateRolStruct = v1_api.model('UpdateRolStruct', { 
     'name': fields.String(),
     # 'privileges' : fields.List(fields.String()), 
-    'tipos_ausencias' : fields.List(fields.Integer()), 
 }) 
 
 ExtraInfoUserStruct = v1_api.model('ExtraInfoUserStruct', { 
@@ -58,9 +51,8 @@ ExtraInfoUserStruct = v1_api.model('ExtraInfoUserStruct', {
     'gender': fields.String(attribute='gender'),
     'address': fields.String(attribute='address'),
     'phone_number': fields.String(attribute='phone_number'),
-    #Datos Adicionales Creados para RRHH
-    'rrhh_info': fields.Nested(TrabajadorStruct,attribute='trabajador'),
-    'centroscosto': fields.Nested(CentroCostoStruct,attribute='centroscosto'),
+    # #Datos Adicionales Creados para RRHH
+    'person_info': fields.Nested(PersonaStruct,attribute='persona'),
 }) 
 
 AdminUserStruct = v1_api.model('AdminUserStruct', { 
@@ -80,8 +72,7 @@ UpdateExtraInfoUserStruct = v1_api.model('UpdateExtraInfoUserStruct', {
     'address': fields.String(),
     'phone_number': fields.String(),
     #Informacion Adicional Asociado al Usuario
-    'rrhh_info': fields.Nested(UpdateTrabajadorStruct),
-    'centroscosto': fields.List(fields.String()), #Listado de Ids de Centros de Costo
+    'person_info': fields.Nested(UpdatePersonaStruct),
 }) 
 
 UpdateAdminUserStruct = v1_api.model('UpdateAdminUserStruct', { 

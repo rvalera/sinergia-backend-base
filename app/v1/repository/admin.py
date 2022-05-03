@@ -4,7 +4,7 @@ Created on 17 dic. 2019
 @author: ramon
 '''
 from app.v1.models.security import SecurityElement, User, PersonExtension, Rol, Privilege
-from app.v1.models.hr import Trabajador,CentroCosto,TipoAusencia
+from app.v1.models.hr import Persona, Trabajador
 from app.v1.models.constant import *
 
 from app import redis_client, db
@@ -40,8 +40,6 @@ class MemberRepository(SinergiaRepository):
         ON s.id = sr.securityelement_id 
         LEFT JOIN rol r 
         ON sr.rol_id = r.id  
-        LEFT JOIN user_ceco uc 
-        ON pe.id = uc.id_user_extension  
         {conditions}
         {order_by}
         {limits_offset}
@@ -58,8 +56,6 @@ class MemberRepository(SinergiaRepository):
         ON s.id = sr.securityelement_id 
         LEFT JOIN rol r 
         ON sr.rol_id = r.id  
-        LEFT JOIN user_ceco uc 
-        ON pe.id = uc.id_user_extension  
         {conditions}
         '''
 
@@ -79,26 +75,14 @@ class MemberRepository(SinergiaRepository):
                     if 'username' in filter_conditions:
                         conditions.append("s.\"name\"  like '%{username}%' ")
 
-                    if 'cedula_trabajador' in filter_conditions:
-                        conditions.append('pe.cedula  = {cedula_trabajador}')
+                    if 'cedula' in filter_conditions:
+                        conditions.append('pe.cedula  = {cedula}')
 
                     if 'first_name' in filter_conditions:
                         conditions.append("pe.first_name LIKE '%{first_name}%' ")
 
                     if 'last_name' in filter_conditions:
                         conditions.append("pe.last_name LIKE '%{last_name}%' ")
-
-                    if 'id_centro_costo' in filter_conditions:                       
-                        if type(filter_conditions['id_centro_costo']) == str :
-                            conditions.append("uc.centro_costo = '{id_centro_costo}' ")
-                        else:
-                            if type(filter_conditions['id_centro_costo'] is list) and len(filter_conditions['id_centro_costo']) > 1:
-                                filter_conditions['id_centro_costo'] = tuple(filter_conditions['id_centro_costo']) 
-                                conditions.append('uc.centro_costo IN {id_centro_costo}')
-                            else:
-                                filter_conditions['id_centro_costo'] = (filter_conditions['id_centro_costo'][0])
-                                conditions.append("uc.centro_costo = '{id_centro_costo}' ")
-                            
 
                     if 'rolname' in filter_conditions:
                         if type(filter_conditions['rolname']) == str:
@@ -176,13 +160,6 @@ class MemberRepository(SinergiaRepository):
             roles_list = Rol.query.filter(Rol.id.in_(ids_roles)).all()
         return roles_list
 
-    def get_centro_costo(self,payload):
-        centrocosto_list = []
-        if 'extra_info' in payload and 'centroscosto' in payload['extra_info']:
-            ids_centros_costo = payload['extra_info']['centroscosto']
-            centrocosto_list = CentroCosto.query.filter(CentroCosto.codigo.in_(ids_centros_costo)).all()
-        return centrocosto_list
-
     def new(self,payload):
         username = payload['name'] if 'name' in payload else None
         password = payload['password'] if 'password' in payload else None         
@@ -209,29 +186,26 @@ class MemberRepository(SinergiaRepository):
                 id_number = payload['extra_info']['id_number'] if 'id_number' in payload['extra_info'] else ''
                 first_name =  payload['extra_info']['first_name'] if 'first_name' in payload['extra_info'] else ''
                 last_name =  payload['extra_info']['last_name'] if 'last_name' in payload['extra_info'] else ''
+
                 phone_number =  payload['extra_info']['phone_number'] if 'phone_number' in payload['extra_info'] else ''
                 gender =  payload['extra_info']['gender'] if 'gender' in payload['extra_info'] else ''
                 email =  payload['extra_info']['email'] if 'email' in payload['extra_info'] else ''
 
                 user.person_extension = PersonExtension()
 
-                if 'rrhh_info' in payload['extra_info'] and 'cedula' in payload['extra_info']['rrhh_info'] :
-                    cedula = payload['extra_info']['rrhh_info']['cedula']
-                    trabajador = Trabajador.query.filter(Trabajador.cedula == cedula).first()
-                    if not trabajador is None:
+                if 'person_info' in payload['extra_info'] and 'cedula' in payload['extra_info']['person_info'] :
+                    cedula = payload['extra_info']['person_info']['cedula']
+                    persona = Persona.query.filter(Trabajador.cedula == cedula).first()
+                    if not persona is None:
                         #El Trabajador existe todos los datos del Usuario debe sacarse de esta tabla
-                        id_number = trabajador.cedula
-                        first_name =  trabajador.nombres
-                        last_name =  trabajador.apellidos
-                        phone_number =  trabajador.telefono
-                        gender =  trabajador.sexo
+                        id_number = persona.cedula
+                        first_name =  persona.nombres
+                        last_name =  persona.apellidos
+                        phone_number =  persona.telefonocelular
+                        gender =  persona.sexo
 
-                        user.person_extension.id_trabajador = cedula
+                        user.person_extension.cedula = cedula
                 
-                cecos = self.get_centro_costo(payload)
-                if len(cecos):
-                    user.person_extension.centroscosto = [c for c in cecos] 
-
                 user.person_extension.id_number = id_number
                 user.person_extension.first_name = first_name
                 user.person_extension.last_name = last_name
@@ -281,23 +255,19 @@ class MemberRepository(SinergiaRepository):
                 gender =  payload['extra_info']['gender'] if 'gender' in payload['extra_info'] else ''
                 email =  payload['extra_info']['email'] if 'email' in payload['extra_info'] else ''
 
-                if 'rrhh_info' in payload['extra_info'] and 'cedula' in payload['extra_info']['rrhh_info'] :
-                    cedula = payload['extra_info']['rrhh_info']['cedula']
-                    trabajador = Trabajador.query.filter(Trabajador.cedula == cedula).first()
-                    if not trabajador is None:
+                if 'person_info' in payload['extra_info'] and 'cedula' in payload['extra_info']['person_info'] :
+                    cedula = payload['extra_info']['person_info']['cedula']
+                    persona = Persona.query.filter(Trabajador.cedula == cedula).first()
+                    if not persona is None:
                         #El Trabajador existe todos los datos del Usuario debe sacarse de esta tabla
-                        id_number = trabajador.cedula
-                        first_name =  trabajador.nombres
-                        last_name =  trabajador.apellidos
-                        phone_number =  trabajador.telefono
-                        gender =  trabajador.sexo
+                        id_number = persona.cedula
+                        first_name =  persona.nombres
+                        last_name =  persona.apellidos
+                        phone_number =  persona.telefonocelular
+                        gender =  persona.sexo
 
-                        user.person_extension.id_trabajador = cedula
-                
-                cecos = self.get_centro_costo(payload)
-                if len(cecos):
-                    user.person_extension.centroscosto = [c for c in cecos] 
-
+                        user.person_extension.cedula = cedula
+               
                 user.person_extension.id_number = id_number
                 user.person_extension.first_name = first_name
                 user.person_extension.last_name = last_name
@@ -326,13 +296,6 @@ class RolRepository(SinergiaRepository):
             privileges_list = Privilege.query.filter(Privilege.name.in_(ids_privileges)).all()
         return privileges_list    
 
-    def get_tipos_ausencias(self,payload):
-        tipos_ausencias_list = []
-        if 'tipos_ausencias' in payload:
-            ids_tipos_ausencias = payload['tipos_ausencias']
-            tipos_ausencias_list = TipoAusencia.query.filter(TipoAusencia.codigo.in_(ids_tipos_ausencias)).all()
-        return tipos_ausencias_list    
-
     def get(self,query_params):
         rows = Rol.query.all()
         count_result_rows = len(rows)
@@ -344,11 +307,7 @@ class RolRepository(SinergiaRepository):
         if rol_name:
             rol = Rol.query.filter(Rol.name == rol_name).first()
             if rol is None:
-                raise DataNotFoundException()
-
-            tipos_ausencias = self.get_tipos_ausencias(payload)
-            if len(tipos_ausencias):
-                rol.tipos_ausencias = [t for t in tipos_ausencias] 
+                raise DataNotFoundException() 
 
             privileges = self.get_privileges(payload)
             if len(privileges):
