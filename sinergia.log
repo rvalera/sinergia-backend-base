@@ -1,0 +1,34 @@
+Host: localhost:5000
+Connection: keep-alive
+Sec-Ch-Ua: " Not A;Brand";v="99", "Chromium";v="101", "Google Chrome";v="101"
+Accept: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2NTE1ODk1NzcsIm5iZiI6MTY1MTU4OTU3NywianRpIjoiZTAzYzU4YTktZGU2ZS00ZmNjLWI3NDQtZDQyOTRhYWNlMmJlIiwiZXhwIjoxNjUxNTkwNDc3LCJpZGVudGl0eSI6InJhbW9uLnZhbGVyYUBnbWFpbC5jb20iLCJmcmVzaCI6ZmFsc2UsInR5cGUiOiJhY2Nlc3MifQ.ZjDDlJg5zcTPkEBnVrfHb6aWCQsgDprZMyp5U-zY4i0
+Sec-Ch-Ua-Mobile: ?0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.41 Safari/537.36
+Sec-Ch-Ua-Platform: "Linux"
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: cors
+Sec-Fetch-Dest: empty
+Referer: http://localhost:5000/api/v1/
+Accept-Encoding: gzip, deflate, br
+Accept-Language: es-ES,es;q=0.9,en;q=0.8
+Cookie: _xsrf=2|d9b88610|4b84624098bd3bec67576614572d25cf|1650741550; _ga=GA1.1.1053981618.1650747259; _ga_8PH6FM2JEL=GS1.1.1650747258.1.1.1650747302.0; username-localhost-8888="2|1:0|10:1650792340|23:username-localhost-8888|44:NDY0NDMzYWEyYTQ1NDU5NGIxYTc4MGJlMWIyNDQ0MDg=|30822425af23f4f7e1f1ef4e635b3b80410b6090ca45908fa845e64f167b4fa9"
+
+
+Host: localhost:5000
+Connection: keep-alive
+Sec-Ch-Ua: " Not A;Brand";v="99", "Chromium";v="101", "Google Chrome";v="101"
+Accept: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2NTE1ODk1NzcsIm5iZiI6MTY1MTU4OTU3NywianRpIjoiZTAzYzU4YTktZGU2ZS00ZmNjLWI3NDQtZDQyOTRhYWNlMmJlIiwiZXhwIjoxNjUxNTkwNDc3LCJpZGVudGl0eSI6InJhbW9uLnZhbGVyYUBnbWFpbC5jb20iLCJmcmVzaCI6ZmFsc2UsInR5cGUiOiJhY2Nlc3MifQ.ZjDDlJg5zcTPkEBnVrfHb6aWCQsgDprZMyp5U-zY4i0
+Sec-Ch-Ua-Mobile: ?0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.41 Safari/537.36
+Sec-Ch-Ua-Platform: "Linux"
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: cors
+Sec-Fetch-Dest: empty
+Referer: http://localhost:5000/api/v1/
+Accept-Encoding: gzip, deflate, br
+Accept-Language: es-ES,es;q=0.9,en;q=0.8
+Cookie: _xsrf=2|d9b88610|4b84624098bd3bec67576614572d25cf|1650741550; _ga=GA1.1.1053981618.1650747259; _ga_8PH6FM2JEL=GS1.1.1650747258.1.1.1650747302.0; username-localhost-8888="2|1:0|10:1650792340|23:username-localhost-8888|44:NDY0NDMzYWEyYTQ1NDU5NGIxYTc4MGJlMWIyNDQ0MDg=|30822425af23f4f7e1f1ef4e635b3b80410b6090ca45908fa845e64f167b4fa9"
+
+

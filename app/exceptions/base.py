@@ -22,3 +22,38 @@ class ProxyCredentialsNotFound(SinergiaException):
     def __init__(self,text=None):
         super(ProxyCredentialsNotFound, self).__init__(code='ESIN002',text = text)    
 
+class NotImplementedException(SinergiaException):
+    def __init__(self,text=None):
+        super(NotImplementedException, self).__init__(code='NOTIMP001',text = text)
+
+class UserCurrentPasswordException(SinergiaException):
+    def __init__(self,text=None):
+        super(UserCurrentPasswordException, self).__init__(code='USRPWD001',text = text)
+
+class UserRepeatedPasswordException(SinergiaException):
+    def __init__(self,text=None):
+        super(UserRepeatedPasswordException, self).__init__(code='USRPWD002',text = text)
+
+class IntegrityException(SinergiaException):
+    def __init__(self,text=None):
+        super(IntegrityException, self).__init__(code='INT001',text = text)
+
+class DatabaseException(SinergiaException):
+    def __init__(self,text=None):
+        super(DatabaseException, self).__init__(code='DB001',text = text)
+
+class DataNotFoundException(SinergiaException):
+    def __init__(self,text=None):
+        super(DataNotFoundException, self).__init__(code='DAT001',text = text)
+
+class ParametersNotFoundException(SinergiaException):
+    def __init__(self,text=None):
+        super(ParametersNotFoundException, self).__init__(code='PAR001',text = text)
+
+class RepositoryUnknownException(SinergiaException):
+    def __init__(self,text=None):
+        super(RepositoryUnknownException, self).__init__(code='REP001',text = text)
+
+class RESTClientException(SinergiaException):
+    def __init__(self, text=None):
+        super(RESTClientException, self).__init__(code='AIR001',text = text)

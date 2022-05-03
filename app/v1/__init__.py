@@ -14,14 +14,16 @@ logger = LocalProxy(lambda: current_app.logger)
 
 v1_blueprint = Blueprint('v1_blueprint', __name__,template_folder='/templates')
 v1_api = Api(v1_blueprint,
-             title='CryptoPOS API',
+             title='Sinergia Security API',
              version='1.0',
-             description='OpenAPI to CryptoPOS Service')
+             description='OpenAPI to Sinergia Security Service')
 
 from app.v1.resources.base import member_ns
-from app.v1.resources.application import application_ns
-from app.v1.resources.transaction import transaction_ns
-from app.v1.resources.affiliate import affiliate_ns 
+from app.v1.resources.entities import entities_ns
+from app.v1.resources.configuration import configuration_ns
+from app.v1.resources.admin import admin_ns
+from app.v1.resources.system import system_ns
+from app.v1.resources.process import process_ns
 
 # pybabel extract -o locale/base.pot  .
 # pybabel init -i base.pot -d translations -l en
@@ -77,6 +79,8 @@ def error_handler_500(error):
 
 
 v1_api.add_namespace(member_ns)
-v1_api.add_namespace(application_ns)
-v1_api.add_namespace(transaction_ns)
-v1_api.add_namespace(affiliate_ns)
+v1_api.add_namespace(entities_ns)
+v1_api.add_namespace(configuration_ns)
+v1_api.add_namespace(admin_ns)
+v1_api.add_namespace(system_ns)
+v1_api.add_namespace(process_ns)

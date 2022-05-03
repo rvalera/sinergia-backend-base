@@ -13,51 +13,62 @@ from itsdangerous import (TimedJSONWebSignatureSerializer
 import hashlib
 from app.v1.models.constant import STATUS_ACTIVE, configuration
 from app.v1.models.payment import Bank
+from app.v1.models.hr import Persona
 
 
 securityelement_rol_table = Table('securityelement_rol', db.Model.metadata,
-    Column('securityelement_id', Integer, ForeignKey('securityelement.id')),
-    Column('rol_id', Integer, ForeignKey('rol.id'))
+    Column('securityelement_id', Integer, ForeignKey('public.securityelement.id')),
+    Column('rol_id', Integer, ForeignKey('public.rol.id'))
 )
 
 rol_privilege_table = Table('rol_privilege', db.Model.metadata,
-    Column('rol_id', Integer, ForeignKey('rol.id')),
-    Column('privilege_id', Integer, ForeignKey('privilege.id'))
+    Column('rol_id', Integer, ForeignKey('public.rol.id')),
+    Column('privilege_id', Integer, ForeignKey('public.privilege.id'))
 )    
 
 function_rol_table = Table('function_rol', db.Model.metadata,
-    Column('rol_id', Integer, ForeignKey('rol.id')),
-    Column('function_id', Integer, ForeignKey('function.id'))
+    Column('rol_id', Integer, ForeignKey('public.rol.id')),
+    Column('function_id', Integer, ForeignKey('public.function.id'))
 )    
 
 class Privilege(db.Model):
     __tablename__ = 'privilege'
+    __table_args__ = {'schema' : 'public'}
+
     id = Column(Integer, primary_key=True)
     short_name = Column(String(5), unique=True)
     name = Column(String(32))
         
 class Function(db.Model):
     __tablename__ = 'function'
+    __table_args__ = {'schema' : 'public'}
+
     id = Column(Integer, primary_key=True)
     name = Column(String(50))
     long_name = Column(String(100))
     link = Column(String(50))
     icon = Column(String(50))
     is_container = Column(Boolean, default=False)
-    parent_id = Column(Integer, ForeignKey('function.id'))
+    parent_id = Column(Integer, ForeignKey('public.function.id'))
     order = Column(Integer())
     children = relationship("Function")
     status = Column(String(1))    
 
+
 class Rol(db.Model):
     __tablename__ = 'rol'
+    __table_args__ = {'schema' : 'public'}
+
     id = Column(Integer, primary_key=True)
     name = Column(String(32))
     privileges = relationship("Privilege", secondary=rol_privilege_table)
     functions = relationship("Function", secondary=function_rol_table)
 
+
 class PersonExtension(db.Model):
     __tablename__ = 'personextension'
+    __table_args__ = {'schema' : 'public'}
+
     id = Column(Integer, primary_key=True)
     type = Column(String(1))   
     id_number = Column(String(25))
@@ -71,25 +82,30 @@ class PersonExtension(db.Model):
     email = Column(String(128))
     secondary_email = Column(String(128))
     
-    bank_id = Column(Integer, ForeignKey('bank.id'))
+    bank_id = Column(Integer, ForeignKey('public.bank.id'))
     bank = relationship("Bank")
     
     account_number = Column(String(50))
     status = Column(String(1))
-    
+
+    #Modificacion realizada para recursos humanos
+    cedula = Column('cedula',Integer(), ForeignKey('hospitalario.persona.cedula'))
+    persona = relationship("Persona")
+
     __mapper_args__ = {
         'polymorphic_identity':'personextension'
     }
 
 class SecurityElement(db.Model):
     __tablename__ = 'securityelement'
+    __table_args__ = {'schema' : 'public'}
     
     id = Column(Integer, primary_key=True)
 
     name = Column(String(128), unique=True)
     password_hash = Column(String(128))
 
-    roles = relationship("Rol", secondary=securityelement_rol_table)
+    roles = relationship("Rol", secondary=securityelement_rol_table,cascade="save-update")                                    
     
     status = Column(String(1), default=STATUS_ACTIVE)
 
@@ -123,10 +139,12 @@ class SecurityElement(db.Model):
     
 class User(SecurityElement):
     __tablename__ = 'user'
-    id = Column(Integer, ForeignKey('securityelement.id'), primary_key=True)
+    __table_args__ = {'schema' : 'public'}
+
+    id = Column(Integer, ForeignKey('public.securityelement.id'), primary_key=True)
     
-    person_extension_id = Column(Integer, ForeignKey('personextension.id'))
-    person_extension = relationship("PersonExtension")
+    person_extension_id = Column(Integer, ForeignKey('public.personextension.id'))
+    person_extension = relationship("PersonExtension",cascade="all,delete")
     
     operation_key = Column(String(128))
     register_mode = Column(String(1))
@@ -145,7 +163,9 @@ class User(SecurityElement):
     
 class Device(SecurityElement):
     __tablename__ = 'device'
-    id = Column(Integer, ForeignKey('securityelement.id'), primary_key=True)
+    __table_args__ = {'schema' : 'public'}
+
+    id = Column(Integer, ForeignKey('public.securityelement.id'), primary_key=True)
 
     serial = Column(String(128))
     serial2 = Column(String(128))

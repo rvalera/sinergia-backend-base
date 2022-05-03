@@ -15,19 +15,21 @@ import json
 import requests
 from requests.auth import HTTPBasicAuth
 from ..repository.base import CacheRepository
-from ..use_cases.wallet import DashboardUseCase
 from app.exceptions.base import SinergiaException, ProxyCredentialsNotFound
+
 from app.v1.use_cases.security import   MemberInitSignUpUseCase,\
     MemberFinishRegisterUseCase, GetMemberProfileUseCase,\
     UpdateMemberProfileUseCase, ChangePasswordMemberUseCase,\
     ResetPasswordMemberUseCase, GetAnyMemberProfileUseCase,\
     GetDetailedMemberProfileUseCase, GetUserByNameUseCase
-from app.v1.use_cases.wallet import ChangeOperationKeyMemberUseCase
+
 from app.v1.models.constant import STATUS_ACTIVE, STATUS_GENERATED,\
     STATUS_PENDING
 
+from app.tools.sqlalchemy import entity_as_dict
+from app.tools.response_tools import make_template_response
 
-member_ns = v1_api.namespace('member', description='Member Services')
+member_ns = v1_api.namespace('member', description='Security Services')
 
 mLogin = v1_api.model('Login', {
     'username': fields.String(required=True, description='User Name '),
@@ -41,9 +43,6 @@ mMemberInitRegister = v1_api.model('MemberInitRegister', {
 })
 
 mMemberFinishRegister = v1_api.model('MemberFinishRegister', {
-#     'email': fields.String(required=True, description='Email'),
-#     'first_name': fields.String(required=True, description='First Name'),
-#     'last_name': fields.String(required=True, description='Last Name'),
     'phone_number': fields.String(required=True, description='Phone Number'),
     'gender': fields.String(required=True, description='Gender'),
     'secondary_email': fields.String(required=True, description='Secondary email'),
@@ -52,19 +51,9 @@ mMemberFinishRegister = v1_api.model('MemberFinishRegister', {
     'password': fields.String(required=True, description='New Password')
 })
 
-mMemberProfile = v1_api.model('MemberProfile', {
-    'first_name': fields.String(required=True, description='First Name'),
-    'last_name': fields.String(required=True, description='Last Name'),
-    'phone_number': fields.String(required=True, description='Phone Number'),
-    'gender': fields.String(required=True, description='Gender'),
-    'secondary_email': fields.String(required=True, description='Secondary email'),
-    'birth_date': fields.String(required=True, description='Birth Date'),
-})
-
 mMemberEmail = v1_api.model('MemberEmail', {
     'email': fields.String(required=True, description='Email')
 })
-
 
 mUserExtraInfo = v1_api.model('User Extra Info', { 
     'username': fields.String(description='Username'),
@@ -115,6 +104,53 @@ mChangePassword = v1_api.model('ChangePassword', {
     'new_password': fields.String(required=True, description='New Password'),
 })
 
+# BankStruct = v1_api.model('BankStruct', { 
+#     'id': fields.String(attribute='id'),
+#     'name': fields.String(attribute='name'),
+#     'account_number': fields.String(attribute='account_number'),
+# }) 
+
+UpdateProfileUserStruct = v1_api.model('UpdateProfileUserStruct', {
+    'first_name': fields.String(required=True, description='First Name'),
+    'last_name': fields.String(required=True, description='Last Name'),
+    'phone_number': fields.String(required=True, description='Phone Number'),
+    'gender': fields.String(required=True, description='Gender'),
+    'secondary_email': fields.String(required=True, description='Secondary email'),
+    'birth_date': fields.String(required=True, description='Birth Date'),
+})
+
+
+ProfileRolStruct = v1_api.model('ProfileRolStruct', { 
+    'id' : fields.Integer(), 
+    'name' : fields.String(), 
+})
+
+
+ProfileUserStruct = v1_api.model('ProfileUserStruct', { 
+    'id': fields.String(attribute='id'),
+    'id_number': fields.String(attribute='person_extension.id_number'),
+    'first_name': fields.String(attribute='person_extension.first_name'),
+    'last_name': fields.String(attribute='person_extension.last_name'),
+    'fullname': fields.String(attribute='person_extension.fullname'),
+    'email': fields.String(attribute='person_extension.email'),
+    'gender': fields.String(attribute='person_extension.gender'),
+    'address': fields.String(attribute='person_extension.address'),
+    'phone_number': fields.String(attribute='person_extension.phone_number'),
+
+    'roles' : fields.Nested(ProfileRolStruct,attribute='roles'),
+    # 'bank' : fields.Nested(BankStruct,attribute='person_extension.bank')
+}) 
+
+GetProfileUserStruct = v1_api.model('GetProfileUserStruct', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'data' : fields.Nested(ProfileUserStruct,attribute='data')
+}) 
+
+DateRangeStruct = v1_api.model('DateRangeStruct', { 
+    'from': fields.String(description='From'),
+    'to': fields.String(description='To') 
+})
+
 secureHeader = v1_api.parser()
 secureHeader.add_argument('Authorization', type=str,location='headers',help='Bearer Access Token',required=True)
 secureHeader.add_argument('Accept-Language', type=str,location='headers',help="en-US,en;q=0.5")
@@ -124,12 +160,12 @@ publicHeader.add_argument('Accept-Language', type=str,location='headers',help="e
 
 queryParams = v1_api.parser()
 queryParams.add_argument('filter',type=str,  help='{"stringParamName" : "stringParamValue","numericParamName" : numericParamValue}', location='args')
-queryParams.add_argument('order',type=str, location='args')
-queryParams.add_argument('range',type=str, location='args')
+queryParams.add_argument('order',type=str, location='args', help='["field1","field2 ASC","field3 DESC"]')
+queryParams.add_argument('range',type=str, location='args', help='[low,high]')
 
 
-ACCESS_EXPIRES = 300
-REFRESH_EXPIRES = 86400
+ACCESS_EXPIRES = 86400
+REFRESH_EXPIRES = 172800
 
 @member_ns.route('/login')
 @v1_api.expect(publicHeader)
@@ -178,19 +214,23 @@ class MemberLoginResource(Resource):
         
         payload = { "session_expired" : "false", "username" : username, "password": password, "id" : securityElement.id }
         user = GetUserByNameUseCase().execute(payload)
-        if user.status == STATUS_ACTIVE:
-            person = GetMemberProfileUseCase().execute(payload,{})
-            payload['person_id'] = person['data']['id']
-            payload['person_extension_id'] = person['data']['person_extension_id']
-        else:
-            payload['person_id'] = None            
-            payload['person_extension_id'] = user.person_extension_id
+        # if user.status == STATUS_ACTIVE:
+        #     # person = GetMemberProfileUseCase().execute(payload,{})
+        #     # payload['person_id'] = person['data']['id']
+        #     payload['person_id'] = None            
+        #     payload['person_extension_id'] = user.person_extension_id
+        # else:
+        #     payload['person_id'] = None            
+        #     payload['person_extension_id'] = user.person_extension_id
 
-        redis_client.set(access_jti, json.dumps(payload), int(ACCESS_EXPIRES * 1.2))
-        redis_client.set(refresh_jti, json.dumps(payload), int(REFRESH_EXPIRES * 1.2))
+        payload['person_id'] = None            
+        payload['person_extension_id'] = user.person_extension_id
+
+        redis_client.set(access_jti, json.dumps(payload), ex=int(ACCESS_EXPIRES * 1.2))
+        redis_client.set(refresh_jti, json.dumps(payload), ex=int(REFRESH_EXPIRES * 1.2))
 
         userTokens = {'access_token' : access_jti,'refresh_token': refresh_jti}
-        redis_client.set(username, json.dumps(userTokens), int(REFRESH_EXPIRES * 1.2))
+        redis_client.set(username, json.dumps(userTokens), ex=int(REFRESH_EXPIRES * 1.2))
 
         # Use create_access_token() and create_refresh_token() to create our
         # access and refresh tokens
@@ -198,7 +238,8 @@ class MemberLoginResource(Resource):
             'data': {
                 'extra_info' : {
                     'username' : username,
-                    'status' : securityElement.status 
+                    'status' : securityElement.status,
+                    'roles' : [r.name for r in user.roles],
                 },
                 'access_token': access_token,
                 'refresh_token': refresh_token
@@ -226,17 +267,17 @@ class MemberLogoutResource(Resource):
             payload = redis_client.get(access_token_jti)    
             json_payload = json.loads(payload)
             json_payload["session_expired"] = 'true' 
-            redis_client.set(access_token_jti, json.dumps(json_payload), int(ACCESS_EXPIRES * 1.2))
+            redis_client.set(access_token_jti, json.dumps(json_payload), ex=int(ACCESS_EXPIRES * 1.2))
         else:
-            redis_client.set(access_token_jti, json.dumps({"session_expired" : 'true'}), int(ACCESS_EXPIRES * 1.2))            
+            redis_client.set(access_token_jti, json.dumps({"session_expired" : 'true'}), ex=int(ACCESS_EXPIRES * 1.2))            
 
         if redis_client.get(refresh_token_jti):
             payload = redis_client.get(refresh_token_jti)
             json_payload = json.loads(payload)
             json_payload["session_expired"] = 'true' 
-            redis_client.set(refresh_token_jti, json.dumps(json_payload), int(ACCESS_EXPIRES * 1.2))
+            redis_client.set(refresh_token_jti, json.dumps(json_payload), ex=int(ACCESS_EXPIRES * 1.2))
         else:
-            redis_client.set(refresh_token_jti, json.dumps({"session_expired" : 'true'}), int(ACCESS_EXPIRES * 1.2))            
+            redis_client.set(refresh_token_jti, json.dumps({"session_expired" : 'true'}), ex=int(ACCESS_EXPIRES * 1.2))            
 
         return { 'ok' : 1, 
                 'message' : { 
@@ -265,9 +306,11 @@ class TokenRefreshResource(Resource):
 
         user = GetUserByNameUseCase().execute(payload)
         if user.status == STATUS_ACTIVE:
-            person = GetMemberProfileUseCase().execute(payload,{})
-            payload['person_id'] = person['data']['id']
-            payload['person_extension_id'] = person['data']['person_extension_id']
+            # person = GetMemberProfileUseCase().execute(payload,{})
+            # payload['person_id'] = person['data']['id']
+            # payload['person_extension_id'] = person['data']['person_extension_id']
+            payload['person_id'] = None            
+            payload['person_extension_id'] = user.person_extension_id
         else:           
             error =  { 
                 'ok' : 0, 
@@ -308,9 +351,11 @@ class ProxySecureResource(Resource):
 
         user = GetUserByNameUseCase().execute(cache_payload)
         if user.status == STATUS_ACTIVE:
-            person = GetMemberProfileUseCase().execute(cache_payload,{})
-            cache_payload['person_id'] = person['data']['id']
-            cache_payload['person_extension_id'] = person['data']['person_extension_id']
+            # person = GetMemberProfileUseCase().execute(cache_payload,{})
+            # cache_payload['person_id'] = person['data']['id']
+            # cache_payload['person_extension_id'] = person['data']['person_extension_id']
+            cache_payload['person_id'] = None            
+            cache_payload['person_extension_id'] = user.person_extension_id
     
         cacheRepository.save(access_token_jti,cache_payload, expired_time = int(ACCESS_EXPIRES * 1.2))
 
@@ -324,14 +369,20 @@ class ProxySecureResource(Resource):
     def checkCredentials(self):
         access_token_jti = get_raw_jwt()['jti']
         security_credentials = CacheRepository().getByKey(access_token_jti)
-        if security_credentials == None or (not 'person_id' in security_credentials) or ('person_id' in security_credentials and security_credentials['person_id'] is None):
+        # This is used for check if the Signup is Finished
+        # if security_credentials == None or (not 'person_id' in security_credentials) or ('person_id' in security_credentials and security_credentials['person_id'] is None):
+        #     raise ProxyCredentialsNotFound()
+        if security_credentials == None or (not 'person_extension_id' in security_credentials) or ('person_extension_id' in security_credentials and security_credentials['person_extension_id'] is None):
             raise ProxyCredentialsNotFound()
         return security_credentials
 
     def checkForFinishSignup(self):
         access_token_jti = get_raw_jwt()['jti']
         security_credentials = CacheRepository().getByKey(access_token_jti)
-        if not ('person_id' in security_credentials and security_credentials['person_id'] is None):
+        # This is used for check if the Signup is Finished
+        # if not ('person_id' in security_credentials and security_credentials['person_id'] is None):
+        #     raise ProxyCredentialsNotFound()
+        if not ('person_extension_id' in security_credentials and security_credentials['person_extension_id'] is None):
             raise ProxyCredentialsNotFound()
         return security_credentials    
 
@@ -365,40 +416,44 @@ class MemberFinishSignupResource(ProxySecureResource):
         self.syncronizePasswordCache(payload['password'])
         return  data, 200
 
+
 @member_ns.route('/profile')
 @v1_api.expect(secureHeader)
 class MemberProfileResource(ProxySecureResource): 
  
     @member_ns.doc('Member Profile')
-    @jwt_required    
+    @jwt_required   
+    @v1_api.marshal_with(GetProfileUserStruct) 
     def get(self):
         security_credentials = self.checkCredentials()
         query_params = {}
         data = GetDetailedMemberProfileUseCase().execute(security_credentials,query_params)
-        return  data, 200
+        # return make_template_response(data, 'json/member/get.json'), 200
+        return {'ok' : 1, 'data': data },200
 
     @member_ns.doc('Update Member Profile')
-    @v1_api.expect(mMemberProfile)
+    @v1_api.expect(UpdateProfileUserStruct)
     @jwt_required    
     def put(self):
         payload = request.json        
         security_credentials = self.checkCredentials()
         payload['id'] = security_credentials['id']
-        data = UpdateMemberProfileUseCase().execute(security_credentials,payload)
-        return  data, 200
+        UpdateMemberProfileUseCase().execute(security_credentials,payload)
+        return  { 'ok': 1 }, 200
 
 @member_ns.route('/profile/<email>')
 @member_ns.param('email', 'Email Member')
 @v1_api.expect(secureHeader)
 class GetAnyMemberProfileResource(ProxySecureResource): 
- 
+
     @member_ns.doc('Get Any Member Profile')
     @jwt_required    
+    @v1_api.marshal_with(GetProfileUserStruct) 
     def get(self,email):
         security_credentials = self.checkCredentials()
         query_params = {'email': email}
         data = GetAnyMemberProfileUseCase().execute(security_credentials,query_params)
-        return  data, 200
+        return  {'ok' : 1, 'data': data }, 200
 
 
 @member_ns.route('/password')
@@ -415,14 +470,15 @@ class ChangePasswordMemberResource(ProxySecureResource):
         request_payload = { 'id': security_credentials['id'] ,
                    'password': user_payload['new_password'],
                    'old_password': user_payload['old_password']}
-        data = ChangePasswordMemberUseCase().execute(security_credentials,request_payload)
+        ChangePasswordMemberUseCase().execute(security_credentials,request_payload)
         self.syncronizePasswordCache(user_payload['new_password'])
-        return  data, 200
+        return  { 'ok': 1 }, 200
+
 
 @member_ns.route('/password/reset')
 @v1_api.expect(publicHeader)
 class ResetPasswordMemberResource(Resource):
- 
+
     @member_ns.doc('Reset Password')
     @v1_api.expect(mMemberEmail)    
     def post(self):
@@ -431,6 +487,3 @@ class ResetPasswordMemberResource(Resource):
         data = ResetPasswordMemberUseCase().execute(request_payload)
         return  data, 200
 
-
-
-from .wallet import *  
