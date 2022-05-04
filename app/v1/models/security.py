@@ -5,7 +5,7 @@ Created on 17 dic. 2019
 '''
 from app import db
 from flask_sqlalchemy.model import Model
-from sqlalchemy import Table, Column, ForeignKey, Integer, String, Float, Boolean, DateTime, Text
+from sqlalchemy import Table, Column, ForeignKey, Integer, String, Float, Boolean, DateTime, Text, Date
 from sqlalchemy.orm import relationship, backref
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer

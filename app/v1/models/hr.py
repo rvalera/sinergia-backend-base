@@ -76,7 +76,6 @@ class Persona(db.Model):
     fechanacimiento = Column(Date()) 
     sexo = Column(String(1)) 
 
-    suspendido = Column(String(100)) 
     nivel = Column(String(100))
     profesion = Column(String(100)) 
 
@@ -119,20 +118,34 @@ class Trabajador(Persona):
 
     ficha = Column(String(12))
 
-    codigotipotrabajador = Column('codigotipotrabajador',String(10), ForeignKey('hospitalario.tipotrabajador.codigo'))
-    tipotrabajador = relationship("TipoTrabajador")
+    suspendido = Column(String(10)) 
 
-    codigotiponomina = Column('codigotiponomina',String(10), ForeignKey('hospitalario.tiponomina.codigo'))
-    tiponomina = relationship("TipoNomina")
+    personal = Column(String(100))
+    tiponomina = Column(String(100))
+    ubicacionlaboral = Column(String(100))
+    cargo = Column(String(100))
 
-    codigoestatustrabajador = Column('codigoestatustrabajador',String(10), ForeignKey('hospitalario.estatustrabajador.codigo'))
-    estatustrabajador = relationship("EstatusTrabajador")
+    observaciones = Column(String())
+    fechaactualizacion = Column(DateTime()) 
 
-    codigoubicacionlaboral = Column('ubicacionlaboral',String(10), ForeignKey('hospitalario.ubicacionlaboral.codigo'))
-    ubicacionlaboral = relationship("UbicacionLaboral")
+    idusuarioactualizacion = Column('idusuarioactualizacion',String(10), ForeignKey('public.user.id'))
+    # usuario = relationship("Usuario")
 
-    codigotipocargo = Column('codigotipocargo',String(10), ForeignKey('hospitalario.tipocargo.codigo'))
-    tipocargo = relationship("TipoCargo")
+
+    # codigotipotrabajador = Column('codigotipotrabajador',String(10), ForeignKey('hospitalario.tipotrabajador.codigo'))
+    # tipotrabajador = relationship("TipoTrabajador")
+
+    # codigotiponomina = Column('codigotiponomina',String(10), ForeignKey('hospitalario.tiponomina.codigo'))
+    # tiponomina = relationship("TipoNomina")
+
+    # codigoestatustrabajador = Column('codigoestatustrabajador',String(10), ForeignKey('hospitalario.estatustrabajador.codigo'))
+    # estatustrabajador = relationship("EstatusTrabajador")
+
+    # codigoubicacionlaboral = Column('ubicacionlaboral',String(10), ForeignKey('hospitalario.ubicacionlaboral.codigo'))
+    # ubicacionlaboral = relationship("UbicacionLaboral")
+
+    # codigotipocargo = Column('codigotipocargo',String(10), ForeignKey('hospitalario.tipocargo.codigo'))
+    # tipocargo = relationship("TipoCargo")
 
     codigoempresa = Column('codigoempresa',String(10), ForeignKey('hospitalario.empresa.codigo'))
     empresa = relationship("Empresa")
