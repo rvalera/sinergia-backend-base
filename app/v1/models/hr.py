@@ -65,6 +65,7 @@ class Municipio(db.Model):
     codigo = Column(String(10), primary_key=True)
     nombre = Column(String(100)) 
 
+
 class Persona(db.Model):
     __tablename__ = 'persona'
     __table_args__ = {'schema' : 'hospitalario'}
@@ -94,17 +95,20 @@ class Persona(db.Model):
     avenidacalle = Column(String(100))
     edifcasa = Column(String(100))
 
+    historiamedica = relationship("HistoriaMedica", back_populates="persona", uselist=False)
+
     discriminator = Column(String)
 
     __mapper_args__ = {
-        'polymorphic_on':'discriminator',
+        'polymorphic_identity':'persona',
+        'polymorphic_on':discriminator,
     }      
 
 
 class Trabajador(Persona):
     __tablename__ = 'trabajador'
     __table_args__ = {'schema' : 'hospitalario'}
-    cedula = Column(Integer, ForeignKey('hospitalario.persona.cedula'), primary_key=True)
+    cedula = Column(String(12), ForeignKey('hospitalario.persona.cedula'), primary_key=True)
 
     jornada = Column(String(100))
     ingreso = Column(Date()) 
@@ -114,7 +118,7 @@ class Trabajador(Persona):
 
     camisa = Column(String(5))
     pantalon = Column(String(5))
-    calzado = Column(String(4))
+    calzado = Column(String(5))
 
     ficha = Column(String(12))
 
@@ -128,29 +132,39 @@ class Trabajador(Persona):
     observaciones = Column(String())
     fechaactualizacion = Column(DateTime()) 
 
-    idusuarioactualizacion = Column('idusuarioactualizacion',String(10), ForeignKey('public.user.id'))
-    # usuario = relationship("Usuario")
-
-
-    # codigotipotrabajador = Column('codigotipotrabajador',String(10), ForeignKey('hospitalario.tipotrabajador.codigo'))
-    # tipotrabajador = relationship("TipoTrabajador")
-
-    # codigotiponomina = Column('codigotiponomina',String(10), ForeignKey('hospitalario.tiponomina.codigo'))
-    # tiponomina = relationship("TipoNomina")
-
-    # codigoestatustrabajador = Column('codigoestatustrabajador',String(10), ForeignKey('hospitalario.estatustrabajador.codigo'))
-    # estatustrabajador = relationship("EstatusTrabajador")
-
-    # codigoubicacionlaboral = Column('ubicacionlaboral',String(10), ForeignKey('hospitalario.ubicacionlaboral.codigo'))
-    # ubicacionlaboral = relationship("UbicacionLaboral")
-
-    # codigotipocargo = Column('codigotipocargo',String(10), ForeignKey('hospitalario.tipocargo.codigo'))
-    # tipocargo = relationship("TipoCargo")
+    idusuarioactualizacion = Column('idusuarioactualizacion',Integer(), ForeignKey('public.user.id'))
+    usuarioactualizacion = relationship("User")
 
     codigoempresa = Column('codigoempresa',String(10), ForeignKey('hospitalario.empresa.codigo'))
     empresa = relationship("Empresa")
+
+    beneficiarios = relationship('Beneficiario', primaryjoin="and_(Trabajador.cedula==Beneficiario.cedulatrabajador)")
 
     __mapper_args__ = {
         'polymorphic_identity':'trabajador'
     }
 
+
+class Beneficiario(Persona):
+    __tablename__ = 'beneficiario'
+    __table_args__ = {'schema' : 'hospitalario'}
+    cedula = Column(String(12), ForeignKey('hospitalario.persona.cedula'), primary_key=True)
+    vinculo = Column(String(100))
+    
+    cedulatrabajador = Column('cedulatrabajador',String(12), ForeignKey('hospitalario.trabajador.cedula'))
+    trabajador = relationship("Trabajador", foreign_keys=[cedulatrabajador])
+
+    __mapper_args__ = {
+        'polymorphic_identity':'beneficiario'
+    }
+
+
+class HistoriaMedica(db.Model):
+    __tablename__ = 'historiamedica'
+    __table_args__ = {'schema' : 'hospitalario'}
+
+    cedula = Column(String(12), ForeignKey('hospitalario.persona.cedula'), primary_key=True)
+    persona = relationship("Persona")
+    gruposanguineo = Column(String(12))
+    discapacidad = Column(String(10)) 
+    fecha = Column(Date()) 

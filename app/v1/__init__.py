@@ -31,7 +31,7 @@ from app.v1.resources.process import process_ns
 
 LANGUAGES = {
     'en': 'English',
-    'es': 'Español'
+    'es': 'Espanol'
 }
 
 @babel.localeselector

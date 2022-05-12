@@ -2,10 +2,10 @@ from app.v1 import v1_api
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_restplus import Resource, Namespace, fields
 from app.v1.resources.base import ProxySecureResource, secureHeader,queryParams
-from app.v1.use_cases.entities import GetEmpresaListUseCase,GetTipoNominaListUseCase
+from app.v1.use_cases.entities import GetEmpresaListUseCase,GetTipoNominaListUseCase, GetTrabajadorUseCase
 # from app.v1.use_cases.entities import GetCargoListUseCase,GetCentroCostoListUseCase,GetConceptoNominaListUseCase,\
 #     GetDispositivoListUseCase,GetEstatusTrabajadorListUseCase,GetTipoAusenciaListUseCase,GetTipoNominaListUseCase,\
-#     GetTrabajadorListUseCase,GetTrabajadorUseCase,GetTipoTrabajadorListUseCase,GetGrupoGuardiaListUseCase
+#     GetTrabajadorListUseCase,GetTipoTrabajadorListUseCase,GetGrupoGuardiaListUseCase
 from flask.globals import request    
 import json 
 
@@ -13,12 +13,19 @@ entities_ns = v1_api.namespace('entities', description='Business Entities Servic
 
 EstadoStruct = v1_api.model('EstadoStruct', { 
     'codigo' : fields.String(), 
-    'descripcion' : fields.String(), 
+    'nombre' : fields.String(), 
 })
 
 MunicipioStruct = v1_api.model('MunicipioStruct', { 
     'codigo' : fields.String(), 
-    'descripcion' : fields.String(), 
+    'nombre' : fields.String(), 
+})
+
+HistoriaMedicaStruct = v1_api.model('HistoriaMedicaStruct', { 
+    'cedula' : fields.String(), 
+    'gruposanguineo' : fields.String(), 
+    'discapacidad' : fields.String(), 
+    'fecha' : fields.String(format='date-time')
 })
 
 PersonaStruct = v1_api.model('PersonaStruct', { 
@@ -77,6 +84,20 @@ EmpresaStruct = v1_api.model('EmpresaStruct', {
     'nombre' : fields.String(), 
 })
 
+UsuarioActStruct = v1_api.model('UsuarioActStruct', { 
+    'name': fields.String()
+})
+
+BeneficiarioStruct = v1_api.model('BeneficiarioStruct', { 
+    'cedula' : fields.String(),
+    'vinculo' : fields.String(),
+    'nombres' : fields.String(),  
+    'apellidos' : fields.String(),  
+    'sexo' : fields.String(),  
+    'fechanacimiento' : fields.String(format='date-time'),
+    'historiamedica': fields.Nested(HistoriaMedicaStruct,attribute='historiamedica')
+})
+
 TrabajadorStruct = v1_api.model('TrabajadorStruct', { 
     'cedula' : fields.String(), 
     'nombres' : fields.String(),  
@@ -92,6 +113,7 @@ TrabajadorStruct = v1_api.model('TrabajadorStruct', {
     'suspendido' : fields.String(),  
     'nivel' : fields.String(),  
     'profesion' : fields.String(),  
+
 
     'estado': fields.Nested(EstadoStruct,attribute='estado'),
     'municipio': fields.Nested(MunicipioStruct,attribute='municipio'),
@@ -111,13 +133,11 @@ TrabajadorStruct = v1_api.model('TrabajadorStruct', {
     'calzado' : fields.String(),  
 
     'ficha' : fields.String(),
+    'historiamedica': fields.Nested(HistoriaMedicaStruct,attribute='historiamedica'),  
+    'empresa': fields.Nested(EmpresaStruct,attribute='empresa'),  
+    'usuarioactualizacion': fields.Nested(UsuarioActStruct,attribute='usuarioactualizacion'),
 
-    'tipotrabajador': fields.Nested(TipoTrabajadorStruct,attribute='tipotrabajador'),
-    'tiponomina': fields.Nested(TipoNominaStruct,attribute='tiponomina'),
-    'estatustrabajador': fields.Nested(EstatusTrabajadorStruct,attribute='estatustrabajador'),
-    'ubicacionlaboral': fields.Nested(UbicacionLaboralStruct,attribute='ubicacionlaboral'),
-    'tipocargo': fields.Nested(TipoCargoStruct,attribute='tipocargo'),
-    'empresa': fields.Nested(EmpresaStruct,attribute='empresa'),
+    'beneficiarios': fields.List(fields.Nested(BeneficiarioStruct))
 
 }) 
 
@@ -323,20 +343,21 @@ class TipoNominaResource(ProxySecureResource):
 #         data['ok']= 1
 #         return  data , 200
 
-# @entities_ns.route('/trabajador/<cedula>')
-# @entities_ns.param('cedula', 'Cedula Trabajador')
-# @v1_api.expect(secureHeader)
-# class OneTrabajadorResource(ProxySecureResource):
+@entities_ns.route('/trabajador/<cedula>')
+@entities_ns.param('cedula', 'Cedula Trabajador')
+@v1_api.expect(secureHeader)
+class OneTrabajadorResource(ProxySecureResource):
 
-#     @entities_ns.doc('Get Trabajador')
-#     @v1_api.marshal_with(GetTrabajadorStruct) 
-#     @jwt_required    
-#     def get(self,cedula):
-#         security_credentials = self.checkCredentials()
-#         # security_credentials = {'username': 'prueba'}
-#         query_params = {'cedula': cedula}
-#         data = GetTrabajadorUseCase().execute(security_credentials,query_params)
-#         return  {'ok': 1, 'data': data}, 200
+
+    @entities_ns.doc('Get Trabajador')
+    @v1_api.marshal_with(GetTrabajadorStruct) 
+    #@jwt_required    
+    def get(self,cedula):
+        #security_credentials = self.checkCredentials()
+        security_credentials = {'username': 'prueba'}
+        query_params = {'cedula': cedula}
+        data = GetTrabajadorUseCase().execute(security_credentials,query_params)
+        return  {'ok': 1, 'data': data}, 200
 
 
 # @entities_ns.route('/tipo_trabajador')

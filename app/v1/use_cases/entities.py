@@ -4,10 +4,10 @@ Created on 17 dic. 2019
 @author: ramon
 '''
 # from app.v1.repository.entities import CargoRepository,CentroCostoRepository,ConceptoNominaRepository,DispositivoRepository,\
-#     EstatusTrabajadorRepository,TipoAusenciaRepository,TipoNominaRepository,TrabajadorRepository,\
+#     EstatusTrabajadorRepository,TipoAusenciaRepository,TipoNominaRepository,\
 #     TipoTrabajadorRepository,GrupoGuardiaRepository
 
-from app.v1.repository.entities import EmpresaRepository, TipoNominaRepository
+from app.v1.repository.entities import EmpresaRepository, TipoNominaRepository, TrabajadorRepository
 
 class GetEmpresaListUseCase(object):
     def execute(self,security_credentials):
@@ -49,9 +49,9 @@ class GetTipoNominaListUseCase(object):
 #     def execute(self,security_credentials,query_params):
 #         return TrabajadorRepository(username=security_credentials['username']).get(query_params)
 
-# class GetTrabajadorUseCase(object):
-#     def execute(self,security_credentials,query_params):
-#         return TrabajadorRepository(username=security_credentials['username']).getByCedula(query_params['cedula'])
+class GetTrabajadorUseCase(object):
+    def execute(self,security_credentials,query_params):
+        return TrabajadorRepository(username=security_credentials['username']).getByCedula(query_params['cedula'])
 
 # class GetTipoTrabajadorListUseCase(object):
 #     def execute(self,security_credentials):
