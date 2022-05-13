@@ -17,10 +17,10 @@ python-editor
 pytz
 six
 SQLAlchemy
-psycopg2-binary
 requests
 passlib
 flask_redis
 flask_babel
 flask_jwt_extended
 Werkzeug==0.15
+
