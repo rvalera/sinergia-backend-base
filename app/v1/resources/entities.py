@@ -1,8 +1,9 @@
 from app.v1 import v1_api
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_restplus import Resource, Namespace, fields
-from app.v1.resources.base import ProxySecureResource, secureHeader,queryParams
-from app.v1.use_cases.entities import GetEmpresaListUseCase,GetTipoNominaListUseCase, GetTrabajadorUseCase
+from app.v1.resources.base import ProxySecureResource, secureHeader, queryParams
+from app.v1.use_cases.entities import CreateBeneficiarioUseCase, GetEmpresaListUseCase, GetEstadoListUseCase, GetMunicipioListUseCase,GetTipoNominaListUseCase, \
+    GetTrabajadorUseCase, GetEstadoListUseCase, GetMunicipioListUseCase, GetPatologiaListUseCase, SaveBeneficiarioUseCase, DeleteBeneficiarioUseCase
 # from app.v1.use_cases.entities import GetCargoListUseCase,GetCentroCostoListUseCase,GetConceptoNominaListUseCase,\
 #     GetDispositivoListUseCase,GetEstatusTrabajadorListUseCase,GetTipoAusenciaListUseCase,GetTipoNominaListUseCase,\
 #     GetTrabajadorListUseCase,GetTipoTrabajadorListUseCase,GetGrupoGuardiaListUseCase
@@ -52,6 +53,21 @@ PersonaStruct = v1_api.model('PersonaStruct', {
     'avenidacalle' : fields.String(),  
     'edifcasa' : fields.String()
 }) 
+
+
+UpdateBeneficiarioStruct = v1_api.model('UpdateBeneficiarioStruct', { 
+    'cedula': fields.String(),
+    'nombres': fields.String(),
+    'apellidos': fields.String(),
+    'sexo': fields.String(),
+    'fechanacimiento': fields.String(),
+    'cedulatrabajador': fields.String(),
+    'vinculo': fields.String(),
+    'gruposanguineo': fields.String(),
+    'tipodiscapacidad': fields.String(),
+    'patologias' : fields.List(fields.String()), #Listado de Ids de Patologias
+}) 
+
 
 TipoCargoStruct = v1_api.model('TipoCargoStruct', { 
     'codigo' : fields.String(), 
@@ -351,13 +367,92 @@ class OneTrabajadorResource(ProxySecureResource):
 
     @entities_ns.doc('Get Trabajador')
     @v1_api.marshal_with(GetTrabajadorStruct) 
-    #@jwt_required    
+    @jwt_required    
     def get(self,cedula):
-        #security_credentials = self.checkCredentials()
+        security_credentials = self.checkCredentials()
         security_credentials = {'username': 'prueba'}
         query_params = {'cedula': cedula}
         data = GetTrabajadorUseCase().execute(security_credentials,query_params)
         return  {'ok': 1, 'data': data}, 200
+
+
+@entities_ns.route('/estado')
+@v1_api.expect(secureHeader)
+class EstadoResource(ProxySecureResource): 
+
+    @entities_ns.doc('Estado')
+    @jwt_required    
+    def get(self):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        data = GetEstadoListUseCase().execute(security_credentials)
+        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+
+
+@entities_ns.route('/municipio')
+@v1_api.expect(secureHeader)
+class MunicipioResource(ProxySecureResource): 
+
+    @entities_ns.doc('Municipio')
+    @jwt_required    
+    def get(self):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        data = GetMunicipioListUseCase().execute(security_credentials)
+        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+
+
+@entities_ns.route('/patologia')
+@v1_api.expect(secureHeader)
+class EstadoResource(ProxySecureResource): 
+
+    @entities_ns.doc('Patologia')
+    @jwt_required    
+    def get(self):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        data = GetPatologiaListUseCase().execute(security_credentials)
+        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+
+
+@entities_ns.route('/beneficiario')
+@v1_api.expect(secureHeader)
+class BeneficiarioResource(ProxySecureResource): 
+
+    @entities_ns.doc('Create Beneficiario')
+    @v1_api.expect(UpdateBeneficiarioStruct)    
+    @jwt_required    
+    def post(self):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        payload = request.json        
+        CreateBeneficiarioUseCase().execute(security_credentials,payload)
+        return  {'ok':1} , 200
+
+    @entities_ns.doc('Update Beneficiario')
+    @v1_api.expect(UpdateBeneficiarioStruct)    
+    @jwt_required    
+    def put(self):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        payload = request.json        
+        SaveBeneficiarioUseCase().execute(security_credentials,payload)
+        return  {'ok':1} , 200
+    
+
+
+@entities_ns.route('/beneficiario/<cedula>')
+@entities_ns.param('cedula', 'Cedula Trabajador')
+@v1_api.expect(secureHeader)
+class DeleteBeneficiarioResource(ProxySecureResource): 
+    @entities_ns.doc('Delete Beneficiario')
+    @jwt_required
+    def delete(self,cedula):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        query_params = {'cedula': cedula}
+        DeleteBeneficiarioUseCase().execute(security_credentials,query_params)
+        return  {'ok':1} , 200
 
 
 # @entities_ns.route('/tipo_trabajador')

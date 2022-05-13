@@ -3,6 +3,7 @@ Created on 17 dic. 2019
 
 @author: ramon
 '''
+
 from app import db
 from flask_sqlalchemy.model import Model
 from sqlalchemy import Table, Column, ForeignKey, Integer, String, Float, Boolean, DateTime, Text, Date
@@ -64,6 +65,7 @@ class Municipio(db.Model):
 
     codigo = Column(String(10), primary_key=True)
     nombre = Column(String(100)) 
+
 
 
 class Persona(db.Model):
@@ -158,6 +160,28 @@ class Beneficiario(Persona):
         'polymorphic_identity':'beneficiario'
     }
 
+#patologia_historiamedica_table = Table('hospitalario.patologiahistoriamedica', db.Model.metadata, 
+#    Column('cedula', String, ForeignKey('hospitalario.historiamedica.cedula')),
+#    Column('codigopatologia', String, ForeignKey('hospitalario.patologia.codigopatologia'))
+#)
+
+
+class PatologiaHistoriaMedica(db.Model):
+    __tablename__ = 'patologiahistoriamedica'
+    __table_args__ = {'schema' : 'hospitalario'}
+    cedula = Column(Integer, ForeignKey('hospitalario.historiamedica.cedula'), primary_key = True)
+    codigopatologia = Column(Integer, ForeignKey('hospitalario.patologia.codigopatologia'), primary_key = True)
+
+
+
+
+class Patologia(db.Model):
+    __tablename__ = 'patologia'
+    __table_args__ = {'schema' : 'hospitalario'}
+
+    codigopatologia = Column(String(12), primary_key=True)
+    nombre = Column(String(100)) 
+
 
 class HistoriaMedica(db.Model):
     __tablename__ = 'historiamedica'
@@ -168,3 +192,9 @@ class HistoriaMedica(db.Model):
     gruposanguineo = Column(String(12))
     discapacidad = Column(String(10)) 
     fecha = Column(Date()) 
+
+    #patologias = relationship("Patologia", secondary=patologia_historiamedica_table, cascade="save-update")          
+    patologias = relationship("Patologia", secondary='hospitalario.patologiahistoriamedica')          
+
+
+                          

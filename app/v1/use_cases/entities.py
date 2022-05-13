@@ -7,7 +7,8 @@ Created on 17 dic. 2019
 #     EstatusTrabajadorRepository,TipoAusenciaRepository,TipoNominaRepository,\
 #     TipoTrabajadorRepository,GrupoGuardiaRepository
 
-from app.v1.repository.entities import EmpresaRepository, TipoNominaRepository, TrabajadorRepository
+from app.v1.repository.entities import EmpresaRepository, TipoNominaRepository, TrabajadorRepository, EstadoRepository, MunicipioRepository, \
+    PatologiaRepository, BeneficiarioRepository
 
 class GetEmpresaListUseCase(object):
     def execute(self,security_credentials):
@@ -16,6 +17,10 @@ class GetEmpresaListUseCase(object):
 class GetTipoNominaListUseCase(object):
     def execute(self,security_credentials):
         return TipoNominaRepository(username=security_credentials['username']).getAll()
+
+class GetPatologiaListUseCase(object):
+    def execute(self,security_credentials):
+        return PatologiaRepository(username=security_credentials['username']).getAll()
 
 # class GetCargoListUseCase(object):
 #     def execute(self,security_credentials,query_params):
@@ -52,6 +57,26 @@ class GetTipoNominaListUseCase(object):
 class GetTrabajadorUseCase(object):
     def execute(self,security_credentials,query_params):
         return TrabajadorRepository(username=security_credentials['username']).getByCedula(query_params['cedula'])
+
+class GetEstadoListUseCase(object):
+    def execute(self,security_credentials):
+        return EstadoRepository(username=security_credentials['username']).getAll()
+
+class GetMunicipioListUseCase(object):
+    def execute(self,security_credentials):
+        return MunicipioRepository(username=security_credentials['username']).getAll()
+
+class CreateBeneficiarioUseCase(object):
+    def execute(self,security_credentials,payload):
+        BeneficiarioRepository(username=security_credentials['username']).new(payload)
+
+class SaveBeneficiarioUseCase(object):
+    def execute(self,security_credentials,payload):
+        BeneficiarioRepository(username=security_credentials['username']).save(payload)
+
+class DeleteBeneficiarioUseCase(object):
+    def execute(self,security_credentials,query_params):
+        BeneficiarioRepository(username=security_credentials['username']).delete(query_params['cedula'])
 
 # class GetTipoTrabajadorListUseCase(object):
 #     def execute(self,security_credentials):

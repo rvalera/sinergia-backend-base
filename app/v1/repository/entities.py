@@ -4,16 +4,17 @@ Created on 17 dic. 2019
 @author: ramon
 '''
 from app.v1.models.security import SecurityElement, User, PersonExtension
-from app.v1.models.hr import Persona,Estado,Municipio,Trabajador,TipoTrabajador,EstatusTrabajador,TipoNomina,TipoCargo,UbicacionLaboral,Empresa
+from app.v1.models.hr import Beneficiario, HistoriaMedica, Persona,Estado,Municipio,Trabajador,TipoTrabajador,EstatusTrabajador,TipoNomina,\
+    TipoCargo,UbicacionLaboral,Empresa, Patologia
 from app import redis_client, db
 import json
 import requests
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
-from app.exceptions.base import CryptoPOSException, ConnectionException,NotImplementedException,DatabaseException,IntegrityException
+from app.exceptions.base import CryptoPOSException, ConnectionException,NotImplementedException,DatabaseException,IntegrityException, ParametersNotFoundException
 from .base import SinergiaRepository
 
-from app.exceptions.base import RepositoryUnknownException,DataNotFoundException
+from app.exceptions.base import DataNotFoundException
 
 import pandas as pd
 import logging
@@ -23,6 +24,7 @@ from sqlalchemy import select
 
 from psycopg2 import OperationalError, errorcodes, errors    
 from sqlalchemy import exc
+from datetime import datetime
 
 
 class TipoCargoRepository(SinergiaRepository):
@@ -380,3 +382,133 @@ class TrabajadorRepository(SinergiaRepository):
             error_description = '%s' % (err)
             raise DatabaseException(text=error_description)
 
+class EstadoRepository(SinergiaRepository):
+    def getAll(self):
+        try:
+            table_df = pd.read_sql_query('select * from hospitalario.estado',con=db.engine)
+            table_df = table_df.fillna('')
+            result = table_df.to_dict('records')
+            return result
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
+    
+class MunicipioRepository(SinergiaRepository):
+    def getAll(self):
+        try:
+            table_df = pd.read_sql_query('select * from hospitalario.municipio',con=db.engine)
+            table_df = table_df.fillna('')
+            result = table_df.to_dict('records')
+            return result
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
+
+class PatologiaRepository(SinergiaRepository):
+    def getAll(self):
+        try:
+            table_df = pd.read_sql_query('select * from hospitalario.patologia',con=db.engine)
+            table_df = table_df.fillna('')
+            result = table_df.to_dict('records')
+            return result
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
+
+class BeneficiarioRepository(SinergiaRepository):
+
+    def get_patologias(self,payload):
+        patologias_list = []
+        if 'patologias' in payload:
+            ids_patologias = payload['patologias']
+            patologias_list = Patologia.query.filter(Patologia.codigopatologia.in_(ids_patologias)).all()
+        return patologias_list
+
+    def new(self,payload):
+        cedula = payload['cedula'] if 'cedula' in payload else None
+        if cedula:
+            #Se chequea que el beneficario NO exista previamente 
+            aux = Beneficiario.query.filter(Beneficiario.cedula == cedula).first()
+            if aux:
+                #Se arroja excepcion, el beneficiario ya esta creado
+                raise DataNotFoundException()
+
+            beneficiario = Beneficiario()
+            beneficiario.cedula             = payload['cedula']
+            beneficiario.cedulatrabajador   = payload['cedulatrabajador']
+            beneficiario.vinculo            = payload['vinculo']
+
+            beneficiario.nombres            = payload['nombres']
+            beneficiario.apellidos          = payload['apellidos']
+            beneficiario.sexo               = payload['sexo']
+            beneficiario.fechanacimiento    = payload['fechanacimiento']
+            
+            historiamedica = HistoriaMedica()
+            historiamedica.cedula = cedula
+            historiamedica.gruposanguineo = payload['gruposanguineo']
+            historiamedica.discapacidad   = payload['tipodiscapacidad']
+            historiamedica.fecha          = datetime.now().date()
+            
+            #Se procesan las Patologias de la Historia Medica
+            patologias = self.get_patologias(payload) 
+            if len(patologias):
+                historiamedica.patologias = [p for p in patologias] 
+           
+            db.session.add(historiamedica)
+            db.session.add(beneficiario)
+            db.session.commit()            
+        else:
+            #No se proporciono el username o la contrasena, es obligatorio 
+            raise ParametersNotFoundException()
+
+    
+    def save(self,payload):
+        cedula = payload['cedula'] if 'cedula' in payload else None
+        if cedula:
+            #Se chequea que el beneficario NO exista previamente 
+            beneficiario = Beneficiario.query.filter(Beneficiario.cedula == cedula).first()
+            if beneficiario is None:
+                #Se arroja excepcion, el beneficiario ya esta creado
+                raise DataNotFoundException()
+
+            beneficiario.cedula             = payload['cedula']
+            beneficiario.cedulatrabajador   = payload['cedulatrabajador']
+            beneficiario.vinculo            = payload['vinculo']
+
+            beneficiario.nombres            = payload['nombres']
+            beneficiario.apellidos          = payload['apellidos']
+            beneficiario.sexo               = payload['sexo']
+            beneficiario.fechanacimiento    = payload['fechanacimiento']
+
+            beneficiario.historiamedica.gruposanguineo = payload['gruposanguineo']
+            beneficiario.historiamedica.discapacidad   = payload['tipodiscapacidad']
+
+            #Se procesan las Patologias de la Historia Medica
+            patologias = self.get_patologias(payload) 
+            if len(patologias) > 0:
+                beneficiario.historiamedica.patologias = [p for p in patologias] 
+            else:
+                beneficiario.historiamedica.patologias = []
+
+            db.session.add(beneficiario)
+            db.session.commit()            
+        else:
+            #No se proporciono el username o la contrasena, es obligatorio 
+            raise ParametersNotFoundException()
+    
+
+    def delete(self,cedula):
+        beneficiario = Beneficiario.query.filter(Beneficiario.cedula == cedula).first()
+        if beneficiario is None:
+            #Se arroja excepcion, el beneficiario ya esta creado
+            raise DataNotFoundException()
+        historia = HistoriaMedica.query.filter(HistoriaMedica.cedula == cedula).first()
+        db.session.delete(historia)
+        db.session.delete(beneficiario)
+        db.session.commit()
