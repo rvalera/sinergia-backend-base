@@ -281,6 +281,13 @@ class PersonaRepository(SinergiaRepository):
 
 class TrabajadorRepository(SinergiaRepository):
 
+    def get_patologias(self,payload):
+        patologias_list = []
+        if 'patologias' in payload:
+            ids_patologias = payload['patologias']
+            patologias_list = Patologia.query.filter(Patologia.codigopatologia.in_(ids_patologias)).all()
+        return patologias_list
+
     def get(self,query_params):
 
         sql = '''
@@ -381,6 +388,45 @@ class TrabajadorRepository(SinergiaRepository):
             # pass exception to function
             error_description = '%s' % (err)
             raise DatabaseException(text=error_description)
+
+
+    def save(self,payload):
+        cedula = payload['cedula'] if 'cedula' in payload else None
+        if cedula:
+            #Se chequea que el trabajador exista previamente 
+            trabajador = Trabajador.query.filter(Trabajador.cedula == cedula).first()
+            if trabajador is None:
+                #Se arroja excepcion, el trabajador no existe
+                raise DataNotFoundException()
+
+            trabajador.telefonocelular = payload['telefonocelular']
+            trabajador.telefonoresidencia = payload['telefonoresidencia']
+            trabajador.correo = payload['correo']
+            trabajador.codigoestado = payload['codigoestado']
+            trabajador.codigomunicipio = payload['codigomunicipio']
+            trabajador.parroquia = payload['parroquia']
+            trabajador.sector = payload['sector']
+            trabajador.avenidacalle = payload['avenidacalle']
+            trabajador.edifcasa = payload['edifcasa']
+            trabajador.camisa = payload['camisa']
+            trabajador.pantalon = payload['pantalon']
+            trabajador.calzado = payload['calzado']
+
+            trabajador.historiamedica.gruposanguineo = payload['gruposanguineo']
+            trabajador.historiamedica.discapacidad   = payload['tipodiscapacidad']
+
+            #Se procesan las Patologias de la Historia Medica
+            patologias = self.get_patologias(payload) 
+            if len(patologias) > 0:
+                trabajador.historiamedica.patologias = [p for p in patologias] 
+            else:
+                trabajador.historiamedica.patologias = []
+
+            db.session.add(trabajador)
+            db.session.commit()            
+        else:
+            #No se proporciono el username o la contrasena, es obligatorio 
+            raise ParametersNotFoundException()
 
 class EstadoRepository(SinergiaRepository):
     def getAll(self):

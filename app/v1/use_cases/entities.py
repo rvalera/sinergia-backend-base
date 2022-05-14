@@ -54,6 +54,10 @@ class GetPatologiaListUseCase(object):
 #     def execute(self,security_credentials,query_params):
 #         return TrabajadorRepository(username=security_credentials['username']).get(query_params)
 
+class SaveTrabajadorUseCase(object):
+    def execute(self,security_credentials,payload):
+        TrabajadorRepository(username=security_credentials['username']).save(payload)
+
 class GetTrabajadorUseCase(object):
     def execute(self,security_credentials,query_params):
         return TrabajadorRepository(username=security_credentials['username']).getByCedula(query_params['cedula'])

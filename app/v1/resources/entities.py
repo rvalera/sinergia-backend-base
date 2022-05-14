@@ -3,7 +3,7 @@ from flask_jwt_extended.view_decorators import jwt_required
 from flask_restplus import Resource, Namespace, fields
 from app.v1.resources.base import ProxySecureResource, secureHeader, queryParams
 from app.v1.use_cases.entities import CreateBeneficiarioUseCase, GetEmpresaListUseCase, GetEstadoListUseCase, GetMunicipioListUseCase,GetTipoNominaListUseCase, \
-    GetTrabajadorUseCase, GetEstadoListUseCase, GetMunicipioListUseCase, GetPatologiaListUseCase, SaveBeneficiarioUseCase, DeleteBeneficiarioUseCase
+    GetTrabajadorUseCase, GetEstadoListUseCase, GetMunicipioListUseCase, GetPatologiaListUseCase, SaveBeneficiarioUseCase, DeleteBeneficiarioUseCase, SaveTrabajadorUseCase
 # from app.v1.use_cases.entities import GetCargoListUseCase,GetCentroCostoListUseCase,GetConceptoNominaListUseCase,\
 #     GetDispositivoListUseCase,GetEstatusTrabajadorListUseCase,GetTipoAusenciaListUseCase,GetTipoNominaListUseCase,\
 #     GetTrabajadorListUseCase,GetTipoTrabajadorListUseCase,GetGrupoGuardiaListUseCase
@@ -61,20 +61,6 @@ PersonaStruct = v1_api.model('PersonaStruct', {
 }) 
 
 
-UpdateBeneficiarioStruct = v1_api.model('UpdateBeneficiarioStruct', { 
-    'cedula': fields.String(),
-    'nombres': fields.String(),
-    'apellidos': fields.String(),
-    'sexo': fields.String(),
-    'fechanacimiento': fields.String(),
-    'cedulatrabajador': fields.String(),
-    'vinculo': fields.String(),
-    'gruposanguineo': fields.String(),
-    'tipodiscapacidad': fields.String(),
-    'patologias' : fields.List(fields.String()), #Listado de Ids de Patologias
-}) 
-
-
 TipoCargoStruct = v1_api.model('TipoCargoStruct', { 
     'codigo' : fields.String(), 
     'nombre' : fields.String(), 
@@ -120,6 +106,19 @@ BeneficiarioStruct = v1_api.model('BeneficiarioStruct', {
     'historiamedica': fields.Nested(HistoriaMedicaStruct,attribute='historiamedica')
 })
 
+UpdateBeneficiarioStruct = v1_api.model('UpdateBeneficiarioStruct', { 
+    'cedula': fields.String(),
+    'nombres': fields.String(),
+    'apellidos': fields.String(),
+    'sexo': fields.String(),
+    'fechanacimiento': fields.String(),
+    'cedulatrabajador': fields.String(),
+    'vinculo': fields.String(),
+    'gruposanguineo': fields.String(),
+    'tipodiscapacidad': fields.String(),
+    'patologias' : fields.List(fields.String()), #Listado de Ids de Patologias
+}) 
+
 TrabajadorStruct = v1_api.model('TrabajadorStruct', { 
     'cedula' : fields.String(), 
     'nombres' : fields.String(),  
@@ -163,12 +162,25 @@ TrabajadorStruct = v1_api.model('TrabajadorStruct', {
 
 }) 
 
-UpdatePersonaStruct = v1_api.model('UpdatePersonaStruct', { 
-    'cedula' : fields.String(), 
-}) 
 
 UpdateTrabajadorStruct = v1_api.model('UpdateTrabajadorStruct', { 
-    'cedula' : fields.String(), 
+    'cedula' : fields.String(),   
+    'telefonocelular' : fields.String(),  
+    'telefonoresidencia' : fields.String(),  
+    'correo' : fields.String(),
+    'codigoestado': fields.String(), 
+    'codigomunicipio': fields.String(), 
+    'parroquia' : fields.String(), 
+    'sector' : fields.String(),  
+    'avenidacalle' : fields.String(),  
+    'edifcasa' : fields.String(),  
+    'camisa' : fields.String(),  
+    'pantalon' : fields.String(),  
+    'calzado' : fields.String(),  
+    'gruposanguineo': fields.String(),
+    'tipodiscapacidad': fields.String(),
+    'patologias' : fields.List(fields.String()), #Listado de Ids de Patologias
+
 }) 
 
 GetTrabajadorListStruct = v1_api.model('GetTrabajadorListResult', { 
@@ -182,6 +194,10 @@ GetTrabajadorStruct = v1_api.model('GetTrabajadorResult', {
     'ok' : fields.Integer(description='Ok Result'), 
     'data' : fields.Nested(TrabajadorStruct,attribute='data')
 }) 
+
+UpdatePersonaStruct = v1_api.model('UpdatePersonaStruct', { 
+    'cedula' : fields.String(), 
+})
 
 @entities_ns.route('/empresa')
 @v1_api.expect(secureHeader)
@@ -419,6 +435,21 @@ class EstadoResource(ProxySecureResource):
         #security_credentials = {'username': 'prueba'}
         data = GetPatologiaListUseCase().execute(security_credentials)
         return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+
+
+@entities_ns.route('/trabajador')
+@v1_api.expect(secureHeader)
+class TrabajadorResource(ProxySecureResource): 
+    
+    @entities_ns.doc('Update Trabajador')
+    @v1_api.expect(UpdateTrabajadorStruct)    
+    @jwt_required    
+    def put(self):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        payload = request.json        
+        SaveTrabajadorUseCase().execute(security_credentials,payload)
+        return  {'ok':1} , 200
 
 
 @entities_ns.route('/beneficiario')
