@@ -22,11 +22,17 @@ MunicipioStruct = v1_api.model('MunicipioStruct', {
     'nombre' : fields.String(), 
 })
 
+PatologiaStruct = v1_api.model('PatologiaStruct', { 
+    'codigopatologia' : fields.String(), 
+    'nombre' : fields.String(), 
+})
+
 HistoriaMedicaStruct = v1_api.model('HistoriaMedicaStruct', { 
     'cedula' : fields.String(), 
     'gruposanguineo' : fields.String(), 
     'discapacidad' : fields.String(), 
-    'fecha' : fields.String(format='date-time')
+    'fecha' : fields.String(format='date-time'),
+    'patologias': fields.List(fields.Nested(PatologiaStruct))
 })
 
 PersonaStruct = v1_api.model('PersonaStruct', { 
@@ -367,9 +373,9 @@ class OneTrabajadorResource(ProxySecureResource):
 
     @entities_ns.doc('Get Trabajador')
     @v1_api.marshal_with(GetTrabajadorStruct) 
-    @jwt_required    
+    #@jwt_required    
     def get(self,cedula):
-        security_credentials = self.checkCredentials()
+        #security_credentials = self.checkCredentials()
         security_credentials = {'username': 'prueba'}
         query_params = {'cedula': cedula}
         data = GetTrabajadorUseCase().execute(security_credentials,query_params)
