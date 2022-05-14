@@ -373,10 +373,10 @@ class OneTrabajadorResource(ProxySecureResource):
 
     @entities_ns.doc('Get Trabajador')
     @v1_api.marshal_with(GetTrabajadorStruct) 
-    #@jwt_required    
+    @jwt_required    
     def get(self,cedula):
-        #security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
         query_params = {'cedula': cedula}
         data = GetTrabajadorUseCase().execute(security_credentials,query_params)
         return  {'ok': 1, 'data': data}, 200
