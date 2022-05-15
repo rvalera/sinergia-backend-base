@@ -152,6 +152,7 @@ TrabajadorStruct = v1_api.model('TrabajadorStruct', {
     'camisa' : fields.String(),  
     'pantalon' : fields.String(),  
     'calzado' : fields.String(),  
+    'observaciones' : fields.String(),  
 
     'ficha' : fields.String(),
     'historiamedica': fields.Nested(HistoriaMedicaStruct,attribute='historiamedica'),  
