@@ -179,6 +179,7 @@ UpdateTrabajadorStruct = v1_api.model('UpdateTrabajadorStruct', {
     'calzado' : fields.String(),  
     'gruposanguineo': fields.String(),
     'tipodiscapacidad': fields.String(),
+    'observaciones': fields.String(),
     'patologias' : fields.List(fields.String()), #Listado de Ids de Patologias
 
 }) 

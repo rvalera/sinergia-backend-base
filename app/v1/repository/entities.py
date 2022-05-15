@@ -411,6 +411,7 @@ class TrabajadorRepository(SinergiaRepository):
             trabajador.camisa = payload['camisa']
             trabajador.pantalon = payload['pantalon']
             trabajador.calzado = payload['calzado']
+            trabajador.observaciones = payload['observaciones']
 
             trabajador.historiamedica.gruposanguineo = payload['gruposanguineo']
             trabajador.historiamedica.discapacidad   = payload['tipodiscapacidad']
@@ -421,6 +422,11 @@ class TrabajadorRepository(SinergiaRepository):
                 trabajador.historiamedica.patologias = [p for p in patologias] 
             else:
                 trabajador.historiamedica.patologias = []
+
+            trabajador.fechaactualizacion = datetime.now()
+            user = User.query.filter(User.name==self.username.lower()).first()        
+            if user:
+                trabajador.idusuarioactualizacion = user.id
 
             db.session.add(trabajador)
             db.session.commit()            
