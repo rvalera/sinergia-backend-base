@@ -102,6 +102,18 @@ class GetCitasDisponiblesListUseCase(object):
     def execute(self,security_credentials, query_params):
         return CitaRepository(username=security_credentials['username']).getFechasDisponibleByEspecialidad(query_params['codigoespecialidad'],query_params['fechainicio'],query_params['fechafin'])
 
+class CreateCitaMedicaUseCase(object):
+    def execute(self,security_credentials,payload):
+        CitaRepository(username=security_credentials['username']).new(payload)
+
+class SaveCitaMedicaUseCase(object):
+    def execute(self,security_credentials,payload):
+        CitaRepository(username=security_credentials['username']).save(payload)
+
+class DeleteCitaMedicaUseCase(object):
+    def execute(self,security_credentials,query_params):
+        CitaRepository(username=security_credentials['username']).cancelCita(query_params['idcita'])
+
 
 # class GetTipoTrabajadorListUseCase(object):
 #     def execute(self,security_credentials):

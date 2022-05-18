@@ -57,3 +57,27 @@ class RepositoryUnknownException(SinergiaException):
 class RESTClientException(SinergiaException):
     def __init__(self, text=None):
         super(RESTClientException, self).__init__(code='AIR001',text = text)
+
+
+
+## =============================================================================================================================
+## ================================                  CVG EXCEPTIONS               ==============================================
+## =============================================================================================================================
+
+class CitaFechaInvalidaException(SinergiaException):
+    def __init__(self, text=None):
+        super(CitaFechaInvalidaException, self).__init__(code='CIT001',text = text)
+
+class CitaFechaSinCupoException(SinergiaException):
+    def __init__(self, text=None):
+        super(CitaFechaSinCupoException, self).__init__(code='CIT002',text = text)
+
+class CitaException(SinergiaException):
+    def __init__(self, text=None):
+        super(CitaException, self).__init__(code='CIT003',text = text)
+
+
+
+
+
+

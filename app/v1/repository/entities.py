@@ -4,17 +4,16 @@ Created on 17 dic. 2019
 @author: ramon
 '''
 from app.v1.models.security import SecurityElement, User, PersonExtension
-from app.v1.models.hr import Beneficiario, HistoriaMedica, Persona,Estado,Municipio,Trabajador,TipoTrabajador,EstatusTrabajador,TipoNomina,\
+from app.v1.models.hr import Beneficiario, Especialidad, HistoriaMedica, Persona,Estado,Municipio,Trabajador,TipoTrabajador,EstatusTrabajador,TipoNomina,\
     TipoCargo,UbicacionLaboral,Empresa, Patologia, Cita
 from app import redis_client, db
 import json
 import requests
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
-from app.exceptions.base import CryptoPOSException, ConnectionException,NotImplementedException,DatabaseException,IntegrityException, ParametersNotFoundException
+from app.exceptions.base import DataNotFoundException, CitaFechaInvalidaException, CitaFechaSinCupoException, CryptoPOSException, ConnectionException,NotImplementedException,DatabaseException,\
+                                IntegrityException, ParametersNotFoundException, CitaException
 from .base import SinergiaRepository
-
-from app.exceptions.base import DataNotFoundException
 
 import pandas as pd
 import logging
@@ -24,7 +23,8 @@ from sqlalchemy import select
 
 from psycopg2 import OperationalError, errorcodes, errors    
 from sqlalchemy import exc
-from datetime import datetime
+from datetime import datetime, timedelta
+from app.v1.models.constant import *
 
 
 class TipoCargoRepository(SinergiaRepository):
@@ -593,6 +593,96 @@ class HistoriaMedicaRepository(SinergiaRepository):
 
 
 class CitaRepository(SinergiaRepository):
+
+    def getFechasConCitaByEspecialidad(self, codigoespecialidad, fechainicio, fechafin):
+        #Buscamos los dias que la especialidad tiene citas en el rango de fecha recibida
+        sql_query = f"select fechacita from hospitalario.cita where codigoespecialidad = '{codigoespecialidad}' \
+                        and fechacita between '{fechainicio}' and '{fechafin}' and estado <> '{CITA_CANCELADA}'"
+        table_df = pd.read_sql_query(sql_query,con=db.engine)
+        df2 = table_df.groupby(['fechacita'])['fechacita'].count()
+        dictfechasconcita = df2.to_dict()
+        formatofecha = '%Y-%m-%d'
+        data = {}
+        for key in dictfechasconcita:
+            pyfecha = key.to_pydatetime()
+            fecha = pyfecha.date()
+            fechastr = datetime.strftime(fecha, formatofecha)
+            nrocitas = dictfechasconcita[key]
+            data[fechastr] = nrocitas
+        return data
+
+
+    def canSolicitarCita(self, codigoespecialidad, fechacita):
+        especialidad = Especialidad.query.filter(Especialidad.codigoespecialidad == codigoespecialidad).first()
+        if especialidad is None:
+            raise DataNotFoundException()
+
+        if fechacita is None:
+            raise DataNotFoundException()
+
+        cantidadmaximacitas = especialidad.cantidadmaximapacientes
+        diasdeatencion = []
+        if especialidad.diasdeatencion:
+            diasdeatencion = eval(especialidad.diasdeatencion)
+
+        fechacitadt = datetime.strptime(fechacita, '%Y-%m-%d')
+        diasemana = fechacitadt.weekday()
+        if diasemana not in diasdeatencion:
+            raise CitaFechaInvalidaException()
+
+        #Validamos que la fecha de la cita sea valida
+        dictfechasconcita = self.getFechasConCitaByEspecialidad(codigoespecialidad, fechacita, fechacita)
+        if dictfechasconcita:
+            nrocitas = dictfechasconcita[fechacita]
+            if nrocitas >= cantidadmaximacitas:
+                raise CitaFechaSinCupoException()
+        
+        return True
+
+
+    def new(self,payload):
+        cedula = payload['cedula'] if 'cedula' in payload else None
+        codigoespecialidad = payload['codigoespecialidad'] if 'codigoespecialidad' in payload else None
+        fechacita = payload['fechacita'] if 'fechacita' in payload else None
+
+        #Se chequea que la persona exista
+        persona = Persona.query.filter(Persona.cedula == cedula).first()
+        if persona is None:
+            #Se arroja excepcion, la persona no existe en la BD
+            raise DataNotFoundException()
+
+        if not self.canSolicitarCita(codigoespecialidad, fechacita):
+            raise CitaException()
+
+        cita = Cita()
+        cita.cedula = cedula
+        cita.codigoespecialidad = codigoespecialidad
+        cita.fechacita = fechacita
+        cita.fechadia = datetime.now().date()
+        cita.estado = CITA_PLANIFICADA
+        db.session.add(cita)
+        db.session.commit()   
+
+    def save(self,payload):         
+        idcita = payload['idcita'] if 'idcita' in payload else None
+        codigoespecialidad = payload['codigoespecialidad'] if 'codigoespecialidad' in payload else None
+        fechacita = payload['fechacita'] if 'fechacita' in payload else None
+
+        cita = Cita.query.filter(Cita.id == idcita, Cita.estado == CITA_PLANIFICADA).first()
+        if cita is None:
+            raise DataNotFoundException()
+
+        if not self.canSolicitarCita(codigoespecialidad, fechacita):
+            raise CitaException()
+        
+        cita.codigoespecialidad = codigoespecialidad
+        cita.fechacita = fechacita
+        cita.estado = CITA_PLANIFICADA
+        db.session.add(cita)
+        db.session.commit()   
+
+
+
     def getByCedula(self,cedula):
         try:
             citamedica = Cita.query.filter(Cita.cedula == cedula).first()
@@ -617,26 +707,49 @@ class CitaRepository(SinergiaRepository):
     
     def getFechasDisponibleByEspecialidad(self, codigoespecialidad, fechainicio, fechafin):
         try:
-            sql_query = f"select fechacita from hospitalario.cita where codigoespecialidad = '{codigoespecialidad}' \
-                            and fechacita between '{fechainicio}' and '{fechafin}'"
-            table_df = pd.read_sql_query(sql_query,con=db.engine)
-            df2 = table_df.groupby(['fechacita'])['fechacita'].count()
-            dict_result = df2.to_dict()
-            fechasdisponibles = []
-            for key in dict_result:
-                pyfecha = key.to_pydatetime()
-                fecha = pyfecha.date()
-                nrocitas = dict_result[key]
+            especialidad = Especialidad.query.filter(Especialidad.codigoespecialidad == codigoespecialidad).first()
+            if especialidad is None:
+                raise DataNotFoundException()
 
-                dictfecha = {
-                    'fecha': datetime.strftime(fecha,'%Y-%m-%d'),
-                    'citasdisponibles': 0
-                }
-                fechasdisponibles.append(dictfecha)
+            citasdia = especialidad.cantidadmaximapacientes
+            diasdeatencion = []
+            if especialidad.diasdeatencion:
+                diasdeatencion = eval(especialidad.diasdeatencion)
 
-            return fechasdisponibles
+            fechasconcita = self.getFechasConCitaByEspecialidad(codigoespecialidad, fechainicio, fechafin)
+            formatofecha = '%Y-%m-%d'
+            fechaauxdt = datetime.strptime(fechainicio, formatofecha)
+            fechafindt = datetime.strptime(fechafin, formatofecha)
+
+            fechasrango = []
+            while fechaauxdt <= fechafindt:
+                fechaauxstr = datetime.strftime(fechaauxdt, formatofecha)
+                dict_fecha = {
+                        'fecha': fechaauxstr,
+                        'citasdia': citasdia,
+                        'citasdisponibles': citasdia,
+                    }
+                diasemana = fechaauxdt.weekday()
+                if diasemana in diasdeatencion:
+                    if fechaauxstr in fechasconcita.keys():
+                        dict_fecha['citasdisponibles'] = citasdia - fechasconcita[fechaauxstr]
+                    fechasrango.append(dict_fecha)
+                
+                fechaauxdt = fechaauxdt + timedelta(days=1)
+            
+            return fechasrango
 
         except exc.DatabaseError as err:
             # pass exception to function
             error_description = '%s' % (err)
             raise DatabaseException(text=error_description)
+    
+
+    def cancelCita(self,idcita):
+        cita = Cita.query.filter(Cita.id == idcita).first()
+        if cita is None:
+            #Se arroja excepcion, el beneficiario ya esta creado
+            raise DataNotFoundException()
+        cita.estado = CITA_CANCELADA
+        db.session.add(cita)
+        db.session.commit()
