@@ -5,7 +5,7 @@ Created on 17 dic. 2019
 '''
 from app.v1.models.security import SecurityElement, User, PersonExtension
 from app.v1.models.hr import Beneficiario, HistoriaMedica, Persona,Estado,Municipio,Trabajador,TipoTrabajador,EstatusTrabajador,TipoNomina,\
-    TipoCargo,UbicacionLaboral,Empresa, Patologia
+    TipoCargo,UbicacionLaboral,Empresa, Patologia, Cita
 from app import redis_client, db
 import json
 import requests
@@ -473,6 +473,19 @@ class PatologiaRepository(SinergiaRepository):
             raise DatabaseException(text=error_description)
 
 
+class EspecialidadRepository(SinergiaRepository):
+    def getAll(self):
+        try:
+            table_df = pd.read_sql_query('select * from hospitalario.especialidad',con=db.engine)
+            table_df = table_df.fillna('')
+            result = table_df.to_dict('records')
+            return result
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
+
 class BeneficiarioRepository(SinergiaRepository):
 
     def get_patologias(self,payload):
@@ -564,3 +577,66 @@ class BeneficiarioRepository(SinergiaRepository):
         db.session.delete(historia)
         db.session.delete(beneficiario)
         db.session.commit()
+
+
+class HistoriaMedicaRepository(SinergiaRepository):
+    def getByCedula(self,cedula):
+        try:
+            historiamedica = HistoriaMedica.query.filter(HistoriaMedica.cedula == cedula).first()
+            if historiamedica is None:
+                raise DataNotFoundException()
+            return historiamedica
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
+
+class CitaRepository(SinergiaRepository):
+    def getByCedula(self,cedula):
+        try:
+            citamedica = Cita.query.filter(Cita.cedula == cedula).first()
+            if citamedica is None:
+                raise DataNotFoundException()
+            return citamedica
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
+
+    def getByFechaCita(self,fechacita):
+        try:
+            citamedicas = Cita.query.filter(Cita.fechacita == fechacita).all()
+            return citamedicas
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
+    
+    def getFechasDisponibleByEspecialidad(self, codigoespecialidad, fechainicio, fechafin):
+        try:
+            sql_query = f"select fechacita from hospitalario.cita where codigoespecialidad = '{codigoespecialidad}' \
+                            and fechacita between '{fechainicio}' and '{fechafin}'"
+            table_df = pd.read_sql_query(sql_query,con=db.engine)
+            df2 = table_df.groupby(['fechacita'])['fechacita'].count()
+            dict_result = df2.to_dict()
+            fechasdisponibles = []
+            for key in dict_result:
+                pyfecha = key.to_pydatetime()
+                fecha = pyfecha.date()
+                nrocitas = dict_result[key]
+
+                dictfecha = {
+                    'fecha': datetime.strftime(fecha,'%Y-%m-%d'),
+                    'citasdisponibles': 0
+                }
+                fechasdisponibles.append(dictfecha)
+
+            return fechasdisponibles
+
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)

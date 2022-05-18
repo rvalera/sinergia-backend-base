@@ -2,8 +2,9 @@ from app.v1 import v1_api
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_restplus import Resource, Namespace, fields
 from app.v1.resources.base import ProxySecureResource, secureHeader, queryParams
-from app.v1.use_cases.entities import CreateBeneficiarioUseCase, GetEmpresaListUseCase, GetEstadoListUseCase, GetMunicipioListUseCase,GetTipoNominaListUseCase, \
-    GetTrabajadorUseCase, GetEstadoListUseCase, GetMunicipioListUseCase, GetPatologiaListUseCase, SaveBeneficiarioUseCase, DeleteBeneficiarioUseCase, SaveTrabajadorUseCase
+from app.v1.use_cases.entities import CreateBeneficiarioUseCase, GetCitaUseCase, GetEmpresaListUseCase, GetEspecialidadListUseCase, GetEstadoListUseCase, GetHistoriaMedicaUseCase, GetMunicipioListUseCase,GetTipoNominaListUseCase, \
+    GetTrabajadorUseCase, GetEstadoListUseCase, GetMunicipioListUseCase, GetPatologiaListUseCase, SaveBeneficiarioUseCase, DeleteBeneficiarioUseCase, SaveTrabajadorUseCase, \
+    GetCitasMedicasListUseCase, GetCitasDisponiblesListUseCase
 # from app.v1.use_cases.entities import GetCargoListUseCase,GetCentroCostoListUseCase,GetConceptoNominaListUseCase,\
 #     GetDispositivoListUseCase,GetEstatusTrabajadorListUseCase,GetTipoAusenciaListUseCase,GetTipoNominaListUseCase,\
 #     GetTrabajadorListUseCase,GetTipoTrabajadorListUseCase,GetGrupoGuardiaListUseCase
@@ -25,14 +26,6 @@ MunicipioStruct = v1_api.model('MunicipioStruct', {
 PatologiaStruct = v1_api.model('PatologiaStruct', { 
     'codigopatologia' : fields.String(), 
     'nombre' : fields.String(), 
-})
-
-HistoriaMedicaStruct = v1_api.model('HistoriaMedicaStruct', { 
-    'cedula' : fields.String(), 
-    'gruposanguineo' : fields.String(), 
-    'discapacidad' : fields.String(), 
-    'fecha' : fields.String(format='date-time'),
-    'patologias': fields.List(fields.Nested(PatologiaStruct))
 })
 
 PersonaStruct = v1_api.model('PersonaStruct', { 
@@ -94,6 +87,15 @@ EmpresaStruct = v1_api.model('EmpresaStruct', {
 
 UsuarioActStruct = v1_api.model('UsuarioActStruct', { 
     'name': fields.String()
+})
+
+HistoriaMedicaStruct = v1_api.model('HistoriaMedicaStruct', { 
+    'cedula' : fields.String(), 
+    'persona': fields.Nested(PersonaStruct,attribute='persona'),
+    'gruposanguineo' : fields.String(), 
+    'discapacidad' : fields.String(), 
+    'fecha' : fields.String(format='date-time'),
+    'patologias': fields.List(fields.Nested(PatologiaStruct))
 })
 
 BeneficiarioStruct = v1_api.model('BeneficiarioStruct', { 
@@ -195,7 +197,46 @@ GetTrabajadorListStruct = v1_api.model('GetTrabajadorListResult', {
 GetTrabajadorStruct = v1_api.model('GetTrabajadorResult', { 
     'ok' : fields.Integer(description='Ok Result'), 
     'data' : fields.Nested(TrabajadorStruct,attribute='data')
+})
+
+GetHistoriaMedicaStruct = v1_api.model('GetHistoriaMedicaResult', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'data' : fields.Nested(HistoriaMedicaStruct,attribute='data')
+})
+
+EspecialidadStruct = v1_api.model('EspecialidadStruct', { 
+    'codigoespecialidad' : fields.String(), 
+    'nombre' : fields.String(), 
+    'diasdeatencion' : fields.String(), 
+    'autogestionada' : fields.Boolean(), 
+    'cantidadmaximapacientes' : fields.Integer()
+})
+
+CitaStruct = v1_api.model('CitaStruct', { 
+    'id' : fields.String(), 
+    'persona': fields.Nested(PersonaStruct,attribute='persona'),
+    'especialidad': fields.Nested(EspecialidadStruct,attribute='especialidad'),
+    'fechadia' : fields.DateTime(), 
+    'fechacita' : fields.DateTime(), 
+    'fechaentradacola' : fields.DateTime(), 
+    'fechapasaconsulta' : fields.DateTime(), 
+    'fechafinconsulta' : fields.DateTime(), 
+    'idbiostar' : fields.String()
 }) 
+
+GetCitaStruct = v1_api.model('GetCitaResult', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'data' : fields.Nested(CitaStruct,attribute='data')
+})
+
+GetCitaListStruct = v1_api.model('GetCitaListResult', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'count' : fields.Integer(description='Count Row'), 
+    'total' : fields.Integer(description='Total Row'), 
+    'data' : fields.Nested(CitaStruct,attribute='data')
+}) 
+
+
 
 UpdatePersonaStruct = v1_api.model('UpdatePersonaStruct', { 
     'cedula' : fields.String(), 
@@ -388,7 +429,6 @@ class TipoNominaResource(ProxySecureResource):
 @v1_api.expect(secureHeader)
 class OneTrabajadorResource(ProxySecureResource):
 
-
     @entities_ns.doc('Get Trabajador')
     @v1_api.marshal_with(GetTrabajadorStruct) 
     @jwt_required    
@@ -428,7 +468,7 @@ class MunicipioResource(ProxySecureResource):
 
 @entities_ns.route('/patologia')
 @v1_api.expect(secureHeader)
-class EstadoResource(ProxySecureResource): 
+class PatologiaResource(ProxySecureResource): 
 
     @entities_ns.doc('Patologia')
     @jwt_required    
@@ -436,6 +476,19 @@ class EstadoResource(ProxySecureResource):
         security_credentials = self.checkCredentials()
         #security_credentials = {'username': 'prueba'}
         data = GetPatologiaListUseCase().execute(security_credentials)
+        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+
+
+@entities_ns.route('/especialidad')
+@v1_api.expect(secureHeader)
+class EspecialidadResource(ProxySecureResource): 
+
+    @entities_ns.doc('Especialidad')
+    @jwt_required    
+    def get(self):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        data = GetEspecialidadListUseCase().execute(security_credentials)
         return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
 
 
@@ -479,7 +532,6 @@ class BeneficiarioResource(ProxySecureResource):
         return  {'ok':1} , 200
     
 
-
 @entities_ns.route('/beneficiario/<cedula>')
 @entities_ns.param('cedula', 'Cedula Trabajador')
 @v1_api.expect(secureHeader)
@@ -492,6 +544,75 @@ class DeleteBeneficiarioResource(ProxySecureResource):
         query_params = {'cedula': cedula}
         DeleteBeneficiarioUseCase().execute(security_credentials,query_params)
         return  {'ok':1} , 200
+
+
+@entities_ns.route('/historiamedica/<cedula>')
+@entities_ns.param('cedula', 'Cedula Persona')
+@v1_api.expect(secureHeader)
+class OneHistoriaMedicaResource(ProxySecureResource):
+
+    @entities_ns.doc('Get Historia Medica')
+    @v1_api.marshal_with(GetHistoriaMedicaStruct) 
+    @jwt_required    
+    def get(self,cedula):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        query_params = {'cedula': cedula}
+        data = GetHistoriaMedicaUseCase().execute(security_credentials,query_params)
+        return  {'ok': 1, 'data': data}, 200
+
+
+@entities_ns.route('/citamedica/<cedula>')
+@entities_ns.param('cedula', 'Cedula Persona')
+@v1_api.expect(secureHeader)
+class OneCitaResource(ProxySecureResource):
+
+    @entities_ns.doc('Get Cita Medica')
+    @v1_api.marshal_with(GetCitaStruct) 
+    @jwt_required    
+    def get(self,cedula):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        query_params = {'cedula': cedula}
+        data = GetCitaUseCase().execute(security_credentials,query_params)
+        return  {'ok': 1, 'data': data}, 200
+
+
+@entities_ns.route('/citamedica/fecha/<fecha>')
+@entities_ns.param('fecha', 'Fecha de las Citas Medicas')
+@v1_api.expect(secureHeader)
+class CitaFechaListResource(ProxySecureResource):
+
+    @entities_ns.doc('Get Citas Medicas by Date')
+    @v1_api.marshal_with(GetCitaListStruct) 
+    @jwt_required    
+    def get(self,fecha):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        query_params = {'fechacita': fecha}
+        data = GetCitasMedicasListUseCase().execute(security_credentials,query_params)
+        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+
+
+@entities_ns.route('/citamedica/disponible/<codigoespecialidad>/<fechainicio>/<fechafin>')
+@entities_ns.param('codigoespecialidad', 'Codigo de la Especialidad')
+@entities_ns.param('fechainicio', 'Fecha Inicio')
+@entities_ns.param('fechafin', 'Fecha Fin')
+@v1_api.expect(secureHeader)
+class CitaFechaDisponiblesListResource(ProxySecureResource):
+
+    @entities_ns.doc('Get Citas Medicas Disponibles by Especialidad y Rango de Fecha')
+    @jwt_required    
+    def get(self,codigoespecialidad, fechainicio, fechafin):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        query_params = {
+            'codigoespecialidad': codigoespecialidad,
+            'fechainicio': fechainicio,
+            'fechafin': fechafin
+        }
+        data = GetCitasDisponiblesListUseCase().execute(security_credentials,query_params)
+        return  {'ok':1, 'data': data} , 200
 
 
 # @entities_ns.route('/tipo_trabajador')

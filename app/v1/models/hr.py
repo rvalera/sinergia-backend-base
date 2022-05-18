@@ -169,8 +169,8 @@ class Beneficiario(Persona):
 class PatologiaHistoriaMedica(db.Model):
     __tablename__ = 'patologiahistoriamedica'
     __table_args__ = {'schema' : 'hospitalario'}
-    cedula = Column(Integer, ForeignKey('hospitalario.historiamedica.cedula'), primary_key = True)
-    codigopatologia = Column(Integer, ForeignKey('hospitalario.patologia.codigopatologia'), primary_key = True)
+    cedula = Column(String(12), ForeignKey('hospitalario.historiamedica.cedula'), primary_key = True)
+    codigopatologia = Column(String(12), ForeignKey('hospitalario.patologia.codigopatologia'), primary_key = True)
 
 
 
@@ -197,4 +197,32 @@ class HistoriaMedica(db.Model):
     patologias = relationship("Patologia", secondary='hospitalario.patologiahistoriamedica')          
 
 
+class Especialidad(db.Model):
+    __tablename__ = 'especialidad'
+    __table_args__ = {'schema' : 'hospitalario'}
+
+    codigoespecialidad = Column(String(12), primary_key=True)
+    nombre = Column(String(100))
+    autogestionada = Column(Boolean)
+    diasdeatencion = Column(String(100))
+    cantidadmaximapacientes = Column(Integer)
+
+
+class Cita(db.Model):
+    __tablename__ = 'cita'
+    __table_args__ = {'schema' : 'hospitalario'}
+
+    id = Column(Integer, primary_key=True)
+    cedula = Column(String(12), ForeignKey('hospitalario.persona.cedula'))
+    persona = relationship("Persona")
+    codigoespecialidad = Column(String(12), ForeignKey('hospitalario.especialidad.codigoespecialidad'))
+    especialidad = relationship("Especialidad")
+
+    fechadia = Column(DateTime()) 
+    fechacita = Column(DateTime()) 
+    fechaentradacola = Column(DateTime()) 
+    fechapasaconsulta = Column(DateTime()) 
+    fechafinconsulta = Column(DateTime()) 
+    idbiostar = Column(String(100))
+    
                           
