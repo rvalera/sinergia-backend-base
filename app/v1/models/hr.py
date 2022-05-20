@@ -166,15 +166,28 @@ class Beneficiario(Persona):
 #)
 
 
+class Discapacidad(db.Model):
+    __tablename__ = 'discapacidad'
+    __table_args__ = {'schema' : 'hospitalario'}
+
+    codigodiscapacidad = Column(String(12), primary_key=True)
+    nombre = Column(String(100)) 
+
+
+class DiscapacidadHistoriaMedica(db.Model):
+    __tablename__ = 'discapacidadhistoriamedica'
+    __table_args__ = {'schema' : 'hospitalario'}
+    cedula = Column(String(12), ForeignKey('hospitalario.historiamedica.cedula'), primary_key = True)
+    codigodiscapacidad = Column(String(12), ForeignKey('hospitalario.discapacidad.codigodiscapacidad'), primary_key = True)
+
+
 class PatologiaHistoriaMedica(db.Model):
     __tablename__ = 'patologiahistoriamedica'
     __table_args__ = {'schema' : 'hospitalario'}
     cedula = Column(String(12), ForeignKey('hospitalario.historiamedica.cedula'), primary_key = True)
     codigopatologia = Column(String(12), ForeignKey('hospitalario.patologia.codigopatologia'), primary_key = True)
 
-
-
-
+    
 class Patologia(db.Model):
     __tablename__ = 'patologia'
     __table_args__ = {'schema' : 'hospitalario'}
@@ -190,11 +203,12 @@ class HistoriaMedica(db.Model):
     cedula = Column(String(12), ForeignKey('hospitalario.persona.cedula'), primary_key=True)
     persona = relationship("Persona")
     gruposanguineo = Column(String(12))
-    discapacidad = Column(String(10)) 
+    #discapacidad = Column(String(10)) 
     fecha = Column(Date()) 
 
     #patologias = relationship("Patologia", secondary=patologia_historiamedica_table, cascade="save-update")          
     patologias = relationship("Patologia", secondary='hospitalario.patologiahistoriamedica')          
+    discapacidades = relationship("Discapacidad", secondary='hospitalario.discapacidadhistoriamedica')          
 
 
 class Especialidad(db.Model):

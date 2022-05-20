@@ -8,7 +8,7 @@ Created on 17 dic. 2019
 #     TipoTrabajadorRepository,GrupoGuardiaRepository
 
 from app.v1.repository.entities import EmpresaRepository, HistoriaMedicaRepository, TipoNominaRepository, TrabajadorRepository, EstadoRepository, MunicipioRepository, \
-    PatologiaRepository, BeneficiarioRepository, EspecialidadRepository, CitaRepository
+    PatologiaRepository, BeneficiarioRepository, EspecialidadRepository, CitaRepository, DiscapacidadRepository
 
 class GetEmpresaListUseCase(object):
     def execute(self,security_credentials):
@@ -21,6 +21,10 @@ class GetTipoNominaListUseCase(object):
 class GetPatologiaListUseCase(object):
     def execute(self,security_credentials):
         return PatologiaRepository(username=security_credentials['username']).getAll()
+
+class GetDiscapacidadListUseCase(object):
+    def execute(self,security_credentials):
+        return DiscapacidadRepository(username=security_credentials['username']).getAll()
 
 class GetEspecialidadListUseCase(object):
     def execute(self,security_credentials):

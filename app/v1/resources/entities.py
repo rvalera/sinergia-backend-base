@@ -2,7 +2,7 @@ from app.v1 import v1_api
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_restplus import Resource, Namespace, fields
 from app.v1.resources.base import ProxySecureResource, secureHeader, queryParams
-from app.v1.use_cases.entities import CreateBeneficiarioUseCase, CreateCitaMedicaUseCase, GetCitaUseCase, GetEmpresaListUseCase, GetEspecialidadListUseCase, GetEstadoListUseCase, GetHistoriaMedicaUseCase, GetMunicipioListUseCase,GetTipoNominaListUseCase, \
+from app.v1.use_cases.entities import CreateBeneficiarioUseCase, CreateCitaMedicaUseCase, GetCitaUseCase, GetDiscapacidadListUseCase, GetEmpresaListUseCase, GetEspecialidadListUseCase, GetEstadoListUseCase, GetHistoriaMedicaUseCase, GetMunicipioListUseCase,GetTipoNominaListUseCase, \
     GetTrabajadorUseCase, GetEstadoListUseCase, GetMunicipioListUseCase, GetPatologiaListUseCase, SaveBeneficiarioUseCase, DeleteBeneficiarioUseCase, SaveCitaMedicaUseCase, SaveTrabajadorUseCase, \
     GetCitasMedicasListUseCase, GetCitasDisponiblesListUseCase, DeleteCitaMedicaUseCase
 # from app.v1.use_cases.entities import GetCargoListUseCase,GetCentroCostoListUseCase,GetConceptoNominaListUseCase,\
@@ -25,6 +25,11 @@ MunicipioStruct = v1_api.model('MunicipioStruct', {
 
 PatologiaStruct = v1_api.model('PatologiaStruct', { 
     'codigopatologia' : fields.String(), 
+    'nombre' : fields.String(), 
+})
+
+DiscapacidadStruct = v1_api.model('DiscapacidadStruct', { 
+    'codigodiscapacidad' : fields.String(), 
     'nombre' : fields.String(), 
 })
 
@@ -93,9 +98,9 @@ HistoriaMedicaStruct = v1_api.model('HistoriaMedicaStruct', {
     'cedula' : fields.String(), 
     'persona': fields.Nested(PersonaStruct,attribute='persona'),
     'gruposanguineo' : fields.String(), 
-    'discapacidad' : fields.String(), 
     'fecha' : fields.String(format='date-time'),
-    'patologias': fields.List(fields.Nested(PatologiaStruct))
+    'patologias': fields.List(fields.Nested(PatologiaStruct)),
+    'discapacidades': fields.List(fields.Nested(DiscapacidadStruct))
 })
 
 BeneficiarioStruct = v1_api.model('BeneficiarioStruct', { 
@@ -117,8 +122,9 @@ UpdateBeneficiarioStruct = v1_api.model('UpdateBeneficiarioStruct', {
     'cedulatrabajador': fields.String(),
     'vinculo': fields.String(),
     'gruposanguineo': fields.String(),
-    'tipodiscapacidad': fields.String(),
+    #'tipodiscapacidad': fields.String(),
     'patologias' : fields.List(fields.String()), #Listado de Ids de Patologias
+    'discapacidades' : fields.List(fields.String()), #Listado de Ids de Discapacidades
 }) 
 
 TrabajadorStruct = v1_api.model('TrabajadorStruct', { 
@@ -181,9 +187,10 @@ UpdateTrabajadorStruct = v1_api.model('UpdateTrabajadorStruct', {
     'pantalon' : fields.String(),  
     'calzado' : fields.String(),  
     'gruposanguineo': fields.String(),
-    'tipodiscapacidad': fields.String(),
+    #'tipodiscapacidad': fields.String(),
     'observaciones': fields.String(),
     'patologias' : fields.List(fields.String()), #Listado de Ids de Patologias
+    'discapacidades' : fields.List(fields.String()), #Listado de Ids de Discapacidades
 
 }) 
 
@@ -488,6 +495,19 @@ class PatologiaResource(ProxySecureResource):
         security_credentials = self.checkCredentials()
         #security_credentials = {'username': 'prueba'}
         data = GetPatologiaListUseCase().execute(security_credentials)
+        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+
+
+@entities_ns.route('/discapacidad')
+@v1_api.expect(secureHeader)
+class DiscapacidadResource(ProxySecureResource): 
+
+    @entities_ns.doc('Discapacidad')
+    @jwt_required    
+    def get(self):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        data = GetDiscapacidadListUseCase().execute(security_credentials)
         return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
 
 

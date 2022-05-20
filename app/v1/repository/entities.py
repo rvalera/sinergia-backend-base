@@ -5,7 +5,7 @@ Created on 17 dic. 2019
 '''
 from app.v1.models.security import SecurityElement, User, PersonExtension
 from app.v1.models.hr import Beneficiario, Especialidad, HistoriaMedica, Persona,Estado,Municipio,Trabajador,TipoTrabajador,EstatusTrabajador,TipoNomina,\
-    TipoCargo,UbicacionLaboral,Empresa, Patologia, Cita
+    TipoCargo,UbicacionLaboral,Empresa, Patologia, Cita, Discapacidad
 from app import redis_client, db
 import json
 import requests
@@ -288,6 +288,13 @@ class TrabajadorRepository(SinergiaRepository):
             patologias_list = Patologia.query.filter(Patologia.codigopatologia.in_(ids_patologias)).all()
         return patologias_list
 
+    def get_discapacidades(self,payload):
+        discapacidades_list = []
+        if 'discapacidades' in payload:
+            ids_discapacidades = payload['discapacidades']
+            discapacidades_list = Discapacidad.query.filter(Discapacidad.codigodiscapacidad.in_(ids_discapacidades)).all()
+        return discapacidades_list
+
     def get(self,query_params):
 
         sql = '''
@@ -414,7 +421,7 @@ class TrabajadorRepository(SinergiaRepository):
             trabajador.observaciones = payload['observaciones']
 
             trabajador.historiamedica.gruposanguineo = payload['gruposanguineo']
-            trabajador.historiamedica.discapacidad   = payload['tipodiscapacidad']
+            #trabajador.historiamedica.discapacidad   = payload['tipodiscapacidad']
 
             #Se procesan las Patologias de la Historia Medica
             patologias = self.get_patologias(payload) 
@@ -422,6 +429,13 @@ class TrabajadorRepository(SinergiaRepository):
                 trabajador.historiamedica.patologias = [p for p in patologias] 
             else:
                 trabajador.historiamedica.patologias = []
+
+            #Se procesan las Discapacidades de la Historia Medica
+            discapacidades = self.get_discapacidades(payload) 
+            if len(discapacidades) > 0:
+                trabajador.historiamedica.discapacidades = [p for p in discapacidades] 
+            else:
+                trabajador.historiamedica.discapacidades = []
 
             trabajador.fechaactualizacion = datetime.now()
             user = User.query.filter(User.name==self.username.lower()).first()        
@@ -472,6 +486,18 @@ class PatologiaRepository(SinergiaRepository):
             error_description = '%s' % (err)
             raise DatabaseException(text=error_description)
 
+class DiscapacidadRepository(SinergiaRepository):
+    def getAll(self):
+        try:
+            table_df = pd.read_sql_query('select * from hospitalario.discapacidad',con=db.engine)
+            table_df = table_df.fillna('')
+            result = table_df.to_dict('records')
+            return result
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
 class EspecialidadRepository(SinergiaRepository):
     def getAll(self):
@@ -495,6 +521,14 @@ class BeneficiarioRepository(SinergiaRepository):
             patologias_list = Patologia.query.filter(Patologia.codigopatologia.in_(ids_patologias)).all()
         return patologias_list
 
+    def get_discapacidades(self,payload):
+        discapacidades_list = []
+        if 'discapacidades' in payload:
+            ids_discapacidades = payload['discapacidades']
+            discapacidades_list = Discapacidad.query.filter(Discapacidad.codigodiscapacidad.in_(ids_discapacidades)).all()
+        return discapacidades_list
+
+
     def new(self,payload):
         cedula = payload['cedula'] if 'cedula' in payload else None
         if cedula:
@@ -517,13 +551,18 @@ class BeneficiarioRepository(SinergiaRepository):
             historiamedica = HistoriaMedica()
             historiamedica.cedula = cedula
             historiamedica.gruposanguineo = payload['gruposanguineo']
-            historiamedica.discapacidad   = payload['tipodiscapacidad']
+            #historiamedica.discapacidad   = payload['tipodiscapacidad']
             historiamedica.fecha          = datetime.now().date()
             
             #Se procesan las Patologias de la Historia Medica
             patologias = self.get_patologias(payload) 
             if len(patologias):
                 historiamedica.patologias = [p for p in patologias] 
+
+            #Se procesan las Discapacidades de la Historia Medica
+            discapacidades = self.get_discapacidades(payload) 
+            if len(discapacidades):
+                historiamedica.discapacidades = [p for p in discapacidades] 
            
             db.session.add(historiamedica)
             db.session.add(beneficiario)
@@ -552,7 +591,7 @@ class BeneficiarioRepository(SinergiaRepository):
             beneficiario.fechanacimiento    = payload['fechanacimiento']
 
             beneficiario.historiamedica.gruposanguineo = payload['gruposanguineo']
-            beneficiario.historiamedica.discapacidad   = payload['tipodiscapacidad']
+            #beneficiario.historiamedica.discapacidad   = payload['tipodiscapacidad']
 
             #Se procesan las Patologias de la Historia Medica
             patologias = self.get_patologias(payload) 
@@ -560,6 +599,13 @@ class BeneficiarioRepository(SinergiaRepository):
                 beneficiario.historiamedica.patologias = [p for p in patologias] 
             else:
                 beneficiario.historiamedica.patologias = []
+
+            #Se procesan las Discapacidades de la Historia Medica
+            discapacidades = self.get_discapacidades(payload) 
+            if len(discapacidades) > 0:
+                beneficiario.historiamedica.discapacidades = [p for p in discapacidades] 
+            else:
+                beneficiario.historiamedica.discapacidades = []
 
             db.session.add(beneficiario)
             db.session.commit()            
