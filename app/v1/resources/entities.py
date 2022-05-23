@@ -4,7 +4,7 @@ from flask_restplus import Resource, Namespace, fields
 from app.v1.resources.base import ProxySecureResource, secureHeader, queryParams
 from app.v1.use_cases.entities import CreateBeneficiarioUseCase, CreateCitaMedicaUseCase, GetCitaUseCase, GetDiscapacidadListUseCase, GetEmpresaListUseCase, GetEspecialidadListUseCase, GetEstadoListUseCase, GetHistoriaMedicaUseCase, GetMunicipioListUseCase,GetTipoNominaListUseCase, \
     GetTrabajadorUseCase, GetEstadoListUseCase, GetMunicipioListUseCase, GetPatologiaListUseCase, SaveBeneficiarioUseCase, DeleteBeneficiarioUseCase, SaveCitaMedicaUseCase, SaveTrabajadorUseCase, \
-    GetCitasMedicasListUseCase, GetCitasDisponiblesListUseCase, DeleteCitaMedicaUseCase
+    GetCitasMedicasListUseCase, GetCitasDisponiblesListUseCase, DeleteCitaMedicaUseCase, GetPersonaUseCase, GetVisitasListUseCase, CreateVisitaUseCase
 # from app.v1.use_cases.entities import GetCargoListUseCase,GetCentroCostoListUseCase,GetConceptoNominaListUseCase,\
 #     GetDispositivoListUseCase,GetEstatusTrabajadorListUseCase,GetTipoAusenciaListUseCase,GetTipoNominaListUseCase,\
 #     GetTrabajadorListUseCase,GetTipoTrabajadorListUseCase,GetGrupoGuardiaListUseCase
@@ -33,6 +33,11 @@ DiscapacidadStruct = v1_api.model('DiscapacidadStruct', {
     'nombre' : fields.String(), 
 })
 
+AreaStruct = v1_api.model('AreaStruct', { 
+    'id' : fields.Integer(), 
+    'nombre' : fields.String(), 
+})
+
 PersonaStruct = v1_api.model('PersonaStruct', { 
     'cedula' : fields.String(), 
     'nombres' : fields.String(),  
@@ -45,7 +50,6 @@ PersonaStruct = v1_api.model('PersonaStruct', {
 
     'nacionalidad' : fields.String(), 
     'sexo' : fields.String(),  
-    'suspendido' : fields.String(),  
     'nivel' : fields.String(),  
     'profesion' : fields.String(),  
 
@@ -58,6 +62,14 @@ PersonaStruct = v1_api.model('PersonaStruct', {
     'edifcasa' : fields.String()
 }) 
 
+GetPersonaStruct = v1_api.model('GetPersonaResult', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'data' : fields.Nested(PersonaStruct,attribute='data')
+})
+
+UpdatePersonaStruct = v1_api.model('UpdatePersonaStruct', { 
+    'cedula' : fields.String(), 
+})
 
 TipoCargoStruct = v1_api.model('TipoCargoStruct', { 
     'codigo' : fields.String(), 
@@ -122,7 +134,6 @@ UpdateBeneficiarioStruct = v1_api.model('UpdateBeneficiarioStruct', {
     'cedulatrabajador': fields.String(),
     'vinculo': fields.String(),
     'gruposanguineo': fields.String(),
-    #'tipodiscapacidad': fields.String(),
     'patologias' : fields.List(fields.String()), #Listado de Ids de Patologias
     'discapacidades' : fields.List(fields.String()), #Listado de Ids de Discapacidades
 }) 
@@ -171,7 +182,6 @@ TrabajadorStruct = v1_api.model('TrabajadorStruct', {
 
 }) 
 
-
 UpdateTrabajadorStruct = v1_api.model('UpdateTrabajadorStruct', { 
     'cedula' : fields.String(),   
     'telefonocelular' : fields.String(),  
@@ -187,7 +197,6 @@ UpdateTrabajadorStruct = v1_api.model('UpdateTrabajadorStruct', {
     'pantalon' : fields.String(),  
     'calzado' : fields.String(),  
     'gruposanguineo': fields.String(),
-    #'tipodiscapacidad': fields.String(),
     'observaciones': fields.String(),
     'patologias' : fields.List(fields.String()), #Listado de Ids de Patologias
     'discapacidades' : fields.List(fields.String()), #Listado de Ids de Discapacidades
@@ -228,7 +237,8 @@ CitaStruct = v1_api.model('CitaStruct', {
     'fechaentradacola' : fields.DateTime(), 
     'fechapasaconsulta' : fields.DateTime(), 
     'fechafinconsulta' : fields.DateTime(), 
-    'idbiostar' : fields.String()
+    'idbiostar' : fields.String(),
+    'estado' : fields.String()
 }) 
 
 CreateCitaStruct = v1_api.model('CreateCitaStruct', { 
@@ -254,12 +264,38 @@ GetCitaListStruct = v1_api.model('GetCitaListResult', {
     'total' : fields.Integer(description='Total Row'), 
     'data' : fields.Nested(CitaStruct,attribute='data')
 }) 
-
-
-
-UpdatePersonaStruct = v1_api.model('UpdatePersonaStruct', { 
-    'cedula' : fields.String(), 
+    
+VisitaStruct = v1_api.model('VisitaStruct', { 
+    'id' : fields.Integer(), 
+    'area': fields.Nested(AreaStruct,attribute='area'),
+    'cedula' : fields.String(),
+    'nombre' : fields.String(),
+    'apellidos' : fields.String(),
+    'telefonocelular' : fields.String(),
+    'telefonofijo' : fields.String(),
+    'correo' : fields.String(),
+    'responsable' : fields.String(),
+    'fechavisita' : fields.DateTime()
 })
+
+CreateVisitaStruct = v1_api.model('CreateVisitaStruct', { 
+    'idarea' : fields.Integer(), 
+    'cedula' : fields.String(),
+    'nombre' : fields.String(),
+    'apellidos' : fields.String(),
+    'telefonocelular' : fields.String(),
+    'telefonofijo' : fields.String(),
+    'correo' : fields.String(),
+    'responsable' : fields.String()
+})
+
+GetVisitaListStruct = v1_api.model('GetVisitaListResult', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'count' : fields.Integer(description='Count Row'), 
+    'total' : fields.Integer(description='Total Row'), 
+    'data' : fields.Nested(VisitaStruct,attribute='data')
+})
+
 
 @entities_ns.route('/empresa')
 @v1_api.expect(secureHeader)
@@ -442,6 +478,22 @@ class TipoNominaResource(ProxySecureResource):
 #         data = GetTrabajadorListUseCase().execute(security_credentials,query_params)
 #         data['ok']= 1
 #         return  data , 200
+
+@entities_ns.route('/persona/<cedula>')
+@entities_ns.param('cedula', 'Cedula Persona')
+@v1_api.expect(secureHeader)
+class OnePersonaResource(ProxySecureResource):
+
+    @entities_ns.doc('Get Persona')
+    @v1_api.marshal_with(GetPersonaStruct) 
+    @jwt_required    
+    def get(self,cedula):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        query_params = {'cedula': cedula}
+        data = GetPersonaUseCase().execute(security_credentials,query_params)
+        return  {'ok': 1, 'data': data}, 200
+
 
 @entities_ns.route('/trabajador/<cedula>')
 @entities_ns.param('cedula', 'Cedula Trabajador')
@@ -684,6 +736,38 @@ class CitaFechaDisponiblesListResource(ProxySecureResource):
         }
         data = GetCitasDisponiblesListUseCase().execute(security_credentials,query_params)
         return  {'ok':1, 'data': data} , 200
+
+
+
+@entities_ns.route('/visita')
+@v1_api.expect(secureHeader)
+class VisitaResource(ProxySecureResource): 
+
+    @entities_ns.doc('Create Visita')
+    @v1_api.expect(CreateVisitaStruct)    
+    @jwt_required    
+    def post(self):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        payload = request.json        
+        CreateVisitaUseCase().execute(security_credentials,payload)
+        return  {'ok':1} , 200
+
+        
+@entities_ns.route('/visita/fecha/<fecha>')
+@entities_ns.param('fecha', 'Fecha de las Visitas')
+@v1_api.expect(secureHeader)
+class VisitaFechaListResource(ProxySecureResource):
+
+    @entities_ns.doc('Get Visitas by Date')
+    @v1_api.marshal_with(GetVisitaListStruct) 
+    @jwt_required    
+    def get(self,fecha):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        query_params = {'fechavisita': fecha}
+        data = GetVisitasListUseCase().execute(security_credentials,query_params)
+        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
 
 
 # @entities_ns.route('/tipo_trabajador')

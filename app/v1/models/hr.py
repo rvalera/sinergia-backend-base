@@ -239,5 +239,30 @@ class Cita(db.Model):
     fechafinconsulta = Column(DateTime()) 
     idbiostar = Column(String(100))
     estado = Column(String(50))
+
+
+class Area(db.Model):
+    __tablename__ = 'area'
+    __table_args__ = {'schema' : 'hospitalario'}
+
+    id = Column(Integer(), primary_key=True)
+    nombre = Column(String(100)) 
+
+
+class Visita(db.Model):
+    __tablename__ = 'visita'
+    __table_args__ = {'schema' : 'hospitalario'}
+
+    id = Column(Integer, primary_key=True)
+    idarea = Column(Integer(), ForeignKey('hospitalario.area.id'))
+    area = relationship("Area")
     
+    cedula = Column(String(12))
+    nombre = Column(String(100))
+    apellidos = Column(String(100))
+    telefonocelular = Column(String(100))
+    telefonofijo = Column(String(100))
+    correo = Column(String(100))
+    responsable = Column(String(100))
+    fechavisita = Column(DateTime()) 
                           

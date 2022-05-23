@@ -5,7 +5,7 @@ Created on 17 dic. 2019
 '''
 from app.v1.models.security import SecurityElement, User, PersonExtension
 from app.v1.models.hr import Beneficiario, Especialidad, HistoriaMedica, Persona,Estado,Municipio,Trabajador,TipoTrabajador,EstatusTrabajador,TipoNomina,\
-    TipoCargo,UbicacionLaboral,Empresa, Patologia, Cita, Discapacidad
+    TipoCargo,UbicacionLaboral,Empresa, Patologia, Cita, Discapacidad, Visita
 from app import redis_client, db
 import json
 import requests
@@ -19,7 +19,7 @@ import pandas as pd
 import logging
 
 from sqlalchemy import text    
-from sqlalchemy import select 
+from sqlalchemy import select, func
 
 from psycopg2 import OperationalError, errorcodes, errors    
 from sqlalchemy import exc
@@ -799,3 +799,32 @@ class CitaRepository(SinergiaRepository):
         cita.estado = CITA_CANCELADA
         db.session.add(cita)
         db.session.commit()
+
+
+
+class VisitaRepository(SinergiaRepository):
+
+    def new(self,payload):
+        visita = Visita()
+        visita.cedula = payload['cedula']
+        visita.idarea = payload['idarea']
+        visita.fechavisita = datetime.now()
+        visita.nombre = payload['nombre']
+        visita.apellidos = payload['apellidos']
+        visita.telefonocelular = payload['telefonocelular']
+        visita.telefonofijo = payload['telefonofijo']
+        visita.correo = payload['correo']
+        visita.responsable = payload['responsable']
+        
+        db.session.add(visita)
+        db.session.commit()   
+    
+
+    def getByFechaVista(self,fechavisita):
+        try:
+            visitas = Visita.query.filter(func.date(Visita.fechavisita) == fechavisita).all()
+            return visitas
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
