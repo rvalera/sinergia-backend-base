@@ -153,7 +153,10 @@ TrabajadorStruct = v1_api.model('TrabajadorStruct', {
     'suspendido' : fields.String(),  
     'nivel' : fields.String(),  
     'profesion' : fields.String(),  
-
+    'personal': fields.String(),  
+    'tiponomina': fields.String(),  
+    'ubicacionlaboral': fields.String(),  
+    'cargo': fields.String(),  
 
     'estado': fields.Nested(EstadoStruct,attribute='estado'),
     'municipio': fields.Nested(MunicipioStruct,attribute='municipio'),
