@@ -2,7 +2,7 @@ from app.v1 import v1_api
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_restplus import Resource, Namespace, fields
 from app.v1.resources.base import ProxySecureResource, secureHeader, queryParams
-from app.v1.use_cases.entities import CreateBeneficiarioUseCase, CreateCitaMedicaUseCase, GetCitaUseCase, GetConsultaMedicaUseCase, GetDiscapacidadListUseCase, GetEmpresaListUseCase, GetEspecialidadListUseCase, GetEstadoListUseCase, GetHistoriaMedicaUseCase, GetMunicipioListUseCase,GetTipoNominaListUseCase, \
+from app.v1.use_cases.entities import CreateBeneficiarioUseCase, CreateCitaMedicaUseCase, DeleteConsultaMedicaUseCase, GetCitaUseCase, GetConsultaMedicaUseCase, GetDiscapacidadListUseCase, GetEmpresaListUseCase, GetEspecialidadListUseCase, GetEstadoListUseCase, GetHistoriaMedicaUseCase, GetMunicipioListUseCase,GetTipoNominaListUseCase, \
     GetTrabajadorUseCase, GetEstadoListUseCase, GetMunicipioListUseCase, GetPatologiaListUseCase, SaveBeneficiarioUseCase, DeleteBeneficiarioUseCase, SaveCitaMedicaUseCase, SaveTrabajadorUseCase, \
     GetCitasMedicasListUseCase, GetCitasDisponiblesListUseCase, DeleteCitaMedicaUseCase, GetPersonaUseCase, GetVisitasListUseCase, CreateVisitaUseCase, \
     CreateConsultaMedicaUseCase, SaveConsultaMedicaUseCase, GetConsultasMedicasPersonaListUseCase
@@ -907,6 +907,20 @@ class OneConsultaMedicaResource(ProxySecureResource):
         query_params = {'id': id}
         data = GetConsultaMedicaUseCase().execute(security_credentials,query_params)
         return  {'ok': 1, 'data': data}, 200
+
+
+@entities_ns.route('/consultamedica/<id>')
+@entities_ns.param('id', 'Id de la Consulta Medica')
+@v1_api.expect(secureHeader)
+class DeleteConsultaResource(ProxySecureResource): 
+    @entities_ns.doc('Delete Consulta Medica')
+    @jwt_required
+    def delete(self,id):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        query_params = {'id': id}
+        DeleteConsultaMedicaUseCase().execute(security_credentials,query_params)
+        return  {'ok':1} , 200
 
 # @entities_ns.route('/tipo_trabajador')
 # @v1_api.expect(secureHeader)

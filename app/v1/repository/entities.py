@@ -887,6 +887,15 @@ class ConsultaMedicaRepository(SinergiaRepository):
         db.session.commit()   
 
     
+    def delete(self,id):
+        consultamedica = ConsultaMedica.query.filter(ConsultaMedica.id == id).first()
+        if consultamedica is None:
+            #Se arroja excepcion, el beneficiario ya esta creado
+            raise DataNotFoundException()
+        db.session.delete(consultamedica)
+        db.session.commit()
+
+    
     def getByCedula(self,cedula):
         try:
             consultasmedicas = ConsultaMedica.query.filter(ConsultaMedica.cedula == cedula).all()

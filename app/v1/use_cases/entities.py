@@ -146,6 +146,10 @@ class GetConsultaMedicaUseCase(object):
     def execute(self,security_credentials,query_params):
         return ConsultaMedicaRepository(username=security_credentials['username']).getById(query_params['id'])
 
+class DeleteConsultaMedicaUseCase(object):
+    def execute(self,security_credentials,query_params):
+        ConsultaMedicaRepository(username=security_credentials['username']).delete(query_params['id'])
+
 # class GetTipoTrabajadorListUseCase(object):
 #     def execute(self,security_credentials):
 #         return TipoTrabajadorRepository(username=security_credentials['username']).getAll()
