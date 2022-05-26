@@ -2,9 +2,10 @@ from app.v1 import v1_api
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_restplus import Resource, Namespace, fields
 from app.v1.resources.base import ProxySecureResource, secureHeader, queryParams
-from app.v1.use_cases.entities import CreateBeneficiarioUseCase, CreateCitaMedicaUseCase, GetCitaUseCase, GetDiscapacidadListUseCase, GetEmpresaListUseCase, GetEspecialidadListUseCase, GetEstadoListUseCase, GetHistoriaMedicaUseCase, GetMunicipioListUseCase,GetTipoNominaListUseCase, \
+from app.v1.use_cases.entities import CreateBeneficiarioUseCase, CreateCitaMedicaUseCase, GetCitaUseCase, GetConsultaMedicaUseCase, GetDiscapacidadListUseCase, GetEmpresaListUseCase, GetEspecialidadListUseCase, GetEstadoListUseCase, GetHistoriaMedicaUseCase, GetMunicipioListUseCase,GetTipoNominaListUseCase, \
     GetTrabajadorUseCase, GetEstadoListUseCase, GetMunicipioListUseCase, GetPatologiaListUseCase, SaveBeneficiarioUseCase, DeleteBeneficiarioUseCase, SaveCitaMedicaUseCase, SaveTrabajadorUseCase, \
-    GetCitasMedicasListUseCase, GetCitasDisponiblesListUseCase, DeleteCitaMedicaUseCase, GetPersonaUseCase, GetVisitasListUseCase, CreateVisitaUseCase
+    GetCitasMedicasListUseCase, GetCitasDisponiblesListUseCase, DeleteCitaMedicaUseCase, GetPersonaUseCase, GetVisitasListUseCase, CreateVisitaUseCase, \
+    CreateConsultaMedicaUseCase, SaveConsultaMedicaUseCase, GetConsultasMedicasPersonaListUseCase
 # from app.v1.use_cases.entities import GetCargoListUseCase,GetCentroCostoListUseCase,GetConceptoNominaListUseCase,\
 #     GetDispositivoListUseCase,GetEstatusTrabajadorListUseCase,GetTipoAusenciaListUseCase,GetTipoNominaListUseCase,\
 #     GetTrabajadorListUseCase,GetTipoTrabajadorListUseCase,GetGrupoGuardiaListUseCase
@@ -151,6 +152,7 @@ TrabajadorStruct = v1_api.model('TrabajadorStruct', {
     'nacionalidad' : fields.String(), 
     'sexo' : fields.String(),  
     'suspendido' : fields.String(),  
+    'razonsuspension' : fields.String(),  
     'nivel' : fields.String(),  
     'profesion' : fields.String(),  
     'personal': fields.String(),  
@@ -179,6 +181,7 @@ TrabajadorStruct = v1_api.model('TrabajadorStruct', {
     'ficha' : fields.String(),
     'historiamedica': fields.Nested(HistoriaMedicaStruct,attribute='historiamedica'),  
     'empresa': fields.Nested(EmpresaStruct,attribute='empresa'),  
+    'fechaactualizacion' : fields.DateTime(), 
     'usuarioactualizacion': fields.Nested(UsuarioActStruct,attribute='usuarioactualizacion'),
 
     'beneficiarios': fields.List(fields.Nested(BeneficiarioStruct))
@@ -297,6 +300,82 @@ GetVisitaListStruct = v1_api.model('GetVisitaListResult', {
     'count' : fields.Integer(description='Count Row'), 
     'total' : fields.Integer(description='Total Row'), 
     'data' : fields.Nested(VisitaStruct,attribute='data')
+})
+
+
+SalaDeEsperaStruct = v1_api.model('SalaDeEsperaStruct', { 
+    'idsala' : fields.Integer(), 
+    'nombre' : fields.String()
+})
+
+
+ConsultorioStruct = v1_api.model('ConsultorioStruct', { 
+    'idconsultorio' : fields.Integer(), 
+    'saladeespera': fields.Nested(SalaDeEsperaStruct,attribute='saladeespera'),
+    'nombre' : fields.String()
+})
+
+
+MedicoStruct = v1_api.model('MedicoStruct', { 
+    'cedula' : fields.String(), 
+    'nombres' : fields.String(),  
+    'apellidos' : fields.String(),  
+    'sexo' : fields.String(),  
+    'fechanacimiento' : fields.String(format='date-time'),   
+    'telefonocelular' : fields.String(),  
+    'telefonoresidencia' : fields.String(),  
+    'correo' : fields.String(),
+
+    'especialidad': fields.Nested(EspecialidadStruct,attribute='especialidad'),
+    'consultorio': fields.Nested(ConsultorioStruct,attribute='consultorio')
+
+})
+
+
+ConsultaMedicaStruct = v1_api.model('ConsultaMedicaStruct', { 
+    'id' : fields.Integer(),
+    'historiamedica' : fields.Nested(HistoriaMedicaStruct,attribute='historiamedica'),
+    'medico' : fields.Nested(MedicoStruct,attribute='medico'),
+    'cita' : fields.Nested(CitaStruct,attribute='cita'),
+    'sintomas' : fields.String(),
+    'diagnostico' : fields.String(),
+    'tratamiento' : fields.String(),
+    'examenes' : fields.String(),
+    'fecha' : fields.Date()
+})
+
+CreateConsultaMedicaStruct = v1_api.model('CreateConsultaMedicaStruct', { 
+    'cedula' : fields.String(),
+    'cedulamedico' : fields.String(),
+    'idcita' : fields.Integer(),
+    'sintomas' : fields.String(),
+    'diagnostico' : fields.String(),
+    'tratamiento' : fields.String(),
+    'examenes' : fields.String(),
+    'fecha' : fields.String()
+})
+
+UpdateConsultaMedicaStruct = v1_api.model('UpdateConsultaMedicaStruct', { 
+    #TODO Que se actualiza?
+    'id' : fields.Integer(),
+    'sintomas' : fields.String(),
+    'diagnostico' : fields.String(),
+    'tratamiento' : fields.String(),
+    'examenes' : fields.String()
+})
+
+
+GetConsultaMedicaListStruct = v1_api.model('GetConsultaMedicaListStruct', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'count' : fields.Integer(description='Count Row'), 
+    'total' : fields.Integer(description='Total Row'), 
+    'data' : fields.Nested(ConsultaMedicaStruct,attribute='data')
+})
+
+
+GetConsultaMedicaStruct = v1_api.model('GetConsultaMedicaStruct', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'data' : fields.Nested(ConsultaMedicaStruct,attribute='data')
 })
 
 
@@ -772,6 +851,62 @@ class VisitaFechaListResource(ProxySecureResource):
         data = GetVisitasListUseCase().execute(security_credentials,query_params)
         return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
 
+
+@entities_ns.route('/consultamedica')
+@v1_api.expect(secureHeader)
+class ConsultaMedicaResource(ProxySecureResource): 
+
+    @entities_ns.doc('Create Consulta Medica')
+    @v1_api.expect(CreateConsultaMedicaStruct)    
+    @jwt_required    
+    def post(self):
+        security_credentials = self.checkCredentials()
+        security_credentials = {'username': 'prueba'}
+        payload = request.json        
+        CreateConsultaMedicaUseCase().execute(security_credentials,payload)
+        return  {'ok':1} , 200
+
+    @entities_ns.doc('Update Consulta Medica')
+    @v1_api.expect(UpdateConsultaMedicaStruct)    
+    @jwt_required    
+    def put(self):
+        security_credentials = self.checkCredentials()
+        security_credentials = {'username': 'prueba'}
+        payload = request.json        
+        SaveConsultaMedicaUseCase().execute(security_credentials,payload)
+        return  {'ok':1} , 200
+
+
+@entities_ns.route('/consultamedica/cedula/<cedula>')
+@entities_ns.param('cedula', 'Cedula del Paciente')
+@v1_api.expect(secureHeader)
+class ConsultaMedicaCedulaListResource(ProxySecureResource):
+
+    @entities_ns.doc('Get Consultas Medicas by Cedula')
+    @v1_api.marshal_with(GetConsultaMedicaListStruct) 
+    @jwt_required    
+    def get(self,cedula):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        query_params = {'cedula': cedula}
+        data = GetConsultasMedicasPersonaListUseCase().execute(security_credentials,query_params)
+        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+
+
+@entities_ns.route('/consultamedica/<id>')
+@entities_ns.param('id', 'Id de la Consulta Medica')
+@v1_api.expect(secureHeader)
+class OneConsultaMedicaResource(ProxySecureResource):
+
+    @entities_ns.doc('Get Consulta Medica')
+    @v1_api.marshal_with(GetConsultaMedicaStruct) 
+    @jwt_required    
+    def get(self,id):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        query_params = {'id': id}
+        data = GetConsultaMedicaUseCase().execute(security_credentials,query_params)
+        return  {'ok': 1, 'data': data}, 200
 
 # @entities_ns.route('/tipo_trabajador')
 # @v1_api.expect(secureHeader)

@@ -8,7 +8,7 @@ Created on 17 dic. 2019
 #     TipoTrabajadorRepository,GrupoGuardiaRepository
 
 from app.v1.repository.entities import EmpresaRepository, HistoriaMedicaRepository, TipoNominaRepository, TrabajadorRepository, EstadoRepository, MunicipioRepository, \
-    PatologiaRepository, BeneficiarioRepository, EspecialidadRepository, CitaRepository, DiscapacidadRepository, PersonaRepository, VisitaRepository
+    PatologiaRepository, BeneficiarioRepository, EspecialidadRepository, CitaRepository, DiscapacidadRepository, PersonaRepository, VisitaRepository, ConsultaMedicaRepository
 
 class GetEmpresaListUseCase(object):
     def execute(self,security_credentials):
@@ -130,6 +130,21 @@ class CreateVisitaUseCase(object):
     def execute(self,security_credentials,payload):
         VisitaRepository(username=security_credentials['username']).new(payload)
 
+class CreateConsultaMedicaUseCase(object):
+    def execute(self,security_credentials,payload):
+        ConsultaMedicaRepository(username=security_credentials['username']).new(payload)
+
+class SaveConsultaMedicaUseCase(object):
+    def execute(self,security_credentials,payload):
+        ConsultaMedicaRepository(username=security_credentials['username']).save(payload)
+
+class GetConsultasMedicasPersonaListUseCase(object):
+    def execute(self,security_credentials, query_params):
+        return ConsultaMedicaRepository(username=security_credentials['username']).getByCedula(query_params['cedula'])
+
+class GetConsultaMedicaUseCase(object):
+    def execute(self,security_credentials,query_params):
+        return ConsultaMedicaRepository(username=security_credentials['username']).getById(query_params['id'])
 
 # class GetTipoTrabajadorListUseCase(object):
 #     def execute(self,security_credentials):

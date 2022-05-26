@@ -5,14 +5,14 @@ Created on 17 dic. 2019
 '''
 from app.v1.models.security import SecurityElement, User, PersonExtension
 from app.v1.models.hr import Beneficiario, Especialidad, HistoriaMedica, Persona,Estado,Municipio,Trabajador,TipoTrabajador,EstatusTrabajador,TipoNomina,\
-    TipoCargo,UbicacionLaboral,Empresa, Patologia, Cita, Discapacidad, Visita
+    TipoCargo,UbicacionLaboral,Empresa, Patologia, Cita, Discapacidad, Visita, ConsultaMedica
 from app import redis_client, db
 import json
 import requests
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
 from app.exceptions.base import DataNotFoundException, CitaFechaInvalidaException, CitaFechaSinCupoException, CryptoPOSException, ConnectionException,NotImplementedException,DatabaseException,\
-                                IntegrityException, ParametersNotFoundException, CitaException
+                                IntegrityException, ParametersNotFoundException, CitaException, CitaConConsultaException, CitaPersonaEquivocadaException
 from .base import SinergiaRepository
 
 import pandas as pd
@@ -824,6 +824,85 @@ class VisitaRepository(SinergiaRepository):
         try:
             visitas = Visita.query.filter(func.date(Visita.fechavisita) == fechavisita).all()
             return visitas
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
+
+class ConsultaMedicaRepository(SinergiaRepository):
+
+    def new(self,payload):
+        
+        idcita = payload['idcita']
+        cedula = payload['cedula']
+
+        consulta_aux = ConsultaMedica.query.filter(ConsultaMedica.idcita == idcita).first()
+        if consulta_aux:
+            #Ya la cita tiene una consulta asociada
+            raise CitaConConsultaException()
+
+        citamedica = Cita.query.filter(Cita.id == idcita).first()
+        if citamedica is None:
+            #La cita no existe
+            raise DataNotFoundException()
+        
+        if citamedica.cedula != cedula:
+            #La cita es de otra persona
+            raise CitaPersonaEquivocadaException()
+
+        consultamedica = ConsultaMedica()
+        consultamedica.cedula = payload['cedula']
+        consultamedica.cedulamedico = payload['cedulamedico']
+        consultamedica.idcita = payload['idcita']
+        consultamedica.sintomas = payload['sintomas']
+        consultamedica.diagnostico = payload['diagnostico']
+        consultamedica.tratamiento = payload['tratamiento']
+        consultamedica.examenes = payload['examenes']
+        consultamedica.fecha = payload['fecha']
+        
+        db.session.add(consultamedica)
+        db.session.commit()  
+
+
+    def save(self,payload): 
+        id = payload['id']
+        consultamedica = ConsultaMedica.query.filter(ConsultaMedica.id == id).first()
+        
+        if consultamedica is None:
+            raise DataNotFoundException()
+
+        fecha = consultamedica.fecha
+        hoy = datetime.now().date()
+
+        if fecha != hoy:
+            raise DataNotFoundException()
+
+        consultamedica.sintomas = payload['sintomas']
+        consultamedica.diagnostico = payload['diagnostico']
+        consultamedica.tratamiento = payload['tratamiento']
+        consultamedica.examenes = payload['examenes']
+
+        db.session.add(consultamedica)
+        db.session.commit()   
+
+    
+    def getByCedula(self,cedula):
+        try:
+            consultasmedicas = ConsultaMedica.query.filter(ConsultaMedica.cedula == cedula).all()
+            return consultasmedicas
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
+
+    def getById(self,id):
+        try:
+            consultamedica = ConsultaMedica.query.filter(ConsultaMedica.id == id).first()
+            if consultamedica is None:
+                raise DataNotFoundException()
+            return consultamedica
         except exc.DatabaseError as err:
             # pass exception to function
             error_description = '%s' % (err)

@@ -125,6 +125,7 @@ class Trabajador(Persona):
     ficha = Column(String(12))
 
     suspendido = Column(String(10)) 
+    razonsuspension = Column(String(200)) 
 
     personal = Column(String(100))
     tiponomina = Column(String(100))
@@ -265,4 +266,56 @@ class Visita(db.Model):
     correo = Column(String(100))
     responsable = Column(String(100))
     fechavisita = Column(DateTime()) 
-                          
+
+
+class SalaDeEspera(db.Model):
+    __tablename__ = 'saladeespera'
+    __table_args__ = {'schema' : 'hospitalario'}
+
+    idsala = Column(Integer(), primary_key=True)
+    nombre = Column(String(100)) 
+
+
+class Consultorio(db.Model):
+    __tablename__ = 'consultorio'
+    __table_args__ = {'schema' : 'hospitalario'}
+
+    idconsultorio = Column(Integer(), primary_key=True)
+    idsala = Column(Integer(), ForeignKey('hospitalario.saladeespera.idsala'))
+    saladeespera = relationship("SalaDeEspera")
+    nombre = Column(String(100)) 
+
+
+class Medico(Persona):
+    __tablename__ = 'medico'
+    __table_args__ = {'schema' : 'hospitalario'}
+    cedulamedico = Column(String(12), ForeignKey('hospitalario.persona.cedula'), primary_key=True)
+
+    codigoespecialidad = Column(String(12), ForeignKey('hospitalario.especialidad.codigoespecialidad'))
+    especialidad = relationship("Especialidad")
+    codigoconsultorio = Column('codigoconsultorio',Integer(), ForeignKey('hospitalario.consultorio.idconsultorio'))
+    consultorio = relationship("Consultorio")
+
+    __mapper_args__ = {
+        'polymorphic_identity':'medico'
+    }
+
+
+class ConsultaMedica(db.Model):
+    __tablename__ = 'consultamedica'
+    __table_args__ = {'schema' : 'hospitalario'}
+
+    id = Column(Integer, primary_key=True)
+    
+    cedula = Column(String(12), ForeignKey('hospitalario.historiamedica.cedula'))
+    historiamedica = relationship("HistoriaMedica")
+    cedulamedico = Column(String(12), ForeignKey('hospitalario.medico.cedulamedico'))
+    medico = relationship("Medico")
+    idcita = Column(String(12), ForeignKey('hospitalario.cita.id'))
+    cita = relationship("Cita")
+
+    sintomas = Column(String(100))
+    diagnostico = Column(String(50))
+    tratamiento = Column(String(100))
+    examenes = Column(String(50))
+    fecha = Column(Date()) 
