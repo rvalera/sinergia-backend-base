@@ -757,7 +757,7 @@ class CitaRepository(SinergiaRepository):
     
     def getCitasByCedula(self,cedula):
         try:
-            citamedicas = Cita.query.filter(Cita.cedula == cedula).all()
+            citamedicas = Cita.query.filter(Cita.cedula == cedula, Cita.estado != CITA_CANCELADA).all()
             return citamedicas
         except exc.DatabaseError as err:
             # pass exception to function
