@@ -600,6 +600,21 @@ class OneTrabajadorResource(ProxySecureResource):
         return  {'ok': 1, 'data': data}, 200
 
 
+@entities_ns.route('/trabajador')
+@v1_api.expect(secureHeader)
+class TrabajadorResource(ProxySecureResource): 
+    
+    @entities_ns.doc('Update Trabajador')
+    @v1_api.expect(UpdateTrabajadorStruct)    
+    #@jwt_required    
+    def put(self):
+        #security_credentials = self.checkCredentials()
+        security_credentials = {'username': 'prueba'}
+        payload = request.json        
+        SaveTrabajadorUseCase().execute(security_credentials,payload)
+        return  {'ok':1} , 200
+
+
 @entities_ns.route('/estado')
 @v1_api.expect(secureHeader)
 class EstadoResource(ProxySecureResource): 
@@ -663,21 +678,6 @@ class EspecialidadResource(ProxySecureResource):
         #security_credentials = {'username': 'prueba'}
         data = GetEspecialidadListUseCase().execute(security_credentials)
         return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
-
-
-@entities_ns.route('/trabajador')
-@v1_api.expect(secureHeader)
-class TrabajadorResource(ProxySecureResource): 
-    
-    @entities_ns.doc('Update Trabajador')
-    @v1_api.expect(UpdateTrabajadorStruct)    
-    @jwt_required    
-    def put(self):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        payload = request.json        
-        SaveTrabajadorUseCase().execute(security_credentials,payload)
-        return  {'ok':1} , 200
 
 
 @entities_ns.route('/beneficiario')
@@ -802,7 +802,7 @@ class CitaPersonaListResource(ProxySecureResource):
         #security_credentials = {'username': 'prueba'}
         query_params = {'cedula': cedula}
         data = GetCitasMedicasPersonaListUseCase().execute(security_credentials, query_params)
-        return  {'ok': 1, 'data': data}, 200
+        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
 
 
 @entities_ns.route('/citamedica/fecha/<fecha>')
