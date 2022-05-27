@@ -5,7 +5,7 @@ from app.v1.resources.base import ProxySecureResource, secureHeader, queryParams
 from app.v1.use_cases.entities import ConfirmCitaMedicaUseCase, CreateBeneficiarioUseCase, CreateCitaMedicaUseCase, DeleteConsultaMedicaUseCase, GetCitaUseCase, GetCitasMedicasPersonaListUseCase, GetConsultaMedicaUseCase, GetDiscapacidadListUseCase, GetEmpresaListUseCase, GetEspecialidadListUseCase, GetEstadoListUseCase, GetHistoriaMedicaUseCase, GetMunicipioListUseCase,GetTipoNominaListUseCase, \
     GetTrabajadorUseCase, GetEstadoListUseCase, GetMunicipioListUseCase, GetPatologiaListUseCase, SaveBeneficiarioUseCase, DeleteBeneficiarioUseCase, SaveCitaMedicaUseCase, SaveTrabajadorUseCase, \
     GetCitasMedicasListUseCase, GetCitasDisponiblesListUseCase, DeleteCitaMedicaUseCase, GetPersonaUseCase, GetVisitasListUseCase, CreateVisitaUseCase, \
-    CreateConsultaMedicaUseCase, SaveConsultaMedicaUseCase, GetConsultasMedicasPersonaListUseCase
+    CreateConsultaMedicaUseCase, SaveConsultaMedicaUseCase, GetConsultasMedicasPersonaListUseCase, GetProximasCitasMedicasPersonaListUseCase
 # from app.v1.use_cases.entities import GetCargoListUseCase,GetCentroCostoListUseCase,GetConceptoNominaListUseCase,\
 #     GetDispositivoListUseCase,GetEstatusTrabajadorListUseCase,GetTipoAusenciaListUseCase,GetTipoNominaListUseCase,\
 #     GetTrabajadorListUseCase,GetTipoTrabajadorListUseCase,GetGrupoGuardiaListUseCase
@@ -802,6 +802,22 @@ class CitaPersonaListResource(ProxySecureResource):
         #security_credentials = {'username': 'prueba'}
         query_params = {'cedula': cedula}
         data = GetCitasMedicasPersonaListUseCase().execute(security_credentials, query_params)
+        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+
+
+@entities_ns.route('/citamedica/proxima/cedula/<cedula>')
+@entities_ns.param('cedula', 'Cedula Persona')
+@v1_api.expect(secureHeader)
+class ProximasCitasPersonaListResource(ProxySecureResource):
+
+    @entities_ns.doc('Get Proximas Citas Medicas by Cedula')
+    @v1_api.marshal_with(GetCitaListStruct) 
+    @jwt_required    
+    def get(self,cedula):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        query_params = {'cedula': cedula}
+        data = GetProximasCitasMedicasPersonaListUseCase().execute(security_credentials, query_params)
         return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
 
 

@@ -765,6 +765,19 @@ class CitaRepository(SinergiaRepository):
             raise DatabaseException(text=error_description)
 
 
+    def getProximasCitasByCedula(self,cedula):
+        try:
+            formatofecha = '%Y-%m-%d'
+            hoy = datetime.now().date()
+            hoy_str = datetime.strftime(hoy, formatofecha)
+            citamedicas = Cita.query.filter(Cita.cedula == cedula, Cita.estado != CITA_CANCELADA, Cita.fechacita >= hoy_str).all()
+            return citamedicas
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
+
     def getByFechaCita(self,fechacita):
         try:
             citamedicas = Cita.query.filter(Cita.fechacita == fechacita).all()

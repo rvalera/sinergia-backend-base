@@ -110,6 +110,10 @@ class GetCitasMedicasPersonaListUseCase(object):
     def execute(self,security_credentials, query_params):
         return CitaRepository(username=security_credentials['username']).getCitasByCedula(query_params['cedula'])
 
+class GetProximasCitasMedicasPersonaListUseCase(object):
+    def execute(self,security_credentials, query_params):
+        return CitaRepository(username=security_credentials['username']).getProximasCitasByCedula(query_params['cedula'])
+
 class GetCitasDisponiblesListUseCase(object):
     def execute(self,security_credentials, query_params):
         return CitaRepository(username=security_credentials['username']).getFechasDisponibleByEspecialidad(query_params['codigoespecialidad'],query_params['fechainicio'],query_params['fechafin'])
