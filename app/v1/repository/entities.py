@@ -727,6 +727,20 @@ class CitaRepository(SinergiaRepository):
         db.session.add(cita)
         db.session.commit()   
 
+    
+    def confirm(self,payload):         
+        idcita = payload['idcita'] if 'idcita' in payload else None
+
+        cita = Cita.query.filter(Cita.id == idcita, Cita.estado == CITA_PLANIFICADA).first()
+        if cita is None:
+            raise DataNotFoundException()
+        
+        cita.idbiostar = payload['idbiostar']
+        cita.idbiostar2 = payload['idbiostar2']
+        cita.estado = CITA_CONFIRMADA
+        db.session.add(cita)
+        db.session.commit()   
+
 
 
     def getByCedula(self,cedula):
@@ -735,6 +749,16 @@ class CitaRepository(SinergiaRepository):
             if citamedica is None:
                 raise DataNotFoundException()
             return citamedica
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
+    
+    def getCitasByCedula(self,cedula):
+        try:
+            citamedicas = Cita.query.filter(Cita.cedula == cedula).all()
+            return citamedicas
         except exc.DatabaseError as err:
             # pass exception to function
             error_description = '%s' % (err)

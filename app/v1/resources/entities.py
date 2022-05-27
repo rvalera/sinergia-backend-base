@@ -2,7 +2,7 @@ from app.v1 import v1_api
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_restplus import Resource, Namespace, fields
 from app.v1.resources.base import ProxySecureResource, secureHeader, queryParams
-from app.v1.use_cases.entities import CreateBeneficiarioUseCase, CreateCitaMedicaUseCase, DeleteConsultaMedicaUseCase, GetCitaUseCase, GetConsultaMedicaUseCase, GetDiscapacidadListUseCase, GetEmpresaListUseCase, GetEspecialidadListUseCase, GetEstadoListUseCase, GetHistoriaMedicaUseCase, GetMunicipioListUseCase,GetTipoNominaListUseCase, \
+from app.v1.use_cases.entities import ConfirmCitaMedicaUseCase, CreateBeneficiarioUseCase, CreateCitaMedicaUseCase, DeleteConsultaMedicaUseCase, GetCitaUseCase, GetCitasMedicasPersonaListUseCase, GetConsultaMedicaUseCase, GetDiscapacidadListUseCase, GetEmpresaListUseCase, GetEspecialidadListUseCase, GetEstadoListUseCase, GetHistoriaMedicaUseCase, GetMunicipioListUseCase,GetTipoNominaListUseCase, \
     GetTrabajadorUseCase, GetEstadoListUseCase, GetMunicipioListUseCase, GetPatologiaListUseCase, SaveBeneficiarioUseCase, DeleteBeneficiarioUseCase, SaveCitaMedicaUseCase, SaveTrabajadorUseCase, \
     GetCitasMedicasListUseCase, GetCitasDisponiblesListUseCase, DeleteCitaMedicaUseCase, GetPersonaUseCase, GetVisitasListUseCase, CreateVisitaUseCase, \
     CreateConsultaMedicaUseCase, SaveConsultaMedicaUseCase, GetConsultasMedicasPersonaListUseCase
@@ -244,6 +244,7 @@ CitaStruct = v1_api.model('CitaStruct', {
     'fechapasaconsulta' : fields.DateTime(), 
     'fechafinconsulta' : fields.DateTime(), 
     'idbiostar' : fields.String(),
+    'idbiostar2' : fields.String(),
     'estado' : fields.String()
 }) 
 
@@ -257,6 +258,12 @@ UpdateCitaStruct = v1_api.model('UpdateCitaStruct', {
     'idcita' : fields.String(),   
     'codigoespecialidad' : fields.String(),  
     'fechacita' : fields.String()
+})
+
+ConfirmCitaStruct = v1_api.model('ConfirmCitaStruct', { 
+    'idcita' : fields.String(),   
+    'idbiostar' : fields.String(),
+    'idbiostar2' : fields.String()
 })
 
 GetCitaStruct = v1_api.model('GetCitaResult', { 
@@ -753,6 +760,21 @@ class CitaResource(ProxySecureResource):
         return  {'ok':1} , 200
 
 
+@entities_ns.route('/citamedica/confirm')
+@v1_api.expect(secureHeader)
+class CitaConfirmResource(ProxySecureResource): 
+
+    @entities_ns.doc('Confirm Cita Medica')
+    @v1_api.expect(ConfirmCitaStruct)    
+    @jwt_required    
+    def put(self):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        payload = request.json        
+        ConfirmCitaMedicaUseCase().execute(security_credentials,payload)
+        return  {'ok':1} , 200
+
+
 @entities_ns.route('/citamedica/<idcita>')
 @entities_ns.param('idcita', 'Id de la Cita Medica')
 @v1_api.expect(secureHeader)
@@ -767,19 +789,19 @@ class DeleteCitaResource(ProxySecureResource):
         return  {'ok':1} , 200
 
 
-@entities_ns.route('/citamedica/<cedula>')
+@entities_ns.route('/citamedica/cedula/<cedula>')
 @entities_ns.param('cedula', 'Cedula Persona')
 @v1_api.expect(secureHeader)
-class OneCitaResource(ProxySecureResource):
+class CitaPersonaListResource(ProxySecureResource):
 
-    @entities_ns.doc('Get Cita Medica')
-    @v1_api.marshal_with(GetCitaStruct) 
+    @entities_ns.doc('Get Citas Medicas by Cedula')
+    @v1_api.marshal_with(GetCitaListStruct) 
     @jwt_required    
     def get(self,cedula):
         security_credentials = self.checkCredentials()
         #security_credentials = {'username': 'prueba'}
         query_params = {'cedula': cedula}
-        data = GetCitaUseCase().execute(security_credentials,query_params)
+        data = GetCitasMedicasPersonaListUseCase().execute(security_credentials, query_params)
         return  {'ok': 1, 'data': data}, 200
 
 

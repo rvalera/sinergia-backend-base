@@ -239,6 +239,7 @@ class Cita(db.Model):
     fechapasaconsulta = Column(DateTime()) 
     fechafinconsulta = Column(DateTime()) 
     idbiostar = Column(String(100))
+    idbiostar2 = Column(String(100))
     estado = Column(String(50))
 
 
