@@ -104,6 +104,10 @@ EmpresaStruct = v1_api.model('EmpresaStruct', {
     'nombre' : fields.String(), 
 })
 
+UpdateEmpresaStruct = v1_api.model('UpdateEmpresaStruct', { 
+    'codigo' : fields.String(), 
+})
+
 UsuarioActStruct = v1_api.model('UsuarioActStruct', { 
     'name': fields.String()
 })

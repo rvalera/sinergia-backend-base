@@ -3,6 +3,7 @@ Created on 17 dic. 2019
 
 @author: ramon
 '''
+from getpass import getuser
 from app.v1.models.security import SecurityElement, User, PersonExtension
 from app.v1.models.hr import Beneficiario, Especialidad, HistoriaMedica, Persona,Estado,Municipio,Trabajador,TipoTrabajador,EstatusTrabajador,TipoNomina,\
     TipoCargo,UbicacionLaboral,Empresa, Patologia, Cita, Discapacidad, Visita, ConsultaMedica
@@ -20,6 +21,7 @@ import logging
 
 from sqlalchemy import text    
 from sqlalchemy import select, func
+from sqlalchemy import and_
 
 from psycopg2 import OperationalError, errorcodes, errors    
 from sqlalchemy import exc
@@ -402,7 +404,13 @@ class TrabajadorRepository(SinergiaRepository):
 
     def getByCedula(self,cedula):
         try:
-            trabajador = Trabajador.query.filter(Trabajador.cedula == cedula).first()
+            current_user = self.getUser()
+            empresa_user = current_user.person_extension.empresa
+            if not empresa_user is None:
+                empresa_id = empresa_user.codigo
+                trabajador = Trabajador.query.filter(_and(Trabajador.cedula == cedula, Trabajador.empresa.codigo == empresa_user)).first()
+            else:
+                trabajador = Trabajador.query.filter(Trabajador.cedula == cedula, Trabajador).first()
             if trabajador is None:
                 raise DataNotFoundException()
             return trabajador

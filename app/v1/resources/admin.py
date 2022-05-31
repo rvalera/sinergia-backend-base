@@ -28,7 +28,7 @@ from app.tools.response_tools import make_template_response
 
 from app.v1.use_cases.admin import GetAdminMemberListUseCase,GetAdminMemberUseCase,\
     DeleteAdminMemberUseCase,CreateAdminMemberUseCase,SaveAdminMemberUseCase,GetRolListUseCase, SaveRolUseCase
-from app.v1.resources.entities import PersonaStruct, UpdatePersonaStruct
+from app.v1.resources.entities import EmpresaStruct, PersonaStruct, UpdateEmpresaStruct, UpdatePersonaStruct
 
 admin_ns = v1_api.namespace('admin', description='Admin Services')
 
@@ -53,6 +53,7 @@ ExtraInfoUserStruct = v1_api.model('ExtraInfoUserStruct', {
     'phone_number': fields.String(attribute='phone_number'),
     # #Datos Adicionales Creados para RRHH
     'person_info': fields.Nested(PersonaStruct,attribute='persona'),
+    'empresa': fields.Nested(EmpresaStruct,attribute='empresa'),
 }) 
 
 AdminUserStruct = v1_api.model('AdminUserStruct', { 
@@ -73,6 +74,7 @@ UpdateExtraInfoUserStruct = v1_api.model('UpdateExtraInfoUserStruct', {
     'phone_number': fields.String(),
     #Informacion Adicional Asociado al Usuario
     'person_info': fields.Nested(UpdatePersonaStruct),
+    'empresa': fields.Nested(UpdateEmpresaStruct),
 }) 
 
 UpdateAdminUserStruct = v1_api.model('UpdateAdminUserStruct', { 
