@@ -409,7 +409,7 @@ class TrabajadorRepository(SinergiaRepository):
             if not empresa_user is None:
                 empresa_id = empresa_user.codigo
                 print(f'Filtrando por el Identificador de Empresa {empresa_id}')
-                trabajador = Trabajador.query.filter(and_(Trabajador.cedula == cedula, Trabajador.empresa.codigo == empresa_id)).first()
+                trabajador = Trabajador.query.filter(and_(Trabajador.cedula == cedula, Trabajador.codigoempresa == empresa_id)).first()
             else:
                 print(f'SIN Filtrado')
                 trabajador = Trabajador.query.filter(Trabajador.cedula == cedula).first()
