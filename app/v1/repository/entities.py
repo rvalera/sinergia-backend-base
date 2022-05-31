@@ -408,7 +408,7 @@ class TrabajadorRepository(SinergiaRepository):
             empresa_user = current_user.person_extension.empresa
             if not empresa_user is None:
                 empresa_id = empresa_user.codigo
-                trabajador = Trabajador.query.filter(_and(Trabajador.cedula == cedula, Trabajador.empresa.codigo == empresa_user)).first()
+                trabajador = Trabajador.query.filter(_and(Trabajador.cedula == cedula, Trabajador.empresa.codigo == empresa_id)).first()
             else:
                 trabajador = Trabajador.query.filter(Trabajador.cedula == cedula, Trabajador).first()
             if trabajador is None:
