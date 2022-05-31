@@ -408,10 +408,10 @@ class TrabajadorRepository(SinergiaRepository):
             empresa_user = current_user.person_extension.empresa
             if not empresa_user is None:
                 empresa_id = empresa_user.codigo
-                println(f'Filtrando por el Identificador de Empresa ${empresa_id}')
+                print(f'Filtrando por el Identificador de Empresa ${empresa_id}')
                 trabajador = Trabajador.query.filter(_and(Trabajador.cedula == cedula, Trabajador.empresa.codigo == empresa_id)).first()
             else:
-                println(f'SIN Filtrado')
+                print(f'SIN Filtrado')
                 trabajador = Trabajador.query.filter(Trabajador.cedula == cedula).first()
             if trabajador is None:
                 raise DataNotFoundException()
