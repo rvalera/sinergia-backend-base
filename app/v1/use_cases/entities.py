@@ -8,7 +8,8 @@ Created on 17 dic. 2019
 #     TipoTrabajadorRepository,GrupoGuardiaRepository
 
 from app.v1.repository.entities import EmpresaRepository, HistoriaMedicaRepository, TipoNominaRepository, TrabajadorRepository, EstadoRepository, MunicipioRepository, \
-    PatologiaRepository, BeneficiarioRepository, EspecialidadRepository, CitaRepository, DiscapacidadRepository, PersonaRepository, VisitaRepository, ConsultaMedicaRepository
+    PatologiaRepository, BeneficiarioRepository, EspecialidadRepository, CitaRepository, DiscapacidadRepository, PersonaRepository, VisitaRepository, ConsultaMedicaRepository, \
+    AreaRepository
 
 class GetEmpresaListUseCase(object):
     def execute(self,security_credentials):
@@ -17,6 +18,10 @@ class GetEmpresaListUseCase(object):
 class GetTipoNominaListUseCase(object):
     def execute(self,security_credentials):
         return TipoNominaRepository(username=security_credentials['username']).getAll()
+
+class GetAreaListUseCase(object):
+    def execute(self,security_credentials):
+        return AreaRepository(username=security_credentials['username']).getAll()
 
 class GetPatologiaListUseCase(object):
     def execute(self,security_credentials):
@@ -118,6 +123,10 @@ class GetCitasDisponiblesListUseCase(object):
     def execute(self,security_credentials, query_params):
         return CitaRepository(username=security_credentials['username']).getFechasDisponibleByEspecialidad(query_params['codigoespecialidad'],query_params['fechainicio'],query_params['fechafin'])
 
+class GetCitasCedulaEspecialidadFechaListUseCase(object):
+    def execute(self,security_credentials, query_params):
+        return CitaRepository(username=security_credentials['username']).getCitasByCedulaEspecialidadFecha(query_params['cedula'],query_params['codigoespecialidad'],query_params['fechacita'])
+
 class CreateCitaMedicaUseCase(object):
     def execute(self,security_credentials,payload):
         CitaRepository(username=security_credentials['username']).new(payload)
@@ -125,6 +134,10 @@ class CreateCitaMedicaUseCase(object):
 class SaveCitaMedicaUseCase(object):
     def execute(self,security_credentials,payload):
         CitaRepository(username=security_credentials['username']).save(payload)
+
+class GetCitaMedicaUseCase(object):
+    def execute(self,security_credentials,query_params):
+        return CitaRepository(username=security_credentials['username']).getById(query_params['id'])
 
 class ConfirmCitaMedicaUseCase(object):
     def execute(self,security_credentials,payload):

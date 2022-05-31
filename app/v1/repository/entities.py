@@ -115,6 +115,7 @@ class EstatusTrabajadorRepository(SinergiaRepository):
             error_description = '%s' % (err)
             raise DatabaseException(text=error_description)
 
+
 class TipoNominaRepository(SinergiaRepository):
     def getAll(self):
         try:
@@ -126,6 +127,20 @@ class TipoNominaRepository(SinergiaRepository):
             # pass exception to function
             error_description = '%s' % (err)
             raise DatabaseException(text=error_description)
+
+
+class AreaRepository(SinergiaRepository):
+    def getAll(self):
+        try:
+            table_df = pd.read_sql_query('select * from hospitalario.area',con=db.engine)
+            table_df = table_df.fillna('')
+            result = table_df.to_dict('records')
+            return result
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
 class UbicacionLaboralRepository(SinergiaRepository):
     def getAll(self):
@@ -709,6 +724,7 @@ class CitaRepository(SinergiaRepository):
         db.session.add(cita)
         db.session.commit()   
 
+
     def save(self,payload):         
         idcita = payload['idcita'] if 'idcita' in payload else None
         codigoespecialidad = payload['codigoespecialidad'] if 'codigoespecialidad' in payload else None
@@ -741,6 +757,17 @@ class CitaRepository(SinergiaRepository):
         db.session.add(cita)
         db.session.commit()   
 
+    
+    def getById(self,id):
+        try:
+            citamedica = Cita.query.filter(Cita.id == id).first()
+            if citamedica is None:
+                raise DataNotFoundException()
+            return citamedica
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
 
 
     def getByCedula(self,cedula):
@@ -822,6 +849,17 @@ class CitaRepository(SinergiaRepository):
             
             return fechasrango
 
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
+    
+    def getCitasByCedulaEspecialidadFecha(self, cedula, codigoespecialidad, fechacita):
+        try:
+            citamedicas = Cita.query.filter(Cita.cedula == cedula, Cita.codigoespecialidad == codigoespecialidad, \
+                                            Cita.fechacita == fechacita, Cita.estado != CITA_CANCELADA).all()
+            return citamedicas
         except exc.DatabaseError as err:
             # pass exception to function
             error_description = '%s' % (err)
