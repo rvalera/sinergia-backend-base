@@ -3,13 +3,9 @@ Created on 17 dic. 2019
 
 @author: ramon
 '''
-# from app.v1.repository.entities import CargoRepository,CentroCostoRepository,ConceptoNominaRepository,DispositivoRepository,\
-#     EstatusTrabajadorRepository,TipoAusenciaRepository,TipoNominaRepository,\
-#     TipoTrabajadorRepository,GrupoGuardiaRepository
-
 from app.v1.repository.entities import EmpresaRepository, HistoriaMedicaRepository, TipoNominaRepository, TrabajadorRepository, EstadoRepository, MunicipioRepository, \
     PatologiaRepository, BeneficiarioRepository, EspecialidadRepository, CitaRepository, DiscapacidadRepository, PersonaRepository, VisitaRepository, ConsultaMedicaRepository, \
-    AreaRepository
+    AreaRepository, MedicoRepository
 
 class GetEmpresaListUseCase(object):
     def execute(self,security_credentials):
@@ -35,37 +31,17 @@ class GetEspecialidadListUseCase(object):
     def execute(self,security_credentials):
         return EspecialidadRepository(username=security_credentials['username']).getAll()
 
-# class GetCargoListUseCase(object):
-#     def execute(self,security_credentials,query_params):
-#         return CargoRepository(username=security_credentials['username']).get(query_params)
+class CreateEspecialidadUseCase(object):
+    def execute(self,security_credentials,payload):
+        EspecialidadRepository(username=security_credentials['username']).new(payload)
 
-# class GetCentroCostoListUseCase(object):
-#     def execute(self,security_credentials,query_params):
-#         return CentroCostoRepository(username=security_credentials['username']).get(query_params)
+class SaveEspecialidadUseCase(object):
+    def execute(self,security_credentials,payload):
+        EspecialidadRepository(username=security_credentials['username']).save(payload)
 
-# class GetConceptoNominaListUseCase(object):
-#     def execute(self,security_credentials,query_params):
-#         return ConceptoNominaRepository(username=security_credentials['username']).get(query_params)
-
-# class GetDispositivoListUseCase(object):
-#     def execute(self,security_credentials):
-#         return DispositivoRepository(username=security_credentials['username']).getAll()
-
-# class GetEstatusTrabajadorListUseCase(object):
-#     def execute(self,security_credentials):
-#         return EstatusTrabajadorRepository(username=security_credentials['username']).getAll()
-
-# class GetTipoAusenciaListUseCase(object):
-#     def execute(self,security_credentials):
-#         return TipoAusenciaRepository(username=security_credentials['username']).getAll()
-
-# class GetTipoNominaListUseCase(object):
-#     def execute(self,security_credentials):
-#         return TipoNominaRepository(username=security_credentials['username']).getAll()
-
-# class GetTrabajadorListUseCase(object):
-#     def execute(self,security_credentials,query_params):
-#         return TrabajadorRepository(username=security_credentials['username']).get(query_params)
+class GetEspecialidadUseCase(object):
+    def execute(self,security_credentials,query_params):
+        return EspecialidadRepository(username=security_credentials['username']).getById(query_params['codigoespecialidad'])
 
 class GetPersonaUseCase(object):
     def execute(self,security_credentials,query_params):
@@ -102,6 +78,22 @@ class DeleteBeneficiarioUseCase(object):
 class GetHistoriaMedicaUseCase(object):
     def execute(self,security_credentials,query_params):
         return HistoriaMedicaRepository(username=security_credentials['username']).getByCedula(query_params['cedula'])
+
+class CreateMedicoUseCase(object):
+    def execute(self,security_credentials,payload):
+        MedicoRepository(username=security_credentials['username']).new(payload)
+
+class SaveMedicoUseCase(object):
+    def execute(self,security_credentials,payload):
+        MedicoRepository(username=security_credentials['username']).save(payload)
+
+class DeleteMedicoUseCase(object):
+    def execute(self,security_credentials,query_params):
+        MedicoRepository(username=security_credentials['username']).delete(query_params['cedula'])
+
+class GetMedicoUseCase(object):
+    def execute(self,security_credentials,query_params):
+        return MedicoRepository(username=security_credentials['username']).getByCedula(query_params['cedula'])
 
 class GetCitaUseCase(object):
     def execute(self,security_credentials,query_params):
@@ -174,11 +166,3 @@ class GetConsultaMedicaUseCase(object):
 class DeleteConsultaMedicaUseCase(object):
     def execute(self,security_credentials,query_params):
         ConsultaMedicaRepository(username=security_credentials['username']).delete(query_params['id'])
-
-# class GetTipoTrabajadorListUseCase(object):
-#     def execute(self,security_credentials):
-#         return TipoTrabajadorRepository(username=security_credentials['username']).getAll()
-
-# class GetGrupoGuardiaListUseCase(object):
-#     def execute(self,security_credentials):
-#         return GrupoGuardiaRepository(username=security_credentials['username']).getAll()

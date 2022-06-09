@@ -5,7 +5,7 @@ Created on 17 dic. 2019
 '''
 from app.v1.models.security import SecurityElement, User, PersonExtension
 from app.v1.models.hr import Beneficiario, Especialidad, HistoriaMedica, Persona,Estado,Municipio,Trabajador,TipoTrabajador,EstatusTrabajador,TipoNomina,\
-    TipoCargo,UbicacionLaboral,Empresa, Patologia, Cita, Discapacidad, Visita, ConsultaMedica
+    TipoCargo,UbicacionLaboral,Empresa, Patologia, Cita, Discapacidad, Visita, ConsultaMedica, Medico
 from app import redis_client, db
 import json
 import requests
@@ -521,6 +521,161 @@ class EspecialidadRepository(SinergiaRepository):
             table_df = table_df.fillna('')
             result = table_df.to_dict('records')
             return result
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+    
+    def getById(self,codigoespecialidad):
+        try:
+            especialidad = Especialidad.query.filter(Especialidad.codigoespecialidad == codigoespecialidad).first()
+            if especialidad is None:
+                raise DataNotFoundException()
+            return especialidad
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
+    def new(self,payload):
+        codigoespecialidad = payload['codigoespecialidad'] if 'codigoespecialidad' in payload else None
+        if codigoespecialidad:
+            #Se chequea que el codigo de la especialidad no se este usando
+            aux = Especialidad.query.filter(Especialidad.codigoespecialidad == codigoespecialidad).first()
+            if aux:
+                #Se arroja excepcion, el beneficiario ya esta creado
+                raise DataNotFoundException()
+
+            especialidad = Especialidad()
+            especialidad.codigoespecialidad  = payload['codigoespecialidad']
+            especialidad.nombre = payload['nombre']
+            especialidad.diasdeatencion = payload['diasdeatencion']
+            especialidad.autogestionada = payload['autogestionada']
+            especialidad.cantidadmaximapacientes = payload['cantidadmaximapacientes']
+          
+            db.session.add(especialidad)
+            db.session.commit()            
+        else:
+            #No se proporciono el codigo de la especialidad, es obligatorio 
+            raise ParametersNotFoundException()
+
+    
+    def save(self,payload):
+        codigoespecialidad = payload['codigoespecialidad'] if 'codigoespecialidad' in payload else None
+        if codigoespecialidad:
+            #Se chequea que la especialidad exista previamente 
+            especialidad = Especialidad.query.filter(Especialidad.codigoespecialidad == codigoespecialidad).first()
+            if especialidad is None:
+                #Se arroja excepcion, la especialidad ya esta creado
+                raise DataNotFoundException()
+
+            especialidad.nombre = payload['nombre']
+            especialidad.diasdeatencion = payload['diasdeatencion']
+            especialidad.autogestionada = payload['autogestionada']
+            especialidad.cantidadmaximapacientes = payload['cantidadmaximapacientes']
+            
+            db.session.add(especialidad)
+            db.session.commit()            
+        else:
+            #No se proporciono el codigo, es obligatorio 
+            raise ParametersNotFoundException()
+
+class MedicoRepository(SinergiaRepository):
+
+    def new(self,payload):
+        cedula = payload['cedula'] if 'cedula' in payload else None
+        if cedula:
+            #Se chequea que el medico NO exista previamente 
+            aux = Medico.query.filter(Medico.cedula == cedula).first()
+            if aux:
+                #Se arroja excepcion, el beneficiario ya esta creado
+                raise DataNotFoundException()
+
+            medico = Medico()
+            medico.cedula               = payload['cedula']
+            medico.nombres              = payload['nombres']
+            medico.apellidos            = payload['apellidos']
+            medico.sexo                 = payload['sexo']
+            medico.fechanacimiento      = payload['fechanacimiento']
+            medico.nombres              = payload['nombres']
+            medico.apellidos            = payload['apellidos']
+            medico.sexo                 = payload['sexo']
+            medico.fechanacimiento      = payload['fechanacimiento']
+            medico.telefonocelular      = payload['telefonocelular']
+            medico.telefonoresidencia   = payload['telefonoresidencia']
+            medico.correo               = payload['correo']
+            medico.nacionalidad         = payload['nacionalidad']
+            medico.sexo                 = payload['sexo']
+            medico.codigoestado         = payload['codigoestado']
+            medico.codigomunicipio      = payload['codigomunicipio']
+            medico.parroquia            = payload['parroquia']
+            medico.sector               = payload['sector']
+            medico.avenidacalle         = payload['avenidacalle']
+            medico.edifcasa             = payload['edifcasa']
+            medico.codigoespecialidad   = payload['codigoespecialidad']
+            medico.codigoconsultorio    = payload['idconsultorio']
+          
+            db.session.add(medico)
+            db.session.commit()            
+        else:
+            #No se proporciono la cedula, es obligatorio 
+            raise ParametersNotFoundException()
+
+    
+    def save(self,payload):
+        cedula = payload['cedula'] if 'cedula' in payload else None
+        if cedula:
+            #Se chequea que el medico exista previamente 
+            medico = Medico.query.filter(Medico.cedula == cedula).first()
+            if medico is None:
+                #Se arroja excepcion, el Medico ya esta creado
+                raise DataNotFoundException()
+
+            medico.nombres              = payload['nombres']
+            medico.apellidos            = payload['apellidos']
+            medico.sexo                 = payload['sexo']
+            medico.fechanacimiento      = payload['fechanacimiento']
+            medico.nombres              = payload['nombres']
+            medico.apellidos            = payload['apellidos']
+            medico.sexo                 = payload['sexo']
+            medico.fechanacimiento      = payload['fechanacimiento']
+            medico.telefonocelular      = payload['telefonocelular']
+            medico.telefonoresidencia   = payload['telefonoresidencia']
+            medico.correo               = payload['correo']
+            medico.nacionalidad         = payload['nacionalidad']
+            medico.sexo                 = payload['sexo']
+            medico.codigoestado         = payload['codigoestado']
+            medico.codigomunicipio      = payload['codigomunicipio']
+            medico.parroquia            = payload['parroquia']
+            medico.sector               = payload['sector']
+            medico.avenidacalle         = payload['avenidacalle']
+            medico.edifcasa             = payload['edifcasa']
+            medico.codigoespecialidad   = payload['codigoespecialidad']
+            medico.codigoconsultorio    = payload['idconsultorio']
+            
+            db.session.add(medico)
+            db.session.commit()            
+        else:
+            #No se proporciono la cedula, es obligatorio 
+            raise ParametersNotFoundException()
+    
+
+    def delete(self,cedula):
+        pass
+        #medico = Medico.query.filter(Medico.cedula == cedula).first()
+        #if medico is None:
+            #Se arroja excepcion, el beneficiario ya esta creado
+        #    raise DataNotFoundException()
+        #db.session.delete(medico)
+        #db.session.commit()
+
+
+    def getByCedula(self,cedula):
+        try:
+            medico = Medico.query.filter(Medico.cedula == cedula).first()
+            if medico is None:
+                raise DataNotFoundException()
+            return medico
         except exc.DatabaseError as err:
             # pass exception to function
             error_description = '%s' % (err)
