@@ -95,6 +95,10 @@ class GetMedicoUseCase(object):
     def execute(self,security_credentials,query_params):
         return MedicoRepository(username=security_credentials['username']).getByCedula(query_params['cedula'])
 
+class GetMedicoListUseCase(object):
+    def execute(self,security_credentials):
+        return MedicoRepository(username=security_credentials['username']).getAll()
+
 class GetCitaUseCase(object):
     def execute(self,security_credentials,query_params):
         return CitaRepository(username=security_credentials['username']).getByCedula(query_params['cedula'])

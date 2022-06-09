@@ -7,7 +7,7 @@ from app.v1.use_cases.entities import ConfirmCitaMedicaUseCase, CreateBeneficiar
     GetCitasMedicasListUseCase, GetCitasDisponiblesListUseCase, DeleteCitaMedicaUseCase, GetPersonaUseCase, GetVisitasListUseCase, CreateVisitaUseCase, \
     CreateConsultaMedicaUseCase, SaveConsultaMedicaUseCase, GetConsultasMedicasPersonaListUseCase, GetProximasCitasMedicasPersonaListUseCase, GetCitaMedicaUseCase, \
     GetCitasCedulaEspecialidadFechaListUseCase, GetAreaListUseCase, CreateMedicoUseCase, SaveMedicoUseCase, DeleteMedicoUseCase, CreateEspecialidadUseCase,\
-    SaveEspecialidadUseCase, GetEspecialidadUseCase
+    SaveEspecialidadUseCase, GetEspecialidadUseCase, GetMedicoListUseCase
 
 from flask.globals import request    
 import json 
@@ -513,8 +513,8 @@ class TrabajadorResource(ProxySecureResource):
     @v1_api.expect(UpdateTrabajadorStruct)    
     #@jwt_required    
     def put(self):
-        #security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
         payload = request.json        
         SaveTrabajadorUseCase().execute(security_credentials,payload)
         return  {'ok':1} , 200
@@ -614,8 +614,8 @@ class OneEspecialidadResource(ProxySecureResource):
     @v1_api.marshal_with(GetEspecialidadStruct) 
     @jwt_required    
     def get(self,codigoespecialidad):
-        #security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
         query_params = {'codigoespecialidad': codigoespecialidad}
         data = GetEspecialidadUseCase.execute(security_credentials,query_params)
         return  {'ok': 1, 'data': data}, 200
@@ -664,12 +664,20 @@ class DeleteBeneficiarioResource(ProxySecureResource):
 @v1_api.expect(secureHeader)
 class MedicoResource(ProxySecureResource): 
 
+    @entities_ns.doc('Medicos List')
+    @jwt_required    
+    def get(self):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        data = GetMedicoListUseCase().execute(security_credentials)
+        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+
     @entities_ns.doc('Create Medico')
     @v1_api.expect(UpdateMedicoStruct)    
     @jwt_required    
     def post(self):
-        #security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
         payload = request.json        
         CreateMedicoUseCase().execute(security_credentials,payload)
         return  {'ok':1} , 200
@@ -678,8 +686,8 @@ class MedicoResource(ProxySecureResource):
     @v1_api.expect(UpdateMedicoStruct)    
     @jwt_required    
     def put(self):
-        #security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
         payload = request.json        
         SaveMedicoUseCase().execute(security_credentials,payload)
         return  {'ok':1} , 200
@@ -694,8 +702,8 @@ class OneMedicoResource(ProxySecureResource):
     @v1_api.marshal_with(GetMedicoStruct) 
     @jwt_required    
     def get(self,cedulamed):
-        #security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
         query_params = {'cedula': cedulamed}
         data = GetMedicoUseCase.execute(security_credentials,query_params)
         return  {'ok': 1, 'data': data}, 200

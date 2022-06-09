@@ -689,6 +689,18 @@ class MedicoRepository(SinergiaRepository):
             error_description = '%s' % (err)
             raise DatabaseException(text=error_description)
 
+    
+    def getAll(self):
+        try:
+            table_df = pd.read_sql_query('select * from hospitalario.medico',con=db.engine)
+            table_df = table_df.fillna('')
+            result = table_df.to_dict('records')
+            return result
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
 class BeneficiarioRepository(SinergiaRepository):
 
