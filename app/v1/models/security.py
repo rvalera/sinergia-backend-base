@@ -92,6 +92,11 @@ class PersonExtension(db.Model):
     cedula = Column('cedula',Integer(), ForeignKey('hospitalario.persona.cedula'))
     persona = relationship("Persona")
 
+    #Modificacion realizada para asociar un usuario con la empresa / Es posible que el usuario no tenga empresa asociada
+    empresa_id = Column('empresa_id',String(10), ForeignKey('hospitalario.empresa.codigo'))
+    empresa = relationship("Empresa")
+
+
     __mapper_args__ = {
         'polymorphic_identity':'personextension'
     }

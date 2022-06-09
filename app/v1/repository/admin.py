@@ -4,7 +4,7 @@ Created on 17 dic. 2019
 @author: ramon
 '''
 from app.v1.models.security import SecurityElement, User, PersonExtension, Rol, Privilege
-from app.v1.models.hr import Persona, Trabajador
+from app.v1.models.hr import Empresa, Persona, Trabajador
 from app.v1.models.constant import *
 
 from app import redis_client, db
@@ -193,9 +193,10 @@ class MemberRepository(SinergiaRepository):
 
                 user.person_extension = PersonExtension()
 
-                if 'person_info' in payload['extra_info'] and 'cedula' in payload['extra_info']['person_info'] :
+                if 'person_info' in payload['extra_info'] \
+                    and 'cedula' in payload['extra_info']['person_info'] :
                     cedula = payload['extra_info']['person_info']['cedula']
-                    persona = Persona.query.filter(Trabajador.cedula == cedula).first()
+                    persona = Persona.query.filter(Persona.cedula == cedula).first()
                     if not persona is None:
                         #El Trabajador existe todos los datos del Usuario debe sacarse de esta tabla
                         id_number = persona.cedula
@@ -205,7 +206,16 @@ class MemberRepository(SinergiaRepository):
                         gender =  persona.sexo
 
                         user.person_extension.cedula = cedula
-                
+
+                # Actualizar la empresa si viniera en el Payload / Esto es Opcional
+                if 'empresa' in payload['extra_info'] \
+                    and 'codigo' in payload['extra_info']['empresa'] :
+                    empresa_id = payload['extra_info']['empresa']['codigo']
+                    empresa = Empresa.query.filter(Empresa.codigo == empresa_id).first()
+                    if not empresa is None:
+                        user.person_extension.empresa_id = empresa_id
+
+
                 user.person_extension.id_number = id_number
                 user.person_extension.first_name = first_name
                 user.person_extension.last_name = last_name
@@ -267,6 +277,15 @@ class MemberRepository(SinergiaRepository):
                         gender =  persona.sexo
 
                         user.person_extension.cedula = cedula
+
+                # Actualizar la empresa si viniera en el Payload / Esto es Opcional
+                if 'empresa' in payload['extra_info'] \
+                    and 'codigo' in payload['extra_info']['empresa'] :
+                    empresa_id = payload['extra_info']['empresa']['codigo']
+                    empresa = Empresa.query.filter(Empresa.codigo == empresa_id).first()
+                    if not empresa is None:
+                        user.person_extension.empresa_id = empresa_id
+
                
                 user.person_extension.id_number = id_number
                 user.person_extension.first_name = first_name
