@@ -144,6 +144,19 @@ class AreaRepository(SinergiaRepository):
             raise DatabaseException(text=error_description)
 
 
+class ConsultorioRepository(SinergiaRepository):
+    def getAll(self):
+        try:
+            table_df = pd.read_sql_query('select * from hospitalario.consultorio',con=db.engine)
+            table_df = table_df.fillna('')
+            result = table_df.to_dict('records')
+            return result
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
+
 class UbicacionLaboralRepository(SinergiaRepository):
     def getAll(self):
         try:

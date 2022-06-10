@@ -7,7 +7,7 @@ from app.v1.use_cases.entities import ConfirmCitaMedicaUseCase, CreateBeneficiar
     GetCitasMedicasListUseCase, GetCitasDisponiblesListUseCase, DeleteCitaMedicaUseCase, GetPersonaUseCase, GetVisitasListUseCase, CreateVisitaUseCase, \
     CreateConsultaMedicaUseCase, SaveConsultaMedicaUseCase, GetConsultasMedicasPersonaListUseCase, GetProximasCitasMedicasPersonaListUseCase, GetCitaMedicaUseCase, \
     GetCitasCedulaEspecialidadFechaListUseCase, GetAreaListUseCase, CreateMedicoUseCase, SaveMedicoUseCase, DeleteMedicoUseCase, CreateEspecialidadUseCase,\
-    SaveEspecialidadUseCase, GetEspecialidadUseCase, GetMedicoListUseCase
+    SaveEspecialidadUseCase, GetEspecialidadUseCase, GetMedicoListUseCase, GetConsultorioListUseCase
 
 from flask.globals import request    
 import json 
@@ -470,6 +470,18 @@ class AreaResource(ProxySecureResource):
     def get(self):
         security_credentials = self.checkCredentials()
         data = GetAreaListUseCase().execute(security_credentials)
+        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+
+
+@entities_ns.route('/consultorio')
+@v1_api.expect(secureHeader)
+class ConsultorioResource(ProxySecureResource): 
+
+    @entities_ns.doc('Consultorio')
+    @jwt_required    
+    def get(self):
+        security_credentials = self.checkCredentials()
+        data = GetConsultorioListUseCase().execute(security_credentials)
         return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
 
 
