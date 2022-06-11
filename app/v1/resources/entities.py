@@ -398,12 +398,18 @@ UpdateMedicoStruct = v1_api.model('UpdateMedicoStruct', {
     'sector' : fields.String(),  
     'avenidacalle' : fields.String(),  
     'edifcasa' : fields.String(),
-    'codigoespecialidad' : fields.String(), 
-    'idconsultorio' : fields.Integer()
+    'codigoespecialidad' : fields.String()
 })
 
 GetMedicoStruct = v1_api.model('GetMedicoResult', { 
     'ok' : fields.Integer(description='Ok Result'), 
+    'data' : fields.Nested(MedicoStruct,attribute='data')
+})
+
+GetMedicoListStruct = v1_api.model('GetMedicoListResult', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'count' : fields.Integer(description='Count Row'), 
+    'total' : fields.Integer(description='Total Row'), 
     'data' : fields.Nested(MedicoStruct,attribute='data')
 })
 
@@ -729,6 +735,7 @@ class DeleteBeneficiarioResource(ProxySecureResource):
 class MedicoResource(ProxySecureResource): 
 
     @entities_ns.doc('Medicos List')
+    @v1_api.marshal_with(GetMedicoListStruct) 
     @jwt_required    
     def get(self):
         security_credentials = self.checkCredentials()

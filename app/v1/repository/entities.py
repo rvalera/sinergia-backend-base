@@ -635,7 +635,7 @@ class MedicoRepository(SinergiaRepository):
             medico.avenidacalle         = payload['avenidacalle']
             medico.edifcasa             = payload['edifcasa']
             medico.codigoespecialidad   = payload['codigoespecialidad']
-            medico.codigoconsultorio    = payload['idconsultorio']
+            #medico.codigoconsultorio    = payload['idconsultorio']
           
             db.session.add(medico)
             db.session.commit()            
@@ -673,7 +673,7 @@ class MedicoRepository(SinergiaRepository):
             medico.avenidacalle         = payload['avenidacalle']
             medico.edifcasa             = payload['edifcasa']
             medico.codigoespecialidad   = payload['codigoespecialidad']
-            medico.codigoconsultorio    = payload['idconsultorio']
+            #medico.codigoconsultorio    = payload['idconsultorio']
             
             db.session.add(medico)
             db.session.commit()            
@@ -706,10 +706,8 @@ class MedicoRepository(SinergiaRepository):
     
     def getAll(self):
         try:
-            table_df = pd.read_sql_query('select * from hospitalario.medico',con=db.engine)
-            table_df = table_df.fillna('')
-            result = table_df.to_dict('records')
-            return result
+            medicos = Medico.query.all()
+            return medicos
         except exc.DatabaseError as err:
             # pass exception to function
             error_description = '%s' % (err)
