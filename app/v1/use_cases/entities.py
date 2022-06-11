@@ -161,7 +161,7 @@ class EntryColaEsperaUseCase(object):
 
 class GetColaEsperaResumenUseCase(object):
     def execute(self,security_credentials,query_params):
-        return ColaEsperaRepository(username=security_credentials['username']).getBySalaFecha(query_params['idsala'],query_params['fecha'])
+        return ColaEsperaRepository(username=security_credentials['username']).getBySala(query_params['idsala'])
 
 class CreateVisitaUseCase(object):
     def execute(self,security_credentials,payload):

@@ -353,14 +353,15 @@ ConsultorioStruct = v1_api.model('ConsultorioStruct', {
 
 
 ColaResumenStruct = v1_api.model('ColaResumenStruct', {     
-    'idconsultorio' : fields.Integer(), 
-    'saladeespera': fields.Nested(SalaDeEsperaStruct,attribute='saladeespera'),
-    'nombre' : fields.String()
+    'especialidad': fields.Nested(EspecialidadStruct,attribute='especialidad'),
+    'citas_en_cola': fields.List(fields.Nested(CitaStruct)),
+    'citas_en_atencion': fields.List(fields.Nested(CitaStruct))
 })
+
 
 GetColaEsperaResumenStruct = v1_api.model('GetColaEsperaResumenResult', { 
     'ok' : fields.Integer(description='Ok Result'), 
-    'data' : fields.Nested(ColaResumenStruct,attribute='data')
+    'data' : fields.List(fields.Nested(ColaResumenStruct))
 })
 
 
@@ -531,21 +532,19 @@ class ColaEntradaResource(ProxySecureResource):
         return  {'ok':1} , 200
 
 
-@entities_ns.route('/colaespera/resumen/<idsala>/<fecha>')
+@entities_ns.route('/colaespera/resumen/<idsala>')
 @entities_ns.param('idsala', 'Id Sala de Espera')
-@entities_ns.param('fecha', 'Fecha Consulta')
 @v1_api.expect(secureHeader)
 class ColaEsperaResource(ProxySecureResource):
 
     @entities_ns.doc('Get Cola de Espera por Sala y Dia de Consulta')
     @v1_api.marshal_with(GetColaEsperaResumenStruct) 
     @jwt_required    
-    def get(self,idsala, fecha):
+    def get(self,idsala):
         security_credentials = self.checkCredentials()
         #security_credentials = {'username': 'prueba'}
         query_params = {
-            'idsala': idsala,
-            'fecha': fecha,
+            'idsala': idsala
             }
         data = GetColaEsperaResumenUseCase().execute(security_credentials,query_params)
         return  {'ok': 1, 'data': data}, 200
