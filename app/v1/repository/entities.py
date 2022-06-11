@@ -13,7 +13,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
 from app.exceptions.base import DataNotFoundException, CitaFechaInvalidaException, CitaFechaSinCupoException, CryptoPOSException, ConnectionException,NotImplementedException,DatabaseException,\
-                                IntegrityException, ParametersNotFoundException, CitaException, CitaConConsultaException, CitaPersonaEquivocadaException
+                                IntegrityException, ParametersNotFoundException, CitaException, CitaConConsultaException, CitaPersonaEquivocadaException, PacienteConCitaException
 from .base import SinergiaRepository
 
 import pandas as pd
@@ -914,6 +914,11 @@ class CitaRepository(SinergiaRepository):
             #Se arroja excepcion, la persona no existe en la BD
             raise DataNotFoundException()
 
+        cita_aux = Cita.query.filter(Cita.cedula == cedula, Cita.codigoespecialidad == codigoespecialidad,\
+                                 Cita.fechacita == fechacita, Cita.estado == CITA_PLANIFICADA).first()
+        if cita_aux:
+            raise PacienteConCitaException()
+
         if not self.canSolicitarCita(codigoespecialidad, fechacita):
             raise CitaException()
 
@@ -1009,7 +1014,7 @@ class CitaRepository(SinergiaRepository):
 
     def getByFechaCita(self,fechacita):
         try:
-            citamedicas = Cita.query.filter(Cita.fechacita == fechacita).all()
+            citamedicas = Cita.query.filter(Cita.fechacita == fechacita, Cita.estado.notin_([CITA_CANCELADA])).all()
             return citamedicas
         except exc.DatabaseError as err:
             # pass exception to function

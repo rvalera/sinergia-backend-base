@@ -84,6 +84,12 @@ class CitaPersonaEquivocadaException(SinergiaException):
     def __init__(self, text=None):
         super(CitaPersonaEquivocadaException, self).__init__(code='CIT005',text = text)
 
+class PacienteConCitaException(SinergiaException):
+    def __init__(self, text=None):
+        super(PacienteConCitaException, self).__init__(code='CIT006',text = text)
+
+
+
 
 
 
