@@ -658,7 +658,7 @@ class SalaDeEsperaResource(ProxySecureResource):
     @jwt_required    
     def get(self):
         security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
+        #security_credentials = {'username': 'prueba'}
         data = GetSalaDeEsperaListUseCase().execute(security_credentials)
         return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
 
