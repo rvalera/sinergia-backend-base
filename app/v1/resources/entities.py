@@ -7,7 +7,7 @@ from app.v1.use_cases.entities import ConfirmCitaMedicaUseCase, CreateBeneficiar
     GetCitasMedicasListUseCase, GetCitasDisponiblesListUseCase, DeleteCitaMedicaUseCase, GetPersonaUseCase, GetVisitasListUseCase, CreateVisitaUseCase, \
     CreateConsultaMedicaUseCase, SaveConsultaMedicaUseCase, GetConsultasMedicasPersonaListUseCase, GetProximasCitasMedicasPersonaListUseCase, GetCitaMedicaUseCase, \
     GetCitasCedulaEspecialidadFechaListUseCase, GetAreaListUseCase, CreateMedicoUseCase, SaveMedicoUseCase, DeleteMedicoUseCase, CreateEspecialidadUseCase,\
-    SaveEspecialidadUseCase, GetEspecialidadUseCase, GetMedicoListUseCase, GetConsultorioListUseCase, GetColaEsperaResumenUseCase, EntryColaEsperaUseCase
+    SaveEspecialidadUseCase, GetEspecialidadUseCase, GetMedicoListUseCase, GetConsultorioListUseCase, GetColaEsperaResumenUseCase, EntryColaEsperaUseCase, GetSalaDeEsperaListUseCase
 
 from flask.globals import request    
 import json 
@@ -109,6 +109,18 @@ UpdateEmpresaStruct = v1_api.model('UpdateEmpresaStruct', {
 
 UsuarioActStruct = v1_api.model('UsuarioActStruct', { 
     'name': fields.String()
+})
+
+SalaDeEsperaStruct = v1_api.model('SalaDeEsperaStruct', { 
+    'idsala' : fields.Integer(), 
+    'nombre' : fields.String()
+})
+
+GetSalaDeEsperaListStruct = v1_api.model('GetSalaDeEsperaListResult', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'count' : fields.Integer(description='Count Row'), 
+    'total' : fields.Integer(description='Total Row'), 
+    'data' : fields.Nested(SalaDeEsperaStruct,attribute='data')
 })
 
 HistoriaMedicaStruct = v1_api.model('HistoriaMedicaStruct', { 
@@ -235,7 +247,8 @@ EspecialidadStruct = v1_api.model('EspecialidadStruct', {
     'nombre' : fields.String(), 
     'diasdeatencion' : fields.String(), 
     'autogestionada' : fields.Boolean(), 
-    'cantidadmaximapacientes' : fields.Integer()
+    'cantidadmaximapacientes' : fields.Integer(),
+    'saladeespera': fields.Nested(SalaDeEsperaStruct,attribute='saladeespera'),
 })
 
 UpdateEspecialidadStruct = v1_api.model('UpdateEspecialidadStruct', { 
@@ -243,7 +256,8 @@ UpdateEspecialidadStruct = v1_api.model('UpdateEspecialidadStruct', {
     'nombre' : fields.String(), 
     'diasdeatencion' : fields.String(), 
     'autogestionada' : fields.Boolean(), 
-    'cantidadmaximapacientes' : fields.Integer()
+    'cantidadmaximapacientes' : fields.Integer(),
+    'idsala' : fields.Integer()
 })
 
 GetEspecialidadStruct = v1_api.model('GetEspecialidadResult', { 
@@ -328,12 +342,6 @@ GetVisitaListStruct = v1_api.model('GetVisitaListResult', {
     'count' : fields.Integer(description='Count Row'), 
     'total' : fields.Integer(description='Total Row'), 
     'data' : fields.Nested(VisitaStruct,attribute='data')
-})
-
-
-SalaDeEsperaStruct = v1_api.model('SalaDeEsperaStruct', { 
-    'idsala' : fields.Integer(), 
-    'nombre' : fields.String()
 })
 
 
@@ -639,6 +647,19 @@ class DiscapacidadResource(ProxySecureResource):
         security_credentials = self.checkCredentials()
         #security_credentials = {'username': 'prueba'}
         data = GetDiscapacidadListUseCase().execute(security_credentials)
+        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+
+
+@entities_ns.route('/saladeespera')
+@v1_api.expect(secureHeader)
+class SalaDeEsperaResource(ProxySecureResource): 
+
+    @entities_ns.doc('Sala De Espera')
+    @jwt_required    
+    def get(self):
+        security_credentials = self.checkCredentials()
+        security_credentials = {'username': 'prueba'}
+        data = GetSalaDeEsperaListUseCase().execute(security_credentials)
         return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
 
 

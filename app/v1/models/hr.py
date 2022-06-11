@@ -217,6 +217,9 @@ class Especialidad(db.Model):
     __table_args__ = {'schema' : 'hospitalario'}
 
     codigoespecialidad = Column(String(12), primary_key=True)
+    idsala = Column(Integer, ForeignKey('hospitalario.saladeespera.idsala'))
+    saladeespera = relationship("SalaDeEspera")
+
     nombre = Column(String(100))
     autogestionada = Column(Boolean)
     diasdeatencion = Column(String(100))
