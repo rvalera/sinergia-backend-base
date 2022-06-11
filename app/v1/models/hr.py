@@ -221,6 +221,7 @@ class Especialidad(db.Model):
     autogestionada = Column(Boolean)
     diasdeatencion = Column(String(100))
     cantidadmaximapacientes = Column(Integer)
+    colaactiva = Column(Boolean)
 
 
 class Cita(db.Model):

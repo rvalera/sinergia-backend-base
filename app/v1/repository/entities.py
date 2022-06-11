@@ -573,6 +573,7 @@ class EspecialidadRepository(SinergiaRepository):
             especialidad.diasdeatencion = payload['diasdeatencion']
             especialidad.autogestionada = payload['autogestionada']
             especialidad.cantidadmaximapacientes = payload['cantidadmaximapacientes']
+            especialidad.colaactiva = True
           
             db.session.add(especialidad)
             db.session.commit()            
@@ -945,7 +946,7 @@ class CitaRepository(SinergiaRepository):
         db.session.add(cita)
         db.session.commit()   
 
-    
+
     def getById(self,id):
         try:
             citamedica = Cita.query.filter(Cita.id == id).first()
@@ -1179,3 +1180,22 @@ class ConsultaMedicaRepository(SinergiaRepository):
             # pass exception to function
             error_description = '%s' % (err)
             raise DatabaseException(text=error_description)
+
+
+class ColaEsperaRepository(SinergiaRepository):
+
+    def entry(self,payload):         
+        idbiostar = payload['idbiostar'] if 'idbiostar' in payload else None
+       
+        cita = Cita.query.filter(Cita.idbiostar == idbiostar).first()
+        if cita is None:
+            raise DataNotFoundException()
+
+        cita.estado = CITA_EN_COLA
+        cita.fechaentradacola = datetime.now()
+        db.session.add(cita)
+        db.session.commit()   
+
+
+    def getBySalaFecha(self,idsala,fecha):
+        pass

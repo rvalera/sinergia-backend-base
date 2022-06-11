@@ -5,7 +5,7 @@ Created on 17 dic. 2019
 '''
 from app.v1.repository.entities import EmpresaRepository, HistoriaMedicaRepository, TipoNominaRepository, TrabajadorRepository, EstadoRepository, MunicipioRepository, \
     PatologiaRepository, BeneficiarioRepository, EspecialidadRepository, CitaRepository, DiscapacidadRepository, PersonaRepository, VisitaRepository, ConsultaMedicaRepository, \
-    AreaRepository, MedicoRepository, ConsultorioRepository
+    AreaRepository, MedicoRepository, ConsultorioRepository, ColaEsperaRepository
 
 class GetEmpresaListUseCase(object):
     def execute(self,security_credentials):
@@ -150,6 +150,14 @@ class DeleteCitaMedicaUseCase(object):
 class GetVisitasListUseCase(object):
     def execute(self,security_credentials, query_params):
         return VisitaRepository(username=security_credentials['username']).getByFechaVista(query_params['fechavisita'])
+
+class EntryColaEsperaUseCase(object):
+    def execute(self,security_credentials,payload):
+        ColaEsperaRepository(username=security_credentials['username']).entry(payload)
+
+class GetColaEsperaResumenUseCase(object):
+    def execute(self,security_credentials,query_params):
+        return ColaEsperaRepository(username=security_credentials['username']).getBySalaFecha(query_params['idsala'],query_params['fecha'])
 
 class CreateVisitaUseCase(object):
     def execute(self,security_credentials,payload):

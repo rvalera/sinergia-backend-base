@@ -7,7 +7,7 @@ from app.v1.use_cases.entities import ConfirmCitaMedicaUseCase, CreateBeneficiar
     GetCitasMedicasListUseCase, GetCitasDisponiblesListUseCase, DeleteCitaMedicaUseCase, GetPersonaUseCase, GetVisitasListUseCase, CreateVisitaUseCase, \
     CreateConsultaMedicaUseCase, SaveConsultaMedicaUseCase, GetConsultasMedicasPersonaListUseCase, GetProximasCitasMedicasPersonaListUseCase, GetCitaMedicaUseCase, \
     GetCitasCedulaEspecialidadFechaListUseCase, GetAreaListUseCase, CreateMedicoUseCase, SaveMedicoUseCase, DeleteMedicoUseCase, CreateEspecialidadUseCase,\
-    SaveEspecialidadUseCase, GetEspecialidadUseCase, GetMedicoListUseCase, GetConsultorioListUseCase
+    SaveEspecialidadUseCase, GetEspecialidadUseCase, GetMedicoListUseCase, GetConsultorioListUseCase, GetColaEsperaResumenUseCase, EntryColaEsperaUseCase
 
 from flask.globals import request    
 import json 
@@ -283,6 +283,10 @@ ConfirmCitaStruct = v1_api.model('ConfirmCitaStruct', {
     'idbiostar2' : fields.String()
 })
 
+EntryColaStruct = v1_api.model('EntryColaStruct', { 
+    'idbiostar' : fields.String()
+})
+
 GetCitaStruct = v1_api.model('GetCitaStruct', { 
     'ok' : fields.Integer(description='Ok Result'), 
     'data' : fields.Nested(CitaStruct,attribute='data')
@@ -338,6 +342,19 @@ ConsultorioStruct = v1_api.model('ConsultorioStruct', {
     'saladeespera': fields.Nested(SalaDeEsperaStruct,attribute='saladeespera'),
     'nombre' : fields.String()
 })
+
+
+ColaResumenStruct = v1_api.model('ColaResumenStruct', {     
+    'idconsultorio' : fields.Integer(), 
+    'saladeespera': fields.Nested(SalaDeEsperaStruct,attribute='saladeespera'),
+    'nombre' : fields.String()
+})
+
+GetColaEsperaResumenStruct = v1_api.model('GetColaEsperaResumenResult', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'data' : fields.Nested(ColaResumenStruct,attribute='data')
+})
+
 
 MedicoStruct = v1_api.model('MedicoStruct', { 
     'cedula' : fields.String(), 
@@ -483,6 +500,41 @@ class ConsultorioResource(ProxySecureResource):
         security_credentials = self.checkCredentials()
         data = GetConsultorioListUseCase().execute(security_credentials)
         return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+
+
+@entities_ns.route('/colaespera/entrada')
+@v1_api.expect(secureHeader)
+class ColaEntradaResource(ProxySecureResource): 
+
+    @entities_ns.doc('Entrada a Cola de Espera')
+    @v1_api.expect(EntryColaStruct)    
+    @jwt_required    
+    def put(self):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        payload = request.json        
+        EntryColaEsperaUseCase().execute(security_credentials,payload)
+        return  {'ok':1} , 200
+
+
+@entities_ns.route('/colaespera/resumen/<idsala>/<fecha>')
+@entities_ns.param('idsala', 'Id Sala de Espera')
+@entities_ns.param('fecha', 'Fecha Consulta')
+@v1_api.expect(secureHeader)
+class ColaEsperaResource(ProxySecureResource):
+
+    @entities_ns.doc('Get Cola de Espera por Sala y Dia de Consulta')
+    @v1_api.marshal_with(GetColaEsperaResumenStruct) 
+    @jwt_required    
+    def get(self,idsala, fecha):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        query_params = {
+            'idsala': idsala,
+            'fecha': fecha,
+            }
+        data = GetColaEsperaResumenUseCase().execute(security_credentials,query_params)
+        return  {'ok': 1, 'data': data}, 200
 
 
 @entities_ns.route('/persona/<cedula>')
@@ -775,7 +827,7 @@ class CitaResource(ProxySecureResource):
         return  {'ok':1} , 200
 
 
-@entities_ns.route('/citamedica/confirm')
+@entities_ns.route('/citamedica/confirmar')
 @v1_api.expect(secureHeader)
 class CitaConfirmResource(ProxySecureResource): 
 
