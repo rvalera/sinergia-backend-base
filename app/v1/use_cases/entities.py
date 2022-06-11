@@ -163,6 +163,10 @@ class GetColaEsperaResumenUseCase(object):
     def execute(self,security_credentials,query_params):
         return ColaEsperaRepository(username=security_credentials['username']).getBySala(query_params['idsala'])
 
+class GetProxCitaColaEsperaEspecialidadUseCase(object):
+    def execute(self,security_credentials,query_params):
+        return ColaEsperaRepository(username=security_credentials['username']).getProximaByEspecialidad(query_params['codigoespecialidad'])
+
 class CreateVisitaUseCase(object):
     def execute(self,security_credentials,payload):
         VisitaRepository(username=security_credentials['username']).new(payload)

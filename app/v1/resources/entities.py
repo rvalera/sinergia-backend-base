@@ -7,7 +7,8 @@ from app.v1.use_cases.entities import ConfirmCitaMedicaUseCase, CreateBeneficiar
     GetCitasMedicasListUseCase, GetCitasDisponiblesListUseCase, DeleteCitaMedicaUseCase, GetPersonaUseCase, GetVisitasListUseCase, CreateVisitaUseCase, \
     CreateConsultaMedicaUseCase, SaveConsultaMedicaUseCase, GetConsultasMedicasPersonaListUseCase, GetProximasCitasMedicasPersonaListUseCase, GetCitaMedicaUseCase, \
     GetCitasCedulaEspecialidadFechaListUseCase, GetAreaListUseCase, CreateMedicoUseCase, SaveMedicoUseCase, DeleteMedicoUseCase, CreateEspecialidadUseCase,\
-    SaveEspecialidadUseCase, GetEspecialidadUseCase, GetMedicoListUseCase, GetConsultorioListUseCase, GetColaEsperaResumenUseCase, EntryColaEsperaUseCase, GetSalaDeEsperaListUseCase
+    SaveEspecialidadUseCase, GetEspecialidadUseCase, GetMedicoListUseCase, GetConsultorioListUseCase, GetColaEsperaResumenUseCase, EntryColaEsperaUseCase, GetSalaDeEsperaListUseCase,\
+    GetProxCitaColaEsperaEspecialidadUseCase
 
 from flask.globals import request    
 import json 
@@ -547,6 +548,24 @@ class ColaEsperaResource(ProxySecureResource):
             'idsala': idsala
             }
         data = GetColaEsperaResumenUseCase().execute(security_credentials,query_params)
+        return  {'ok': 1, 'data': data}, 200
+
+
+@entities_ns.route('/colaespera/proximacita/<codigoespecialidad>')
+@entities_ns.param('codigoespecialidad', 'Codigo de la Especialidad')
+@v1_api.expect(secureHeader)
+class ColaProximaCitaResource(ProxySecureResource):
+
+    @entities_ns.doc('Get Proxima Cita en Cola de Espera por Especialidad')
+    @v1_api.marshal_with(GetCitaStruct) 
+    @jwt_required    
+    def get(self,codigoespecialidad):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        query_params = {
+            'codigoespecialidad': codigoespecialidad
+            }
+        data = GetProxCitaColaEsperaEspecialidadUseCase().execute(security_credentials,query_params)
         return  {'ok': 1, 'data': data}, 200
 
 

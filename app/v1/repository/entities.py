@@ -1218,7 +1218,6 @@ class ColaEsperaRepository(SinergiaRepository):
     def getBySala(self,idsala):
         especialidades_list = []
         hoy = datetime.now().date()
-        hoy = '2022-06-01'
         #Buscamos las especialidades que dan consulta en la sala
         especialidades = Especialidad.query.filter(Especialidad.idsala == idsala).order_by(Especialidad.nombre.asc()).all()
         for especialidad in especialidades:
@@ -1236,3 +1235,12 @@ class ColaEsperaRepository(SinergiaRepository):
             }
             especialidades_list.append(dict_especialidad)
         return especialidades_list
+
+
+    def getProximaByEspecialidad(self, codigoespecialidad):
+        hoy = datetime.now().date()
+        proxima_cita = Cita.query.filter(Cita.codigoespecialidad == codigoespecialidad,\
+                                        Cita.fechacita == hoy, Cita.estado == CITA_EN_COLA).order_by(Cita.fechaentradacola.asc()).first()
+        if proxima_cita is None:
+            raise DataNotFoundException()
+        return proxima_cita
