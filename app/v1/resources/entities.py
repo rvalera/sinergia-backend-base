@@ -815,7 +815,7 @@ class OneMedicoResource(ProxySecureResource):
         security_credentials = self.checkCredentials()
         #security_credentials = {'username': 'prueba'}
         query_params = {'cedula': cedulamed}
-        data = GetMedicoUseCase.execute(security_credentials,query_params)
+        data = GetMedicoUseCase().execute(security_credentials,query_params)
         return  {'ok': 1, 'data': data}, 200
 
 
