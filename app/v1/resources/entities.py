@@ -8,7 +8,7 @@ from app.v1.use_cases.entities import ConfirmCitaMedicaUseCase, CreateBeneficiar
     CreateConsultaMedicaUseCase, SaveConsultaMedicaUseCase, GetConsultasMedicasPersonaListUseCase, GetProximasCitasMedicasPersonaListUseCase, GetCitaMedicaUseCase, \
     GetCitasCedulaEspecialidadFechaListUseCase, GetAreaListUseCase, CreateMedicoUseCase, SaveMedicoUseCase, DeleteMedicoUseCase, CreateEspecialidadUseCase,\
     SaveEspecialidadUseCase, GetEspecialidadUseCase, GetMedicoListUseCase, GetConsultorioListUseCase, EntryColaEsperaUseCase, GetSalaDeEsperaListUseCase,\
-    GetProxCitaColaEsperaEspecialidadUseCase, GetColaResumenUseCase, GetColaEsperaEspecialidadUseCase
+    GetProxCitaColaEsperaEspecialidadUseCase, GetColaResumenUseCase, GetColaEsperaEspecialidadUseCase, AttendCitaMedicaUseCase, EndCitaMedicaUseCase, TransferCitaMedicaUseCase
 
 from flask.globals import request    
 import json 
@@ -287,15 +287,32 @@ CreateCitaStruct = v1_api.model('CreateCitaStruct', {
 })
 
 UpdateCitaStruct = v1_api.model('UpdateCitaStruct', { 
-    'idcita' : fields.String(),   
+    'idcita' : fields.Integer(),   
     'codigoespecialidad' : fields.String(),  
     'fechacita' : fields.String()
 })
 
 ConfirmCitaStruct = v1_api.model('ConfirmCitaStruct', { 
-    'idcita' : fields.String(),   
+    'idcita' : fields.Integer(),   
     'idbiostar' : fields.String(),
     'idbiostar2' : fields.String()
+})
+
+AttendCitaStruct = v1_api.model('AttendCitaStruct', { 
+    'idcita' : fields.Integer()
+})
+
+EndCitaStruct = v1_api.model('EndCitaStruct', { 
+    'idcita' : fields.Integer(),
+    'sintomas' : fields.String(),
+    'diagnostico' : fields.String(),
+    'tratamiento' : fields.String(),
+    'examenes' : fields.String()
+})
+
+TransferCitaStruct = v1_api.model('TransferCitaStruct', { 
+    'idcita' : fields.Integer(),   
+    'codigoespecialidad' : fields.String()
 })
 
 EntryColaStruct = v1_api.model('EntryColaStruct', { 
@@ -921,6 +938,51 @@ class CitaConfirmResource(ProxySecureResource):
         #security_credentials = {'username': 'prueba'}
         payload = request.json        
         ConfirmCitaMedicaUseCase().execute(security_credentials,payload)
+        return  {'ok':1} , 200
+
+
+@entities_ns.route('/citamedica/atender')
+@v1_api.expect(secureHeader)
+class CitaAttendResource(ProxySecureResource): 
+
+    @entities_ns.doc('Attend Cita Medica')
+    @v1_api.expect(AttendCitaStruct)    
+    #@jwt_required    
+    def put(self):
+        #security_credentials = self.checkCredentials()
+        security_credentials = {'username': 'prueba'}
+        payload = request.json        
+        AttendCitaMedicaUseCase().execute(security_credentials,payload)
+        return  {'ok':1} , 200
+
+
+@entities_ns.route('/citamedica/finalizar')
+@v1_api.expect(secureHeader)
+class CitaEndResource(ProxySecureResource): 
+
+    @entities_ns.doc('End Cita Medica')
+    @v1_api.expect(EndCitaStruct)    
+    #@jwt_required    
+    def put(self):
+        #security_credentials = self.checkCredentials()
+        security_credentials = {'username': 'prueba'}
+        payload = request.json        
+        EndCitaMedicaUseCase().execute(security_credentials,payload)
+        return  {'ok':1} , 200
+
+
+@entities_ns.route('/citamedica/transferir')
+@v1_api.expect(secureHeader)
+class CitaTransferResource(ProxySecureResource): 
+
+    @entities_ns.doc('Transfer Cita Medica')
+    @v1_api.expect(TransferCitaStruct)    
+    #@jwt_required    
+    def put(self):
+        #security_credentials = self.checkCredentials()
+        security_credentials = {'username': 'prueba'}
+        payload = request.json        
+        TransferCitaMedicaUseCase().execute(security_credentials,payload)
         return  {'ok':1} , 200
 
 

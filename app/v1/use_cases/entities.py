@@ -147,6 +147,18 @@ class ConfirmCitaMedicaUseCase(object):
     def execute(self,security_credentials,payload):
         CitaRepository(username=security_credentials['username']).confirm(payload)
 
+class AttendCitaMedicaUseCase(object):
+    def execute(self,security_credentials,payload):
+        CitaRepository(username=security_credentials['username']).attend(payload)
+
+class EndCitaMedicaUseCase(object):
+    def execute(self,security_credentials,payload):
+        CitaRepository(username=security_credentials['username']).end(payload)
+
+class TransferCitaMedicaUseCase(object):
+    def execute(self,security_credentials,payload):
+        CitaRepository(username=security_credentials['username']).transfer(payload)
+
 class DeleteCitaMedicaUseCase(object):
     def execute(self,security_credentials,query_params):
         CitaRepository(username=security_credentials['username']).cancelCita(query_params['idcita'])

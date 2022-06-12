@@ -965,6 +965,58 @@ class CitaRepository(SinergiaRepository):
         db.session.commit()   
 
 
+    def attend(self,payload):         
+        idcita = payload['idcita'] if 'idcita' in payload else None
+
+        cita = Cita.query.filter(Cita.id == idcita, Cita.estado == CITA_EN_COLA).first()
+        if cita is None:
+            raise DataNotFoundException()
+
+        cita.fechapasaconsulta = datetime.now()
+        cita.estado = CITA_EN_ATENCION
+
+        consulta = ConsultaMedica()
+        consulta.cedula = cita.cedula
+        consulta.cedulamedico = '654321' #TODO Por ahora None mientras definimos las estaciones de trabajo
+        consulta.idcita = cita.id
+
+        db.session.add(cita)
+        db.session.add(consulta)
+        db.session.commit()   
+
+
+    def end(self,payload):         
+        idcita = payload['idcita'] if 'idcita' in payload else None
+
+        cita = Cita.query.filter(Cita.id == idcita, Cita.estado == CITA_EN_ATENCION).first()
+        if cita is None:
+            raise DataNotFoundException()
+
+        cita.fechafinconsulta = datetime.now()
+        cita.estado = CITA_CONCLUIDA
+        cita.consultamedica.sintomas = payload['sintomas']
+        cita.consultamedica.diagnostico = payload['diagnostico']
+        cita.consultamedica.tratamiento = payload['tratamiento']
+        cita.consultamedica.examenes = payload['examenes']
+        cita.consultamedica.fecha = datetime.now().date()
+        db.session.add(cita)
+        db.session.commit()   
+
+
+    def transfer(self,payload):         
+        idcita = payload['idcita'] if 'idcita' in payload else None
+
+        cita = Cita.query.filter(Cita.id == idcita, Cita.estado == CITA_EN_COLA).first()
+        if cita is None:
+            raise DataNotFoundException()
+
+        cita.codigoespecialidad = payload['codigoespecialidad']        
+        cita.fechaentradacola = datetime.now().date()
+        cita.estado = CITA_EN_COLA
+        db.session.add(cita)
+        db.session.commit()
+
+
     def getById(self,id):
         try:
             citamedica = Cita.query.filter(Cita.id == id).first()

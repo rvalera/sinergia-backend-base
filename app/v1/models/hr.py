@@ -246,6 +246,8 @@ class Cita(db.Model):
     idbiostar2 = Column(String(100))
     estado = Column(String(50))
 
+    consultamedica = relationship("ConsultaMedica", back_populates="cita", uselist=False)
+
 
 class Area(db.Model):
     __tablename__ = 'area'
@@ -317,7 +319,7 @@ class ConsultaMedica(db.Model):
     cedulamedico = Column(String(12), ForeignKey('hospitalario.medico.cedulamedico'))
     medico = relationship("Medico")
     idcita = Column(String(12), ForeignKey('hospitalario.cita.id'))
-    cita = relationship("Cita")
+    cita = relationship("Cita", back_populates="consultamedica")
 
     sintomas = Column(String(100))
     diagnostico = Column(String(50))
