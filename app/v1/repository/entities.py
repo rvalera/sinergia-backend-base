@@ -1236,6 +1236,39 @@ class ColaEsperaRepository(SinergiaRepository):
             especialidades_list.append(dict_especialidad)
         return especialidades_list
 
+    
+    def getEnColaByEspecialidad(self,codigoespecialidad):
+        especialidades_list = []
+        hoy = datetime.now().date()
+        #Buscamos las especialidades que dan consulta en la sala
+        especialidad = Especialidad.query.filter(Especialidad.codigoespecialidad == codigoespecialidad).first()
+        #Buscamos las citas de esa lista de especialidades del dia de hoy discriminadas por estados
+        citas_en_cola = Cita.query.filter(Cita.codigoespecialidad == especialidad.codigoespecialidad,\
+                                            Cita.fechacita == hoy, Cita.estado == CITA_EN_COLA).order_by(Cita.fechaentradacola.asc()).all()
+        dict_especialidad = {
+            'especialidad': especialidad,
+            'citas_en_cola': citas_en_cola
+        }
+        especialidades_list.append(dict_especialidad)
+        return especialidades_list
+
+    
+    def getEnAtencionByEspecialidad(self,codigoespecialidad):
+        especialidades_list = []
+        hoy = datetime.now().date()
+        #Buscamos las especialidades que dan consulta en la sala
+        especialidad = Especialidad.query.filter(Especialidad.codigoespecialidad == codigoespecialidad).first()
+        #Buscamos las citas de esa lista de especialidades del dia de hoy discriminadas por estados
+        citas_en_atencion = Cita.query.filter(Cita.codigoespecialidad == especialidad.codigoespecialidad,\
+                                             Cita.fechacita == hoy, Cita.estado == CITA_EN_ATENCION).order_by(Cita.fechapasaconsulta.asc()).all()
+
+        dict_especialidad = {
+            'especialidad': especialidad,
+            'citas_en_atencion': citas_en_atencion
+        }
+        especialidades_list.append(dict_especialidad)
+        return especialidades_list
+
 
     def getProximaByEspecialidad(self, codigoespecialidad):
         hoy = datetime.now().date()

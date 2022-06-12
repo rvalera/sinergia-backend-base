@@ -2,13 +2,13 @@ from app.v1 import v1_api
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_restplus import Resource, Namespace, fields
 from app.v1.resources.base import ProxySecureResource, secureHeader, queryParams
-from app.v1.use_cases.entities import ConfirmCitaMedicaUseCase, CreateBeneficiarioUseCase, CreateCitaMedicaUseCase, DeleteConsultaMedicaUseCase, GetCitaUseCase, GetCitasMedicasPersonaListUseCase, GetConsultaMedicaUseCase, GetDiscapacidadListUseCase, GetEmpresaListUseCase, GetEspecialidadListUseCase, GetEstadoListUseCase, GetHistoriaMedicaUseCase, GetMedicoUseCase, GetMunicipioListUseCase,GetTipoNominaListUseCase, \
+from app.v1.use_cases.entities import ConfirmCitaMedicaUseCase, CreateBeneficiarioUseCase, CreateCitaMedicaUseCase, DeleteConsultaMedicaUseCase, GetCitaUseCase, GetCitasMedicasPersonaListUseCase, GetColaAtencionEspecialidadUseCase, GetConsultaMedicaUseCase, GetDiscapacidadListUseCase, GetEmpresaListUseCase, GetEspecialidadListUseCase, GetEstadoListUseCase, GetHistoriaMedicaUseCase, GetMedicoUseCase, GetMunicipioListUseCase,GetTipoNominaListUseCase, \
     GetTrabajadorUseCase, GetEstadoListUseCase, GetMunicipioListUseCase, GetPatologiaListUseCase, SaveBeneficiarioUseCase, DeleteBeneficiarioUseCase, SaveCitaMedicaUseCase, SaveTrabajadorUseCase, \
     GetCitasMedicasListUseCase, GetCitasDisponiblesListUseCase, DeleteCitaMedicaUseCase, GetPersonaUseCase, GetVisitasListUseCase, CreateVisitaUseCase, \
     CreateConsultaMedicaUseCase, SaveConsultaMedicaUseCase, GetConsultasMedicasPersonaListUseCase, GetProximasCitasMedicasPersonaListUseCase, GetCitaMedicaUseCase, \
     GetCitasCedulaEspecialidadFechaListUseCase, GetAreaListUseCase, CreateMedicoUseCase, SaveMedicoUseCase, DeleteMedicoUseCase, CreateEspecialidadUseCase,\
-    SaveEspecialidadUseCase, GetEspecialidadUseCase, GetMedicoListUseCase, GetConsultorioListUseCase, GetColaEsperaResumenUseCase, EntryColaEsperaUseCase, GetSalaDeEsperaListUseCase,\
-    GetProxCitaColaEsperaEspecialidadUseCase
+    SaveEspecialidadUseCase, GetEspecialidadUseCase, GetMedicoListUseCase, GetConsultorioListUseCase, EntryColaEsperaUseCase, GetSalaDeEsperaListUseCase,\
+    GetProxCitaColaEsperaEspecialidadUseCase, GetColaResumenUseCase, GetColaEsperaEspecialidadUseCase
 
 from flask.globals import request    
 import json 
@@ -360,7 +360,7 @@ ColaResumenStruct = v1_api.model('ColaResumenStruct', {
 })
 
 
-GetColaEsperaResumenStruct = v1_api.model('GetColaEsperaResumenResult', { 
+GetColaResumenStruct = v1_api.model('GetColaResumenResult', { 
     'ok' : fields.Integer(description='Ok Result'), 
     'data' : fields.List(fields.Nested(ColaResumenStruct))
 })
@@ -539,7 +539,7 @@ class ColaEntradaResource(ProxySecureResource):
 class ColaEsperaResource(ProxySecureResource):
 
     @entities_ns.doc('Get Cola de Espera por Sala y Dia de Consulta')
-    @v1_api.marshal_with(GetColaEsperaResumenStruct) 
+    @v1_api.marshal_with(GetColaResumenStruct) 
     @jwt_required    
     def get(self,idsala):
         security_credentials = self.checkCredentials()
@@ -547,7 +547,43 @@ class ColaEsperaResource(ProxySecureResource):
         query_params = {
             'idsala': idsala
             }
-        data = GetColaEsperaResumenUseCase().execute(security_credentials,query_params)
+        data = GetColaResumenUseCase().execute(security_credentials,query_params)
+        return  {'ok': 1, 'data': data}, 200
+
+
+@entities_ns.route('/colaespera/enatencion/<codigoespecialidad>')
+@entities_ns.param('codigoespecialidad', 'Codigo de la Especialidad')
+@v1_api.expect(secureHeader)
+class ColaEsperaResource(ProxySecureResource):
+
+    @entities_ns.doc('Get Cola en Atencion por Especialidad')
+    @v1_api.marshal_with(GetColaResumenStruct) 
+    @jwt_required    
+    def get(self,codigoespecialidad):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        query_params = {
+            'codigoespecialidad': codigoespecialidad
+            }
+        data = GetColaAtencionEspecialidadUseCase().execute(security_credentials,query_params)
+        return  {'ok': 1, 'data': data}, 200
+
+
+@entities_ns.route('/colaespera/enespera/<codigoespecialidad>')
+@entities_ns.param('codigoespecialidad', 'Codigo de la Especialidad')
+@v1_api.expect(secureHeader)
+class ColaEsperaResource(ProxySecureResource):
+
+    @entities_ns.doc('Get Cola en Espera por Especialidad')
+    @v1_api.marshal_with(GetColaResumenStruct) 
+    @jwt_required    
+    def get(self,codigoespecialidad):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        query_params = {
+            'codigoespecialidad': codigoespecialidad
+            }
+        data = GetColaEsperaEspecialidadUseCase().execute(security_credentials,query_params)
         return  {'ok': 1, 'data': data}, 200
 
 
@@ -607,10 +643,10 @@ class TrabajadorResource(ProxySecureResource):
     
     @entities_ns.doc('Update Trabajador')
     @v1_api.expect(UpdateTrabajadorStruct)    
-    #@jwt_required    
+    @jwt_required    
     def put(self):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
+        #security_credentials = self.checkCredentials()
+        security_credentials = {'username': 'prueba'}
         payload = request.json        
         SaveTrabajadorUseCase().execute(security_credentials,payload)
         return  {'ok':1} , 200

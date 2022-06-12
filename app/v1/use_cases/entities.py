@@ -159,9 +159,17 @@ class EntryColaEsperaUseCase(object):
     def execute(self,security_credentials,payload):
         ColaEsperaRepository(username=security_credentials['username']).entry(payload)
 
-class GetColaEsperaResumenUseCase(object):
+class GetColaResumenUseCase(object):
     def execute(self,security_credentials,query_params):
         return ColaEsperaRepository(username=security_credentials['username']).getBySala(query_params['idsala'])
+
+class GetColaEsperaEspecialidadUseCase(object):
+    def execute(self,security_credentials,query_params):
+        return ColaEsperaRepository(username=security_credentials['username']).getEnColaByEspecialidad(query_params['codigoespecialidad'])
+
+class GetColaAtencionEspecialidadUseCase(object):
+    def execute(self,security_credentials,query_params):
+        return ColaEsperaRepository(username=security_credentials['username']).getEnAtencionByEspecialidad(query_params['codigoespecialidad'])
 
 class GetProxCitaColaEsperaEspecialidadUseCase(object):
     def execute(self,security_credentials,query_params):
