@@ -283,11 +283,11 @@ class SalaDeEspera(db.Model):
     nombre = Column(String(100)) 
 
 
-class Consultorio(db.Model):
-    __tablename__ = 'consultorio'
+class EstacionTrabajo(db.Model):
+    __tablename__ = 'estaciontrabajo'
     __table_args__ = {'schema' : 'hospitalario'}
 
-    idconsultorio = Column(Integer(), primary_key=True)
+    idestaciontrabajo = Column(Integer(), primary_key=True)
     idsala = Column(Integer(), ForeignKey('hospitalario.saladeespera.idsala'))
     saladeespera = relationship("SalaDeEspera")
     nombre = Column(String(100)) 
@@ -300,8 +300,8 @@ class Medico(Persona):
 
     codigoespecialidad = Column(String(12), ForeignKey('hospitalario.especialidad.codigoespecialidad'))
     especialidad = relationship("Especialidad")
-    codigoconsultorio = Column('codigoconsultorio',Integer(), ForeignKey('hospitalario.consultorio.idconsultorio'))
-    consultorio = relationship("Consultorio")
+    codigoestaciontrabajo = Column('codigoestaciontrabajo',Integer(), ForeignKey('hospitalario.estaciontrabajo.idestaciontrabajo'))
+    estaciontrabajo = relationship("EstacionTrabajo")
 
     __mapper_args__ = {
         'polymorphic_identity':'medico'

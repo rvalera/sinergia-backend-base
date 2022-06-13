@@ -7,8 +7,8 @@ from app.v1.use_cases.entities import ConfirmCitaMedicaUseCase, CreateBeneficiar
     GetCitasMedicasListUseCase, GetCitasDisponiblesListUseCase, DeleteCitaMedicaUseCase, GetPersonaUseCase, GetVisitasListUseCase, CreateVisitaUseCase, \
     CreateConsultaMedicaUseCase, SaveConsultaMedicaUseCase, GetConsultasMedicasPersonaListUseCase, GetProximasCitasMedicasPersonaListUseCase, GetCitaMedicaUseCase, \
     GetCitasCedulaEspecialidadFechaListUseCase, GetAreaListUseCase, CreateMedicoUseCase, SaveMedicoUseCase, DeleteMedicoUseCase, CreateEspecialidadUseCase,\
-    SaveEspecialidadUseCase, GetEspecialidadUseCase, GetMedicoListUseCase, GetConsultorioListUseCase, EntryColaEsperaUseCase, GetSalaDeEsperaListUseCase,\
-    GetProxCitaColaEsperaEspecialidadUseCase, GetColaResumenUseCase, GetColaEsperaEspecialidadUseCase, AttendCitaMedicaUseCase, EndCitaMedicaUseCase, TransferCitaMedicaUseCase
+    SaveEspecialidadUseCase, GetEspecialidadUseCase, GetMedicoListUseCase, GetEstacionTrabajoListUseCase, EntryColaEsperaUseCase, GetSalaDeEsperaListUseCase,\
+    GetProxCitaColaEsperaEspecialidadUseCase, GetColaResumenUseCase, GetColaEsperaEspecialidadUseCase, AttendCitaMedicaUseCase, EndCitaMedicaUseCase, TransferCitaMedicaUseCase, GetEstacionTrabajoUseCase
 
 from flask.globals import request    
 import json 
@@ -363,10 +363,15 @@ GetVisitaListStruct = v1_api.model('GetVisitaListResult', {
 })
 
 
-ConsultorioStruct = v1_api.model('ConsultorioStruct', {     
-    'idconsultorio' : fields.Integer(), 
+EstacionTrabajoStruct = v1_api.model('EstacionTrabajoStruct', {     
+    'idestaciontrabajo' : fields.Integer(), 
     'saladeespera': fields.Nested(SalaDeEsperaStruct,attribute='saladeespera'),
     'nombre' : fields.String()
+})
+
+GetEstacionTrabajoStruct = v1_api.model('GetEstacionTrabajoStruct', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'data' : fields.Nested(EstacionTrabajoStruct,attribute='data')
 })
 
 
@@ -405,7 +410,7 @@ MedicoStruct = v1_api.model('MedicoStruct', {
     'edifcasa' : fields.String(),
 
     'especialidad': fields.Nested(EspecialidadStruct,attribute='especialidad'),
-    'consultorio': fields.Nested(ConsultorioStruct,attribute='consultorio'),
+    'estaciontrabajo': fields.Nested(EstacionTrabajoStruct,attribute='estaciontrabajo'),
 })
 
 UpdateMedicoStruct = v1_api.model('UpdateMedicoStruct', { 
@@ -523,15 +528,32 @@ class AreaResource(ProxySecureResource):
         return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
 
 
-@entities_ns.route('/consultorio')
+@entities_ns.route('/estaciontrabajo/name')
 @v1_api.expect(secureHeader)
-class ConsultorioResource(ProxySecureResource): 
+class OneEstacionTrabajoResource(ProxySecureResource):
 
-    @entities_ns.doc('Consultorio')
+    @entities_ns.doc('Get Estacion de Trabajo')
+    @v1_api.marshal_with(GetEstacionTrabajoStruct) 
     @jwt_required    
     def get(self):
         security_credentials = self.checkCredentials()
-        data = GetConsultorioListUseCase().execute(security_credentials)
+        #security_credentials = {'username': 'prueba'}
+        #nombre = request.headers['Accept']
+        nombre = '127.0.0.1'
+        query_params = {'nombre': nombre}
+        data = GetEstacionTrabajoUseCase().execute(security_credentials,query_params)
+        return  {'ok': 1, 'data': data}, 200
+
+
+@entities_ns.route('/estaciontrabajo')
+@v1_api.expect(secureHeader)
+class EstacionTrabajoResource(ProxySecureResource): 
+
+    @entities_ns.doc('EstacionTrabajo')
+    @jwt_required    
+    def get(self):
+        security_credentials = self.checkCredentials()
+        data = GetEstacionTrabajoListUseCase().execute(security_credentials)
         return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
 
 
@@ -947,10 +969,10 @@ class CitaAttendResource(ProxySecureResource):
 
     @entities_ns.doc('Attend Cita Medica')
     @v1_api.expect(AttendCitaStruct)    
-    #@jwt_required    
+    @jwt_required    
     def put(self):
-        #security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
         payload = request.json        
         AttendCitaMedicaUseCase().execute(security_credentials,payload)
         return  {'ok':1} , 200
@@ -962,10 +984,10 @@ class CitaEndResource(ProxySecureResource):
 
     @entities_ns.doc('End Cita Medica')
     @v1_api.expect(EndCitaStruct)    
-    #@jwt_required    
+    @jwt_required    
     def put(self):
-        #security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
         payload = request.json        
         EndCitaMedicaUseCase().execute(security_credentials,payload)
         return  {'ok':1} , 200
@@ -977,10 +999,10 @@ class CitaTransferResource(ProxySecureResource):
 
     @entities_ns.doc('Transfer Cita Medica')
     @v1_api.expect(TransferCitaStruct)    
-    #@jwt_required    
+    @jwt_required    
     def put(self):
-        #security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
         payload = request.json        
         TransferCitaMedicaUseCase().execute(security_credentials,payload)
         return  {'ok':1} , 200

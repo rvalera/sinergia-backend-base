@@ -5,7 +5,7 @@ Created on 17 dic. 2019
 '''
 from app.v1.repository.entities import EmpresaRepository, HistoriaMedicaRepository, TipoNominaRepository, TrabajadorRepository, EstadoRepository, MunicipioRepository, \
     PatologiaRepository, BeneficiarioRepository, EspecialidadRepository, CitaRepository, DiscapacidadRepository, PersonaRepository, VisitaRepository, ConsultaMedicaRepository, \
-    AreaRepository, MedicoRepository, ConsultorioRepository, ColaEsperaRepository, SalaDeEsperaRepository
+    AreaRepository, MedicoRepository, EstacionTrabajoRepository, ColaEsperaRepository, SalaDeEsperaRepository
 
 class GetEmpresaListUseCase(object):
     def execute(self,security_credentials):
@@ -19,9 +19,13 @@ class GetAreaListUseCase(object):
     def execute(self,security_credentials):
         return AreaRepository(username=security_credentials['username']).getAll()
 
-class GetConsultorioListUseCase(object):
+class GetEstacionTrabajoListUseCase(object):
     def execute(self,security_credentials):
-        return ConsultorioRepository(username=security_credentials['username']).getAll()
+        return EstacionTrabajoRepository(username=security_credentials['username']).getAll()
+
+class GetEstacionTrabajoUseCase(object):
+    def execute(self,security_credentials,query_params):
+        return EstacionTrabajoRepository(username=security_credentials['username']).getByName(query_params['nombre'])
 
 class GetPatologiaListUseCase(object):
     def execute(self,security_credentials):

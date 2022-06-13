@@ -5,7 +5,7 @@ Created on 17 dic. 2019
 '''
 from getpass import getuser
 from app.v1.models.security import SecurityElement, User, PersonExtension
-from app.v1.models.hr import Beneficiario, Especialidad, HistoriaMedica, Persona,Estado,Municipio,Trabajador,TipoTrabajador,EstatusTrabajador,TipoNomina,\
+from app.v1.models.hr import Beneficiario, Especialidad, EstacionTrabajo, HistoriaMedica, Persona,Estado,Municipio,Trabajador,TipoTrabajador,EstatusTrabajador,TipoNomina,\
     TipoCargo,UbicacionLaboral,Empresa, Patologia, Cita, Discapacidad, Visita, ConsultaMedica, Medico
 from app import redis_client, db
 import json
@@ -144,13 +144,27 @@ class AreaRepository(SinergiaRepository):
             raise DatabaseException(text=error_description)
 
 
-class ConsultorioRepository(SinergiaRepository):
+class EstacionTrabajoRepository(SinergiaRepository):
     def getAll(self):
         try:
-            table_df = pd.read_sql_query('select * from hospitalario.consultorio',con=db.engine)
+            table_df = pd.read_sql_query('select * from hospitalario.estaciontrabajo',con=db.engine)
             table_df = table_df.fillna('')
             result = table_df.to_dict('records')
             return result
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
+
+    def getByName(self, nombre):
+        try:
+            estaciontrabajo = EstacionTrabajo.query.filter(EstacionTrabajo.nombre == nombre).first()
+            if estaciontrabajo is None:
+                #Se arroja excepcion, el Medico ya esta creado
+                raise DataNotFoundException()     
+                  
+            return estaciontrabajo
         except exc.DatabaseError as err:
             # pass exception to function
             error_description = '%s' % (err)
@@ -650,7 +664,7 @@ class MedicoRepository(SinergiaRepository):
             medico.avenidacalle         = payload['avenidacalle']
             medico.edifcasa             = payload['edifcasa']
             medico.codigoespecialidad   = payload['codigoespecialidad']
-            #medico.codigoconsultorio    = payload['idconsultorio']
+            #medico.codigoestaciontrabajo    = payload['idestaciontrabajo']
           
             db.session.add(medico)
             db.session.commit()            
@@ -688,7 +702,7 @@ class MedicoRepository(SinergiaRepository):
             medico.avenidacalle         = payload['avenidacalle']
             medico.edifcasa             = payload['edifcasa']
             medico.codigoespecialidad   = payload['codigoespecialidad']
-            #medico.codigoconsultorio    = payload['idconsultorio']
+            #medico.codigoestaciontrabajo    = payload['idestaciontrabajo']
             
             db.session.add(medico)
             db.session.commit()            
