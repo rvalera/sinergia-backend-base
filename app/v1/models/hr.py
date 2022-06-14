@@ -300,8 +300,8 @@ class Medico(Persona):
 
     codigoespecialidad = Column(String(12), ForeignKey('hospitalario.especialidad.codigoespecialidad'))
     especialidad = relationship("Especialidad")
-    codigoestaciontrabajo = Column('codigoestaciontrabajo',Integer(), ForeignKey('hospitalario.estaciontrabajo.idestaciontrabajo'))
-    estaciontrabajo = relationship("EstacionTrabajo")
+    #idestaciontrabajo = Column('idestaciontrabajo',Integer(), ForeignKey('hospitalario.estaciontrabajo.idestaciontrabajo'))
+    #estaciontrabajo = relationship("EstacionTrabajo")
 
     __mapper_args__ = {
         'polymorphic_identity':'medico'
