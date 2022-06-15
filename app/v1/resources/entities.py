@@ -266,6 +266,73 @@ GetEspecialidadStruct = v1_api.model('GetEspecialidadResult', {
     'data' : fields.Nested(EspecialidadStruct,attribute='data')
 })
 
+
+MedicoStruct = v1_api.model('MedicoStruct', { 
+    'cedula' : fields.String(), 
+    'nombres' : fields.String(),  
+    'apellidos' : fields.String(),  
+    'sexo' : fields.String(),  
+    'fechanacimiento' : fields.String(format='date-time'),   
+    'telefonocelular' : fields.String(),  
+    'telefonoresidencia' : fields.String(),  
+    'correo' : fields.String(),
+
+    'nacionalidad' : fields.String(), 
+    'sexo' : fields.String(),  
+
+    'estado': fields.Nested(EstadoStruct,attribute='estado'),
+    'municipio': fields.Nested(MunicipioStruct,attribute='municipio'),
+
+    'parroquia' : fields.String(), 
+    'sector' : fields.String(),  
+    'avenidacalle' : fields.String(),  
+    'edifcasa' : fields.String(),
+
+    'especialidad': fields.Nested(EspecialidadStruct,attribute='especialidad'),
+    #'estaciontrabajo': fields.Nested(EstacionTrabajoStruct,attribute='estaciontrabajo'),
+})
+
+UpdateMedicoStruct = v1_api.model('UpdateMedicoStruct', { 
+    'cedula' : fields.String(), 
+    'nombres' : fields.String(),  
+    'apellidos' : fields.String(),  
+    'sexo' : fields.String(),  
+    'fechanacimiento' : fields.String(format='date-time'),   
+    'telefonocelular' : fields.String(),  
+    'telefonoresidencia' : fields.String(),  
+    'correo' : fields.String(),
+    'nacionalidad' : fields.String(), 
+    'sexo' : fields.String(),  
+    'codigoestado': fields.String(), 
+    'codigomunicipio': fields.String(), 
+    'parroquia' : fields.String(), 
+    'sector' : fields.String(),  
+    'avenidacalle' : fields.String(),  
+    'edifcasa' : fields.String(),
+    'codigoespecialidad' : fields.String()
+})
+
+GetMedicoStruct = v1_api.model('GetMedicoResult', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'data' : fields.Nested(MedicoStruct,attribute='data')
+})
+
+GetMedicoListStruct = v1_api.model('GetMedicoListResult', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'count' : fields.Integer(description='Count Row'), 
+    'total' : fields.Integer(description='Total Row'), 
+    'data' : fields.Nested(MedicoStruct,attribute='data')
+})
+
+
+CitaConsultaMedicaStruct = v1_api.model('CitaConsultaMedicaStruct', { 
+    'id' : fields.Integer(),
+    'historiamedica' : fields.Nested(HistoriaMedicaStruct,attribute='historiamedica'),
+    'medico' : fields.Nested(MedicoStruct,attribute='medico'),
+    'consultorio' : fields.String(),
+    'fecha' : fields.Date()
+})
+
 CitaStruct = v1_api.model('CitaStruct', { 
     'id' : fields.String(), 
     'persona': fields.Nested(PersonaStruct,attribute='persona'),
@@ -277,7 +344,8 @@ CitaStruct = v1_api.model('CitaStruct', {
     'fechafinconsulta' : fields.DateTime(), 
     'idbiostar' : fields.String(),
     'idbiostar2' : fields.String(),
-    'estado' : fields.String()
+    'estado' : fields.String(),
+    'consultamedica': fields.Nested(CitaConsultaMedicaStruct,attribute='consultamedica'),
 }) 
 
 CreateCitaStruct = v1_api.model('CreateCitaStruct', { 
@@ -299,7 +367,8 @@ ConfirmCitaStruct = v1_api.model('ConfirmCitaStruct', {
 })
 
 AttendCitaStruct = v1_api.model('AttendCitaStruct', { 
-    'idcita' : fields.Integer()
+    'idcita' : fields.Integer(),
+    'cedulamedico' : fields.String()
 })
 
 EndCitaStruct = v1_api.model('EndCitaStruct', { 
@@ -387,63 +456,6 @@ GetColaResumenStruct = v1_api.model('GetColaResumenResult', {
     'data' : fields.List(fields.Nested(ColaResumenStruct))
 })
 
-
-MedicoStruct = v1_api.model('MedicoStruct', { 
-    'cedula' : fields.String(), 
-    'nombres' : fields.String(),  
-    'apellidos' : fields.String(),  
-    'sexo' : fields.String(),  
-    'fechanacimiento' : fields.String(format='date-time'),   
-    'telefonocelular' : fields.String(),  
-    'telefonoresidencia' : fields.String(),  
-    'correo' : fields.String(),
-
-    'nacionalidad' : fields.String(), 
-    'sexo' : fields.String(),  
-
-    'estado': fields.Nested(EstadoStruct,attribute='estado'),
-    'municipio': fields.Nested(MunicipioStruct,attribute='municipio'),
-
-    'parroquia' : fields.String(), 
-    'sector' : fields.String(),  
-    'avenidacalle' : fields.String(),  
-    'edifcasa' : fields.String(),
-
-    'especialidad': fields.Nested(EspecialidadStruct,attribute='especialidad'),
-    'estaciontrabajo': fields.Nested(EstacionTrabajoStruct,attribute='estaciontrabajo'),
-})
-
-UpdateMedicoStruct = v1_api.model('UpdateMedicoStruct', { 
-    'cedula' : fields.String(), 
-    'nombres' : fields.String(),  
-    'apellidos' : fields.String(),  
-    'sexo' : fields.String(),  
-    'fechanacimiento' : fields.String(format='date-time'),   
-    'telefonocelular' : fields.String(),  
-    'telefonoresidencia' : fields.String(),  
-    'correo' : fields.String(),
-    'nacionalidad' : fields.String(), 
-    'sexo' : fields.String(),  
-    'codigoestado': fields.String(), 
-    'codigomunicipio': fields.String(), 
-    'parroquia' : fields.String(), 
-    'sector' : fields.String(),  
-    'avenidacalle' : fields.String(),  
-    'edifcasa' : fields.String(),
-    'codigoespecialidad' : fields.String()
-})
-
-GetMedicoStruct = v1_api.model('GetMedicoResult', { 
-    'ok' : fields.Integer(description='Ok Result'), 
-    'data' : fields.Nested(MedicoStruct,attribute='data')
-})
-
-GetMedicoListStruct = v1_api.model('GetMedicoListResult', { 
-    'ok' : fields.Integer(description='Ok Result'), 
-    'count' : fields.Integer(description='Count Row'), 
-    'total' : fields.Integer(description='Total Row'), 
-    'data' : fields.Nested(MedicoStruct,attribute='data')
-})
 
 ConsultaMedicaStruct = v1_api.model('ConsultaMedicaStruct', { 
     'id' : fields.Integer(),

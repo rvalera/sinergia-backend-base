@@ -981,9 +981,14 @@ class CitaRepository(SinergiaRepository):
 
     def attend(self,payload):         
         idcita = payload['idcita'] if 'idcita' in payload else None
+        cedulamedico = payload['cedulamedico'] if 'cedulamedico' in payload else None
 
         cita = Cita.query.filter(Cita.id == idcita, Cita.estado == CITA_EN_COLA).first()
         if cita is None:
+            raise DataNotFoundException()
+
+        medico = Medico.query.filter(Medico.cedulamedico == cedulamedico).first()
+        if medico is None:
             raise DataNotFoundException()
 
         cita.fechapasaconsulta = datetime.now()
@@ -991,8 +996,9 @@ class CitaRepository(SinergiaRepository):
 
         consulta = ConsultaMedica()
         consulta.cedula = cita.cedula
-        consulta.cedulamedico = '654321' #TODO Por ahora None mientras definimos las estaciones de trabajo
+        consulta.cedulamedico = cedulamedico
         consulta.idcita = cita.id
+        consulta.consultorio = None #TODO AQUI VA EL CONSULTORIO
 
         db.session.add(cita)
         db.session.add(consulta)

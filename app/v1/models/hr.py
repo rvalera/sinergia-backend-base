@@ -288,8 +288,8 @@ class EstacionTrabajo(db.Model):
     __table_args__ = {'schema' : 'hospitalario'}
 
     idestaciontrabajo = Column(Integer(), primary_key=True)
-    idsala = Column(Integer(), ForeignKey('hospitalario.saladeespera.idsala'))
-    saladeespera = relationship("SalaDeEspera")
+    #idsala = Column(Integer(), ForeignKey('hospitalario.saladeespera.idsala'))
+    #saladeespera = relationship("SalaDeEspera")
     nombre = Column(String(100)) 
 
 
@@ -320,7 +320,7 @@ class ConsultaMedica(db.Model):
     medico = relationship("Medico")
     idcita = Column(String(12), ForeignKey('hospitalario.cita.id'))
     cita = relationship("Cita", back_populates="consultamedica")
-
+    consultorio = Column(String(100))
     sintomas = Column(String(100))
     diagnostico = Column(String(50))
     tratamiento = Column(String(100))
