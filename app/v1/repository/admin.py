@@ -214,6 +214,8 @@ class MemberRepository(SinergiaRepository):
                     empresa = Empresa.query.filter(Empresa.codigo == empresa_id).first()
                     if not empresa is None:
                         user.person_extension.empresa_id = empresa_id
+                    else:
+                        user.person_extension.empresa_id = None
 
 
                 user.person_extension.id_number = id_number
@@ -285,6 +287,8 @@ class MemberRepository(SinergiaRepository):
                     empresa = Empresa.query.filter(Empresa.codigo == empresa_id).first()
                     if not empresa is None:
                         user.person_extension.empresa_id = empresa_id
+                    else:
+                        user.person_extension.empresa_id = None
 
                
                 user.person_extension.id_number = id_number

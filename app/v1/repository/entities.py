@@ -1226,11 +1226,13 @@ class ConsultaMedicaRepository(SinergiaRepository):
         if consultamedica is None:
             raise DataNotFoundException()
 
-        fecha = consultamedica.fecha
-        hoy = datetime.now().date()
+        # Modificado por Ramon Valera para poder Almacenar
+        # fecha = consultamedica.fecha
+        # hoy = datetime.now().date()
+        # if fecha != hoy:
+        #   raise DataNotFoundException()
 
-        if fecha != hoy:
-            raise DataNotFoundException()
+        consultamedica.fecha = datetime.now().date()
 
         consultamedica.sintomas = payload['sintomas']
         consultamedica.diagnostico = payload['diagnostico']
