@@ -929,7 +929,7 @@ class CitaRepository(SinergiaRepository):
             raise DataNotFoundException()
 
         cita_aux = Cita.query.filter(Cita.cedula == cedula, Cita.codigoespecialidad == codigoespecialidad,\
-                                 Cita.fechacita == fechacita, Cita.estado == CITA_PLANIFICADA).first()
+                                 Cita.fechacita == fechacita, Cita.estado != CITA_CANCELADA).first()
         if cita_aux:
             raise PacienteConCitaException()
 
@@ -956,7 +956,7 @@ class CitaRepository(SinergiaRepository):
             raise DataNotFoundException()
 
         cita_aux = Cita.query.filter(Cita.cedula == cita.cedula, Cita.codigoespecialidad == codigoespecialidad,\
-                                 Cita.fechacita == fechacita, Cita.estado == CITA_PLANIFICADA).first()
+                                 Cita.fechacita == fechacita, Cita.estado != CITA_CANCELADA).first()
         if cita_aux:
             raise PacienteConCitaException()
 
