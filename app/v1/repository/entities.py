@@ -510,7 +510,7 @@ class TrabajadorRepository(SinergiaRepository):
             carnetizacion_log.observaciones = trabajador.observaciones
             carnetizacion_log.gruposanguineo = trabajador.historiamedica.gruposanguineo
 
-            carnetizacion_log.patologias = s = ",".join(trabajador.historiamedica.patologias)  
+            carnetizacion_log.patologias = ",".join(trabajador.historiamedica.patologias)  
             carnetizacion_log.fechaactualizacion = datetime.now()
             carnetizacion_log.usuarioactualizacion = self.username.lower()
 
