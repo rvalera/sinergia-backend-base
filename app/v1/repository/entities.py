@@ -955,6 +955,12 @@ class CitaRepository(SinergiaRepository):
         if cita is None:
             raise DataNotFoundException()
 
+        cita_aux = Cita.query.filter(Cita.cedula == cita.cedula, Cita.codigoespecialidad == codigoespecialidad,\
+                                 Cita.fechacita == fechacita, Cita.estado == CITA_PLANIFICADA).first()
+        if cita_aux:
+            raise PacienteConCitaException()
+
+
         if not self.canSolicitarCita(codigoespecialidad, fechacita):
             raise CitaException()
         
