@@ -5,7 +5,7 @@ Created on 17 dic. 2019
 '''
 from getpass import getuser
 from app.v1.models.security import SecurityElement, User, PersonExtension
-from app.v1.models.hr import Beneficiario, Especialidad, EstacionTrabajo, HistoriaMedica, Persona,Estado,Municipio,Trabajador,TipoTrabajador,EstatusTrabajador,TipoNomina,\
+from app.v1.models.hr import Beneficiario, CarnetizacionLog, Especialidad, EstacionTrabajo, HistoriaMedica, Persona,Estado,Municipio,Trabajador,TipoTrabajador,EstatusTrabajador,TipoNomina,\
     TipoCargo,UbicacionLaboral,Empresa, Patologia, Cita, Discapacidad, Visita, ConsultaMedica, Medico
 from app import redis_client, db
 import json
@@ -492,7 +492,30 @@ class TrabajadorRepository(SinergiaRepository):
             if user:
                 trabajador.idusuarioactualizacion = user.id
 
+            #Log Solicitado para Carnetizacion
+            carnetizacion_log = CarnetizacionLog()
+            carnetizacion_log.cedula = trabajador.cedula 
+            carnetizacion_log.telefonocelular = trabajador.telefonocelular
+            carnetizacion_log.telefonoresidencia = trabajador.telefonoresidencia
+            carnetizacion_log.correo = trabajador.correo
+            carnetizacion_log.codigoestado = trabajador.codigoestado
+            carnetizacion_log.codigomunicipio = trabajador.codigomunicipio
+            carnetizacion_log.parroquia = trabajador.parroquia
+            carnetizacion_log.sector = trabajador.sector
+            carnetizacion_log.avenidacalle = trabajador.avenidacalle
+            carnetizacion_log.edifcasa = trabajador.edifcasa
+            carnetizacion_log.camisa = trabajador.camisa
+            carnetizacion_log.pantalon = trabajador.pantalon
+            carnetizacion_log.calzado = trabajador.calzado
+            carnetizacion_log.observaciones = trabajador.observaciones
+            carnetizacion_log.gruposanguineo = trabajador.historiamedica.gruposanguineo
+
+            carnetizacion_log.patologias = s = ",".join(trabajador.historiamedica.patologias)  
+            carnetizacion_log.fechaactualizacion = datetime.now()
+            carnetizacion_log.usuarioactualizacion = self.username.lower()
+
             db.session.add(trabajador)
+            db.session.add(carnetizacion_log)
             db.session.commit()            
         else:
             #No se proporciono el username o la contrasena, es obligatorio 

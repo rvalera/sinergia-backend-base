@@ -327,3 +327,29 @@ class ConsultaMedica(db.Model):
     examenes = Column(String(50))
     fecha = Column(Date()) 
     estado = Column(String(50))
+
+
+class CarnetizacionLog(db.Model):
+    __tablename__ = 'carnetizacionlog'
+    __table_args__ = {'schema' : 'hospitalario'}
+
+    cedula = Column(String(12), primary_key=True) 
+    telefonocelular = Column(String(12))
+    telefonoresidencia = Column(String(12)) 
+    correo = Column(String(100))
+    codigoestado = Column(String(10))
+    codigomunicipio = Column(String(10))
+    parroquia = Column(String(100))
+    sector = Column(String(100))
+    avenidacalle = Column(String(100))
+    edifcasa = Column(String(100))
+    camisa = Column(String(5))
+    pantalon = Column(String(5))
+    calzado = Column(String(5))
+    gruposanguineo = Column(String(12))
+    observaciones = Column(String())
+
+    patologias = Column(String(400))
+
+    fechaactualizacion = Column(DateTime()) 
+    usuarioactualizacion  = Column(String(20))

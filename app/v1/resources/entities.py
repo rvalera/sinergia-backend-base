@@ -1073,7 +1073,7 @@ class ProximasCitasPersonaListResource(ProxySecureResource):
 
     @entities_ns.doc('Get Proximas Citas Medicas by Cedula')
     @v1_api.marshal_with(GetCitaListStruct) 
-    @jwt_required    
+    @jwt_required
     def get(self,cedula):
         security_credentials = self.checkCredentials()
         #security_credentials = {'username': 'prueba'}
