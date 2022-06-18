@@ -326,3 +326,4 @@ class ConsultaMedica(db.Model):
     tratamiento = Column(String(100))
     examenes = Column(String(50))
     fecha = Column(Date()) 
+    estado = Column(String(50))

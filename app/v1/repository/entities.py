@@ -1004,6 +1004,7 @@ class CitaRepository(SinergiaRepository):
         consulta.cedulamedico = cedulamedico
         consulta.idcita = cita.id
         consulta.consultorio = None #TODO AQUI VA EL CONSULTORIO
+        consulta.estado = CITA_EN_ATENCION
 
         db.session.add(cita)
         db.session.add(consulta)
@@ -1024,6 +1025,7 @@ class CitaRepository(SinergiaRepository):
         cita.consultamedica.tratamiento = payload['tratamiento']
         cita.consultamedica.examenes = payload['examenes']
         cita.consultamedica.fecha = datetime.now().date()
+
         db.session.add(cita)
         db.session.commit()   
 
@@ -1031,14 +1033,22 @@ class CitaRepository(SinergiaRepository):
     def transfer(self,payload):         
         idcita = payload['idcita'] if 'idcita' in payload else None
 
-        cita = Cita.query.filter(Cita.id == idcita, Cita.estado == CITA_EN_COLA).first()
+        cita = Cita.query.filter(Cita.id == idcita, Cita.estado == CITA_EN_ATENCION).first()
         if cita is None:
             raise DataNotFoundException()
+        cita.fechafinconsulta = datetime.now().date() 
+        cita.estado = CITA_CONCLUIDA
 
-        cita.codigoespecialidad = payload['codigoespecialidad']        
-        cita.fechaentradacola = datetime.now().date()
-        cita.estado = CITA_EN_COLA
+        nueva_cita = Cita()
+        nueva_cita.cedula = cita.cedula
+        nueva_cita.codigoespecialidad = payload['codigoespecialidad']
+        nueva_cita.fechadia = datetime.now().date()
+        nueva_cita.fechacita = datetime.now().date()
+        nueva_cita.fechaentradacola = datetime.now().date()
+        nueva_cita.estado = CITA_EN_COLA
+        
         db.session.add(cita)
+        db.session.add(nueva_cita)
         db.session.commit()
 
 
@@ -1244,6 +1254,8 @@ class ConsultaMedicaRepository(SinergiaRepository):
         consultamedica.tratamiento = payload['tratamiento']
         consultamedica.examenes = payload['examenes']
 
+        consultamedica.estado = CITA_CONCLUIDA
+
         db.session.add(consultamedica)
         db.session.commit()   
 
@@ -1259,7 +1271,7 @@ class ConsultaMedicaRepository(SinergiaRepository):
     
     def getByCedula(self,cedula):
         try:
-            consultasmedicas = ConsultaMedica.query.filter(ConsultaMedica.cedula == cedula).all()
+            consultasmedicas = ConsultaMedica.query.filter(ConsultaMedica.cedula == cedula, ConsultaMedica.estado == CITA_CONCLUIDA).all()
             return consultasmedicas
         except exc.DatabaseError as err:
             # pass exception to function
