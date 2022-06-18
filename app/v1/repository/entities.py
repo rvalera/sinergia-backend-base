@@ -1046,7 +1046,7 @@ class CitaRepository(SinergiaRepository):
         nueva_cita.fechacita = datetime.now().date()
         nueva_cita.fechaentradacola = datetime.now().date()
         nueva_cita.estado = CITA_EN_COLA
-        
+
         db.session.add(cita)
         db.session.add(nueva_cita)
         db.session.commit()
@@ -1101,7 +1101,8 @@ class CitaRepository(SinergiaRepository):
 
     def getByFechaCita(self,fechacita):
         try:
-            citamedicas = Cita.query.filter(Cita.fechacita == fechacita, Cita.estado.notin_([CITA_CANCELADA])).all()
+#            citamedicas = Cita.query.filter(Cita.fechacita == fechacita, Cita.estado.notin_([CITA_CANCELADA])).all()
+            citamedicas = Cita.query.filter(Cita.fechacita == fechacita, Cita.estado.in_([CITA_PLANIFICADA])).all()
             return citamedicas
         except exc.DatabaseError as err:
             # pass exception to function
