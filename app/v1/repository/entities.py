@@ -1081,7 +1081,7 @@ class CitaRepository(SinergiaRepository):
             formatofecha = '%Y-%m-%d'
             hoy = datetime.now().date()
             hoy_str = datetime.strftime(hoy, formatofecha)
-            citamedicas = Cita.query.filter(Cita.cedula == cedula, Cita.estado != CITA_CANCELADA,Cita.estado != CITA_CONCLUIDA, Cita.fechacita >= hoy_str).all()
+            citamedicas = Cita.query.filter(Cita.cedula == cedula, Cita.estado == CITA_PLANIFICADA, Cita.fechacita >= hoy_str).all()
             return citamedicas
         except exc.DatabaseError as err:
             # pass exception to function
