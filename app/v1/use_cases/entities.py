@@ -19,6 +19,18 @@ class GetAreaListUseCase(object):
     def execute(self,security_credentials):
         return AreaRepository(username=security_credentials['username']).getAll()
 
+class CreateEstacionTrabajoUseCase(object):
+    def execute(self,security_credentials,payload):
+        EstacionTrabajoRepository(username=security_credentials['username']).new(payload)
+
+class SaveEstacionTrabajoUseCase(object):
+    def execute(self,security_credentials,payload):
+        EstacionTrabajoRepository(username=security_credentials['username']).save(payload)
+
+class DeleteEstacionTrabajoUseCase(object):
+    def execute(self,security_credentials,query_params):
+        EstacionTrabajoRepository(username=security_credentials['username']).delete(query_params['idestaciontrabajo'])
+
 class GetEstacionTrabajoListUseCase(object):
     def execute(self,security_credentials):
         return EstacionTrabajoRepository(username=security_credentials['username']).getAll()
@@ -50,6 +62,10 @@ class CreateEspecialidadUseCase(object):
 class SaveEspecialidadUseCase(object):
     def execute(self,security_credentials,payload):
         EspecialidadRepository(username=security_credentials['username']).save(payload)
+
+class DeleteEspecialidadUseCase(object):
+    def execute(self,security_credentials,query_params):
+        EspecialidadRepository(username=security_credentials['username']).delete(query_params['codigoespecialidad'])
 
 class GetEspecialidadUseCase(object):
     def execute(self,security_credentials,query_params):
