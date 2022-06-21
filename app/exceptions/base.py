@@ -46,6 +46,14 @@ class DataNotFoundException(SinergiaException):
     def __init__(self,text=None):
         super(DataNotFoundException, self).__init__(code='DAT001',text = text)
 
+class DataAlreadyRegisteredException(SinergiaException):
+    def __init__(self,text=None):
+        super(DataAlreadyRegisteredException, self).__init__(code='DAT003',text = text)
+
+class DeleteDataException(SinergiaException):
+    def __init__(self,text=None):
+        super(DeleteDataException, self).__init__(code='DAT002',text = text)
+
 class ParametersNotFoundException(SinergiaException):
     def __init__(self,text=None):
         super(ParametersNotFoundException, self).__init__(code='PAR001',text = text)

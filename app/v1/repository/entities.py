@@ -13,7 +13,8 @@ import requests
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
 from app.exceptions.base import DataNotFoundException, CitaFechaInvalidaException, CitaFechaSinCupoException, CryptoPOSException, ConnectionException,NotImplementedException,DatabaseException,\
-                                IntegrityException, ParametersNotFoundException, CitaException, CitaConConsultaException, CitaPersonaEquivocadaException, PacienteConCitaException
+                                IntegrityException, ParametersNotFoundException, CitaException, CitaConConsultaException, CitaPersonaEquivocadaException, PacienteConCitaException, DeleteDataException,\
+                                DataAlreadyRegisteredException                                    
 from .base import SinergiaRepository
 
 import pandas as pd
@@ -156,7 +157,6 @@ class EstacionTrabajoRepository(SinergiaRepository):
             error_description = '%s' % (err)
             raise DatabaseException(text=error_description)
 
-
     def getByName(self, nombre):
         try:
             estaciontrabajo = EstacionTrabajo.query.filter(EstacionTrabajo.nombre == nombre).first()
@@ -169,6 +169,50 @@ class EstacionTrabajoRepository(SinergiaRepository):
             # pass exception to function
             error_description = '%s' % (err)
             raise DatabaseException(text=error_description)
+
+    def new(self,payload):
+        direccionip = payload['direccionip'] if 'direccionip' in payload else None
+        if direccionip:
+            #Se chequea que la direccion ip no esté registrada
+            aux = EstacionTrabajo.query.filter(EstacionTrabajo.direccionip == direccionip).first()
+            if aux:
+                #Se arroja excepcion, el beneficiario ya esta creado
+                raise DataAlreadyRegisteredException()
+
+            estacion = EstacionTrabajo()
+            estacion.nombre = payload['nombre']
+            estacion.direccionip = payload['diasdeatencion']
+            db.session.session.add(estacion)
+            db.session.commit() 
+        else:
+            #No se proporciono la direccion ip de la estacion
+            raise ParametersNotFoundException()
+    
+    def save(self,payload):
+        idestaciontrabajo = payload['idestaciontrabajo'] if 'idestaciontrabajo' in payload else None
+        if idestaciontrabajo:
+            #Se chequea que la estacion exista previamente 
+            estaciontrabajo = EstacionTrabajo.query.filter(EstacionTrabajo.idestaciontrabajo == idestaciontrabajo).first()
+            if estaciontrabajo is None:
+                #Se arroja excepcion, la estaciontrabajo no existe
+                raise DataNotFoundException()
+
+            estaciontrabajo.nombre = payload['nombre']
+            estaciontrabajo.direccionip = payload['direccionip']
+            db.session.add(estaciontrabajo)
+            db.session.commit()            
+        else:
+            #No se proporciono el codigo, es obligatorio 
+            raise ParametersNotFoundException()
+
+    def delete(self,idestaciontrabajo):
+        estaciontrabajo = EstacionTrabajo.query.filter(EstacionTrabajo.idestaciontrabajo == idestaciontrabajo).first()
+        if estaciontrabajo is None:
+            #Se arroja excepcion, no existe la estacion
+            raise DataNotFoundException()
+        
+        db.session.delete(estaciontrabajo)
+        db.session.commit()
 
 
 class UbicacionLaboralRepository(SinergiaRepository):
@@ -631,7 +675,6 @@ class EspecialidadRepository(SinergiaRepository):
         else:
             #No se proporciono el codigo de la especialidad, es obligatorio 
             raise ParametersNotFoundException()
-
     
     def save(self,payload):
         codigoespecialidad = payload['codigoespecialidad'] if 'codigoespecialidad' in payload else None
@@ -653,6 +696,22 @@ class EspecialidadRepository(SinergiaRepository):
         else:
             #No se proporciono el codigo, es obligatorio 
             raise ParametersNotFoundException()
+
+    def delete(self,codigoespecialidad):
+        especialidad = Especialidad.query.filter(Especialidad.codigoespecialidad == codigoespecialidad).first()
+        if especialidad is None:
+            #Se arroja excepcion, no existe la especialidad
+            raise DataNotFoundException()
+        
+        cita = Cita.query.filter(Cita.codigoespecialidad == codigoespecialidad).first()
+        medico = Medico.query.filter(Medico.codigoespecialidad == codigoespecialidad).first()
+
+        if cita or medico:
+            #Se arroja excepcion, no se puede borrar la especialidad
+            raise DeleteDataException()
+
+        db.session.delete(especialidad)
+        db.session.commit()
 
 class MedicoRepository(SinergiaRepository):
 

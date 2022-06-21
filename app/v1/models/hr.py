@@ -217,8 +217,8 @@ class Especialidad(db.Model):
     __table_args__ = {'schema' : 'hospitalario'}
 
     codigoespecialidad = Column(String(12), primary_key=True)
-    idsala = Column(Integer, ForeignKey('hospitalario.saladeespera.idsala'))
-    saladeespera = relationship("SalaDeEspera")
+    #idsala = Column(Integer, ForeignKey('hospitalario.saladeespera.idsala'))
+    #saladeespera = relationship("SalaDeEspera")
 
     nombre = Column(String(100))
     autogestionada = Column(Boolean)
@@ -291,6 +291,7 @@ class EstacionTrabajo(db.Model):
     #idsala = Column(Integer(), ForeignKey('hospitalario.saladeespera.idsala'))
     #saladeespera = relationship("SalaDeEspera")
     nombre = Column(String(100)) 
+    direccionip = Column(String(100)) 
 
 
 class Medico(Persona):
@@ -300,8 +301,6 @@ class Medico(Persona):
 
     codigoespecialidad = Column(String(12), ForeignKey('hospitalario.especialidad.codigoespecialidad'))
     especialidad = relationship("Especialidad")
-    #idestaciontrabajo = Column('idestaciontrabajo',Integer(), ForeignKey('hospitalario.estaciontrabajo.idestaciontrabajo'))
-    #estaciontrabajo = relationship("EstacionTrabajo")
 
     __mapper_args__ = {
         'polymorphic_identity':'medico'

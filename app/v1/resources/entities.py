@@ -8,7 +8,8 @@ from app.v1.use_cases.entities import ConfirmCitaMedicaUseCase, CreateBeneficiar
     CreateConsultaMedicaUseCase, SaveConsultaMedicaUseCase, GetConsultasMedicasPersonaListUseCase, GetProximasCitasMedicasPersonaListUseCase, GetCitaMedicaUseCase, \
     GetCitasCedulaEspecialidadFechaListUseCase, GetAreaListUseCase, CreateMedicoUseCase, SaveMedicoUseCase, DeleteMedicoUseCase, CreateEspecialidadUseCase,\
     SaveEspecialidadUseCase, GetEspecialidadUseCase, GetMedicoListUseCase, GetEstacionTrabajoListUseCase, EntryColaEsperaUseCase, GetSalaDeEsperaListUseCase,\
-    GetProxCitaColaEsperaEspecialidadUseCase, GetColaResumenUseCase, GetColaEsperaEspecialidadUseCase, AttendCitaMedicaUseCase, EndCitaMedicaUseCase, TransferCitaMedicaUseCase, GetEstacionTrabajoUseCase
+    GetProxCitaColaEsperaEspecialidadUseCase, GetColaResumenUseCase, GetColaEsperaEspecialidadUseCase, AttendCitaMedicaUseCase, EndCitaMedicaUseCase, TransferCitaMedicaUseCase, GetEstacionTrabajoUseCase, DeleteEspecialidadUseCase,\
+    CreateEstacionTrabajoUseCase, SaveEstacionTrabajoUseCase, DeleteEstacionTrabajoUseCase
 
 from flask.globals import request    
 import json 
@@ -249,7 +250,8 @@ EspecialidadStruct = v1_api.model('EspecialidadStruct', {
     'diasdeatencion' : fields.String(), 
     'autogestionada' : fields.Boolean(), 
     'cantidadmaximapacientes' : fields.Integer(),
-    'saladeespera': fields.Nested(SalaDeEsperaStruct,attribute='saladeespera'),
+    'colaactiva': fields.Boolean()
+
 })
 
 UpdateEspecialidadStruct = v1_api.model('UpdateEspecialidadStruct', { 
@@ -257,8 +259,7 @@ UpdateEspecialidadStruct = v1_api.model('UpdateEspecialidadStruct', {
     'nombre' : fields.String(), 
     'diasdeatencion' : fields.String(), 
     'autogestionada' : fields.Boolean(), 
-    'cantidadmaximapacientes' : fields.Integer(),
-    'idsala' : fields.Integer()
+    'cantidadmaximapacientes' : fields.Integer()
 })
 
 GetEspecialidadStruct = v1_api.model('GetEspecialidadResult', { 
@@ -434,8 +435,20 @@ GetVisitaListStruct = v1_api.model('GetVisitaListResult', {
 
 EstacionTrabajoStruct = v1_api.model('EstacionTrabajoStruct', {     
     'idestaciontrabajo' : fields.Integer(), 
-    'saladeespera': fields.Nested(SalaDeEsperaStruct,attribute='saladeespera'),
-    'nombre' : fields.String()
+    #'saladeespera': fields.Nested(SalaDeEsperaStruct,attribute='saladeespera'),
+    'nombre' : fields.String(),
+    'direccionip' : fields.String()
+})
+
+CreateEstacionTrabajoStruct = v1_api.model('CreateEstacionTrabajoStruct', { 
+    'nombre' : fields.String(), 
+    'direccionip' : fields.String()
+})
+
+UpdateEstacionTrabajoStruct = v1_api.model('UpdateEstacionTrabajoStruct', { 
+    'idestaciontrabajo' : fields.Integer(), 
+    'nombre' : fields.String(), 
+    'direccionip' : fields.String()
 })
 
 GetEstacionTrabajoStruct = v1_api.model('GetEstacionTrabajoStruct', { 
@@ -567,6 +580,40 @@ class EstacionTrabajoResource(ProxySecureResource):
         security_credentials = self.checkCredentials()
         data = GetEstacionTrabajoListUseCase().execute(security_credentials)
         return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+
+    @entities_ns.doc('Create Estacion Trabajo')
+    @v1_api.expect(CreateEstacionTrabajoStruct)    
+    @jwt_required    
+    def post(self):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        payload = request.json        
+        CreateEstacionTrabajoUseCase().execute(security_credentials,payload)
+        return  {'ok':1} , 200
+
+    @entities_ns.doc('Update Estacion Trabajo')
+    @v1_api.expect(UpdateEstacionTrabajoStruct)    
+    @jwt_required    
+    def put(self):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        payload = request.json        
+        SaveEstacionTrabajoUseCase().execute(security_credentials,payload)
+        return  {'ok':1} , 200
+
+
+@entities_ns.route('/estaciontrabajo/<idestaciontrabajo>')
+@entities_ns.param('idestaciontrabajo', 'Codigo de la Estacion Trabajo')
+@v1_api.expect(secureHeader)
+class DeleteEstacionTrabajoResource(ProxySecureResource): 
+    @entities_ns.doc('Delete Estacion Trabajo')
+    @jwt_required
+    def delete(self,idestaciontrabajo):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        query_params = {'idestaciontrabajo': idestaciontrabajo}
+        DeleteEstacionTrabajoUseCase().execute(security_credentials,query_params)
+        return  {'ok':1} , 200
 
 
 @entities_ns.route('/colaespera/entrada')
@@ -798,6 +845,20 @@ class EspecialidadResource(ProxySecureResource):
         #security_credentials = {'username': 'prueba'}
         payload = request.json        
         SaveEspecialidadUseCase().execute(security_credentials,payload)
+        return  {'ok':1} , 200
+
+
+@entities_ns.route('/especialidad/<codigoespecialidad>')
+@entities_ns.param('codigoespecialidad', 'Codigo de la Especialidad')
+@v1_api.expect(secureHeader)
+class DeleteEspecialidadResource(ProxySecureResource): 
+    @entities_ns.doc('Delete Especialidad')
+    @jwt_required
+    def delete(self,codigoespecialidad):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        query_params = {'codigoespecialidad': codigoespecialidad}
+        DeleteEspecialidadUseCase().execute(security_credentials,query_params)
         return  {'ok':1} , 200
 
 
