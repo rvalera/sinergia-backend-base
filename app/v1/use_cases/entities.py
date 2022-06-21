@@ -47,6 +47,18 @@ class GetDiscapacidadListUseCase(object):
     def execute(self,security_credentials):
         return DiscapacidadRepository(username=security_credentials['username']).getAll()
 
+class CreateSalaDeEsperaUseCase(object):
+    def execute(self,security_credentials,payload):
+        SalaDeEsperaRepository(username=security_credentials['username']).new(payload)
+
+class SaveSalaDeEsperaUseCase(object):
+    def execute(self,security_credentials,payload):
+        SalaDeEsperaRepository(username=security_credentials['username']).save(payload)
+
+class DeleteSalaDeEsperaUseCase(object):
+    def execute(self,security_credentials,query_params):
+        SalaDeEsperaRepository(username=security_credentials['username']).delete(query_params['idsala'])
+
 class GetSalaDeEsperaListUseCase(object):
     def execute(self,security_credentials):
         return SalaDeEsperaRepository(username=security_credentials['username']).getAll()

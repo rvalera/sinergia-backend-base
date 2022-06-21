@@ -5,7 +5,7 @@ Created on 17 dic. 2019
 '''
 from getpass import getuser
 from app.v1.models.security import SecurityElement, User, PersonExtension
-from app.v1.models.hr import Beneficiario, CarnetizacionLog, Especialidad, EstacionTrabajo, HistoriaMedica, Persona,Estado,Municipio,Trabajador,TipoTrabajador,EstatusTrabajador,TipoNomina,\
+from app.v1.models.hr import Beneficiario, CarnetizacionLog, Especialidad, EstacionTrabajo, HistoriaMedica, Persona,Estado,Municipio, SalaDeEspera,Trabajador,TipoTrabajador,EstatusTrabajador,TipoNomina,\
     TipoCargo,UbicacionLaboral,Empresa, Patologia, Cita, Discapacidad, Visita, ConsultaMedica, Medico
 from app import redis_client, db
 import json
@@ -628,6 +628,38 @@ class SalaDeEsperaRepository(SinergiaRepository):
             error_description = '%s' % (err)
             raise DatabaseException(text=error_description)
 
+    def new(self,payload):
+        salaespera = SalaDeEspera()
+        salaespera.nombre = payload['nombre']
+        db.session.add(salaespera)
+        db.session.commit()            
+    
+    def save(self,payload):
+        idsala = payload['idsala'] if 'idsala' in payload else None
+        if idsala:
+            #Se chequea que la sala exista previamente 
+            salaespera = SalaDeEspera.query.filter(SalaDeEspera.idsala == idsala).first()
+            if salaespera is None:
+                #Se arroja excepcion, la salaespera ya esta creado
+                raise DataNotFoundException()
+
+            salaespera.nombre = payload['nombre']
+            db.session.add(salaespera)
+            db.session.commit()            
+        else:
+            #No se proporciono el codigo, es obligatorio 
+            raise ParametersNotFoundException()
+
+    def delete(self,idsala):
+        #Se chequea que la sala exista previamente 
+        salaespera = SalaDeEspera.query.filter(SalaDeEspera.idsala == idsala).first()
+        if salaespera is None:
+            #Se arroja excepcion, la salaespera no existe
+            raise DataNotFoundException()
+
+        db.session.delete(salaespera)
+        db.session.commit()
+
 
 class EspecialidadRepository(SinergiaRepository):
     def getAll(self):
@@ -658,8 +690,8 @@ class EspecialidadRepository(SinergiaRepository):
             #Se chequea que el codigo de la especialidad no se este usando
             aux = Especialidad.query.filter(Especialidad.codigoespecialidad == codigoespecialidad).first()
             if aux:
-                #Se arroja excepcion, el beneficiario ya esta creado
-                raise DataNotFoundException()
+                #Se arroja excepcion, la especialidad ya esta creada
+                raise DataAlreadyRegisteredException()
 
             especialidad = Especialidad()
             especialidad.codigoespecialidad  = payload['codigoespecialidad']
@@ -667,7 +699,6 @@ class EspecialidadRepository(SinergiaRepository):
             especialidad.diasdeatencion = payload['diasdeatencion']
             especialidad.autogestionada = payload['autogestionada']
             especialidad.cantidadmaximapacientes = payload['cantidadmaximapacientes']
-            especialidad.idsala = payload['idsala']
             especialidad.colaactiva = True
           
             db.session.add(especialidad)
@@ -682,7 +713,7 @@ class EspecialidadRepository(SinergiaRepository):
             #Se chequea que la especialidad exista previamente 
             especialidad = Especialidad.query.filter(Especialidad.codigoespecialidad == codigoespecialidad).first()
             if especialidad is None:
-                #Se arroja excepcion, la especialidad ya esta creado
+                #Se arroja excepcion, la especialidad no esta creado
                 raise DataNotFoundException()
 
             especialidad.nombre = payload['nombre']

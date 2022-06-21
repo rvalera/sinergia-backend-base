@@ -9,7 +9,7 @@ from app.v1.use_cases.entities import ConfirmCitaMedicaUseCase, CreateBeneficiar
     GetCitasCedulaEspecialidadFechaListUseCase, GetAreaListUseCase, CreateMedicoUseCase, SaveMedicoUseCase, DeleteMedicoUseCase, CreateEspecialidadUseCase,\
     SaveEspecialidadUseCase, GetEspecialidadUseCase, GetMedicoListUseCase, GetEstacionTrabajoListUseCase, EntryColaEsperaUseCase, GetSalaDeEsperaListUseCase,\
     GetProxCitaColaEsperaEspecialidadUseCase, GetColaResumenUseCase, GetColaEsperaEspecialidadUseCase, AttendCitaMedicaUseCase, EndCitaMedicaUseCase, TransferCitaMedicaUseCase, GetEstacionTrabajoUseCase, DeleteEspecialidadUseCase,\
-    CreateEstacionTrabajoUseCase, SaveEstacionTrabajoUseCase, DeleteEstacionTrabajoUseCase
+    CreateEstacionTrabajoUseCase, SaveEstacionTrabajoUseCase, DeleteEstacionTrabajoUseCase, CreateSalaDeEsperaUseCase, SaveSalaDeEsperaUseCase, DeleteSalaDeEsperaUseCase
 
 from flask.globals import request    
 import json 
@@ -114,6 +114,15 @@ UsuarioActStruct = v1_api.model('UsuarioActStruct', {
 })
 
 SalaDeEsperaStruct = v1_api.model('SalaDeEsperaStruct', { 
+    'idsala' : fields.Integer(), 
+    'nombre' : fields.String()
+})
+
+CreateSalaDeEsperaStruct = v1_api.model('CreateSalaDeEsperaStruct', { 
+    'nombre' : fields.String()
+})
+
+UpdateSalaDeEsperaStruct = v1_api.model('UpdateSalaDeEsperaStruct', { 
     'idsala' : fields.Integer(), 
     'nombre' : fields.String()
 })
@@ -813,6 +822,39 @@ class SalaDeEsperaResource(ProxySecureResource):
         #security_credentials = {'username': 'prueba'}
         data = GetSalaDeEsperaListUseCase().execute(security_credentials)
         return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+
+    @entities_ns.doc('Create Sala De Espera')
+    @v1_api.expect(CreateSalaDeEsperaStruct)    
+    @jwt_required    
+    def post(self):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        payload = request.json        
+        CreateSalaDeEsperaUseCase().execute(security_credentials,payload)
+        return  {'ok':1} , 200
+
+    @entities_ns.doc('Update Sala De Espera')
+    @v1_api.expect(UpdateSalaDeEsperaStruct)    
+    @jwt_required    
+    def put(self):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        payload = request.json        
+        SaveSalaDeEsperaUseCase().execute(security_credentials,payload)
+        return  {'ok':1} , 200
+
+@entities_ns.route('/saladeespera/<idsala>')
+@entities_ns.param('idsala', 'Codigo de la Sala de Espera')
+@v1_api.expect(secureHeader)
+class DeleteSalaDeEsperaResource(ProxySecureResource): 
+    @entities_ns.doc('Delete Sala de Espera')
+    @jwt_required
+    def delete(self,idsala):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        query_params = {'idsala': idsala}
+        DeleteSalaDeEsperaUseCase().execute(security_credentials,query_params)
+        return  {'ok':1} , 200
 
 
 @entities_ns.route('/especialidad')
