@@ -274,7 +274,7 @@ EspecialidadStruct = v1_api.model('EspecialidadStruct', {
     'autogestionada' : fields.Boolean(), 
     'cantidadmaximapacientes' : fields.Integer(),
     'colaactiva': fields.Boolean(),
-    'medicos': fields.List(fields.Nested(MedicoEspecStruct)),
+    'medicos': fields.List(fields.Nested(MedicoEspecStruct))
 
 })
 
@@ -939,7 +939,7 @@ class OneEspecialidadResource(ProxySecureResource):
         security_credentials = self.checkCredentials()
         #security_credentials = {'username': 'prueba'}
         query_params = {'codigoespecialidad': codigoespecialidad}
-        data = GetEspecialidadUseCase.execute(security_credentials,query_params)
+        data = GetEspecialidadUseCase().execute(security_credentials,query_params)
         return  {'ok': 1, 'data': data}, 200
 
 
