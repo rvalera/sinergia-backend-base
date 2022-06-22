@@ -182,6 +182,7 @@ class EstacionTrabajoRepository(SinergiaRepository):
             estacion = EstacionTrabajo()
             estacion.nombre = payload['nombre']
             estacion.direccionip = payload['direccionip']
+            estacion.dispositivobiostar = payload['dispositivobiostar']
             db.session.session.add(estacion)
             db.session.commit() 
         else:
@@ -199,6 +200,7 @@ class EstacionTrabajoRepository(SinergiaRepository):
 
             estaciontrabajo.nombre = payload['nombre']
             estaciontrabajo.direccionip = payload['direccionip']
+            estaciontrabajo.dispositivobiostar = payload['dispositivobiostar']
             db.session.add(estaciontrabajo)
             db.session.commit()            
         else:
@@ -758,7 +760,7 @@ class MedicoRepository(SinergiaRepository):
             #Se chequea que el medico NO exista previamente 
             aux = Medico.query.filter(Medico.cedula == cedula).first()
             if aux:
-                #Se arroja excepcion, el beneficiario ya esta creado
+                #Se arroja excepcion, el medico ya esta creado
                 raise DataNotFoundException()
 
             medico = Medico()
@@ -783,7 +785,6 @@ class MedicoRepository(SinergiaRepository):
             medico.avenidacalle         = payload['avenidacalle']
             medico.edifcasa             = payload['edifcasa']
             medico.codigoespecialidad   = payload['codigoespecialidad']
-            #medico.codigoestaciontrabajo    = payload['idestaciontrabajo']
           
             db.session.add(medico)
             db.session.commit()            
@@ -798,7 +799,7 @@ class MedicoRepository(SinergiaRepository):
             #Se chequea que el medico exista previamente 
             medico = Medico.query.filter(Medico.cedula == cedula).first()
             if medico is None:
-                #Se arroja excepcion, el Medico ya esta creado
+                #Se arroja excepcion, el Medico no Existe
                 raise DataNotFoundException()
 
             medico.nombres              = payload['nombres']
@@ -821,7 +822,6 @@ class MedicoRepository(SinergiaRepository):
             medico.avenidacalle         = payload['avenidacalle']
             medico.edifcasa             = payload['edifcasa']
             medico.codigoespecialidad   = payload['codigoespecialidad']
-            #medico.codigoestaciontrabajo    = payload['idestaciontrabajo']
             
             db.session.add(medico)
             db.session.commit()            
@@ -831,13 +831,18 @@ class MedicoRepository(SinergiaRepository):
     
 
     def delete(self,cedula):
-        pass
-        #medico = Medico.query.filter(Medico.cedula == cedula).first()
-        #if medico is None:
+        medico = Medico.query.filter(Medico.cedula == cedula).first()
+        if medico is None:
             #Se arroja excepcion, el beneficiario ya esta creado
-        #    raise DataNotFoundException()
-        #db.session.delete(medico)
-        #db.session.commit()
+            raise DataNotFoundException()
+        
+        consultamedica = ConsultaMedica.query.filter(ConsultaMedica.cedulamedico == cedula).first()
+        if consultamedica:
+            #Se arroja excepcion, el medico tiene consultas
+            raise DeleteDataException()
+
+        db.session.delete(medico)
+        db.session.commit()
 
 
     def getByCedula(self,cedula):

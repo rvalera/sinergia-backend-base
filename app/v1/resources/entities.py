@@ -466,20 +466,22 @@ GetVisitaListStruct = v1_api.model('GetVisitaListResult', {
 
 EstacionTrabajoStruct = v1_api.model('EstacionTrabajoStruct', {     
     'idestaciontrabajo' : fields.Integer(), 
-    #'saladeespera': fields.Nested(SalaDeEsperaStruct,attribute='saladeespera'),
     'nombre' : fields.String(),
-    'direccionip' : fields.String()
+    'direccionip' : fields.String(),
+    'dispositivobiostar' : fields.String()
 })
 
 CreateEstacionTrabajoStruct = v1_api.model('CreateEstacionTrabajoStruct', { 
     'nombre' : fields.String(), 
-    'direccionip' : fields.String()
+    'direccionip' : fields.String(),
+    'dispositivobiostar' : fields.String()
 })
 
 UpdateEstacionTrabajoStruct = v1_api.model('UpdateEstacionTrabajoStruct', { 
     'idestaciontrabajo' : fields.Integer(), 
     'nombre' : fields.String(), 
-    'direccionip' : fields.String()
+    'direccionip' : fields.String(),
+    'dispositivobiostar' : fields.String()
 })
 
 GetEstacionTrabajoStruct = v1_api.model('GetEstacionTrabajoStruct', { 
