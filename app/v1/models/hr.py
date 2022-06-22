@@ -223,6 +223,8 @@ class Especialidad(db.Model):
     cantidadmaximapacientes = Column(Integer)
     colaactiva = Column(Boolean)
 
+    medicos = relationship("Medico", back_populates="especialidad")
+
 
 class Cita(db.Model):
     __tablename__ = 'cita'

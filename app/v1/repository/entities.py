@@ -181,7 +181,7 @@ class EstacionTrabajoRepository(SinergiaRepository):
 
             estacion = EstacionTrabajo()
             estacion.nombre = payload['nombre']
-            estacion.direccionip = payload['diasdeatencion']
+            estacion.direccionip = payload['direccionip']
             db.session.session.add(estacion)
             db.session.commit() 
         else:
@@ -664,10 +664,16 @@ class SalaDeEsperaRepository(SinergiaRepository):
 class EspecialidadRepository(SinergiaRepository):
     def getAll(self):
         try:
+            '''
             table_df = pd.read_sql_query('select * from hospitalario.especialidad',con=db.engine)
             table_df = table_df.fillna('')
             result = table_df.to_dict('records')
             return result
+            '''
+            especialidades = Especialidad.query.order_by(Especialidad.nombre.asc()).all()
+            return especialidades
+
+            
         except exc.DatabaseError as err:
             # pass exception to function
             error_description = '%s' % (err)

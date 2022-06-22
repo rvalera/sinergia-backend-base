@@ -253,15 +253,37 @@ GetHistoriaMedicaStruct = v1_api.model('GetHistoriaMedicaResult', {
     'data' : fields.Nested(HistoriaMedicaStruct,attribute='data')
 })
 
+
+MedicoEspecStruct = v1_api.model('MedicoEspecStruct', { 
+    'cedula' : fields.String(), 
+    'nombres' : fields.String(),  
+    'apellidos' : fields.String(),  
+    'sexo' : fields.String(),  
+    'fechanacimiento' : fields.String(format='date-time'),   
+    'telefonocelular' : fields.String(),  
+    'telefonoresidencia' : fields.String(),  
+    'correo' : fields.String(),
+    'nacionalidad' : fields.String(), 
+    'sexo' : fields.String()
+})
+
 EspecialidadStruct = v1_api.model('EspecialidadStruct', { 
     'codigoespecialidad' : fields.String(), 
     'nombre' : fields.String(), 
     'diasdeatencion' : fields.String(), 
     'autogestionada' : fields.Boolean(), 
     'cantidadmaximapacientes' : fields.Integer(),
-    'colaactiva': fields.Boolean()
+    'colaactiva': fields.Boolean(),
+    'medicos': fields.List(fields.Nested(MedicoEspecStruct)),
 
 })
+
+GetEspecialidadListStruc = v1_api.model('GetEspecialidadListStruc', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'count' : fields.Integer(description='Count Row'), 
+    'total' : fields.Integer(description='Total Row'), 
+    'data' : fields.Nested(EspecialidadStruct,attribute='data')
+}) 
 
 UpdateEspecialidadStruct = v1_api.model('UpdateEspecialidadStruct', { 
     'codigoespecialidad' : fields.String(), 
@@ -862,6 +884,7 @@ class DeleteSalaDeEsperaResource(ProxySecureResource):
 class EspecialidadResource(ProxySecureResource): 
 
     @entities_ns.doc('Especialidad')
+    @v1_api.marshal_with(GetEspecialidadListStruc) 
     @jwt_required    
     def get(self):
         security_credentials = self.checkCredentials()
