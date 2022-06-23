@@ -866,6 +866,16 @@ class MedicoRepository(SinergiaRepository):
             error_description = '%s' % (err)
             raise DatabaseException(text=error_description)
 
+    
+    def getByParams(self, params):
+        try:
+            medicos = Medico.query.all()
+            return medicos
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
 
 class BeneficiarioRepository(SinergiaRepository):
 

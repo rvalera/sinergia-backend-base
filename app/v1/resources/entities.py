@@ -1,6 +1,6 @@
 from app.v1 import v1_api
 from flask_jwt_extended.view_decorators import jwt_required
-from flask_restplus import Resource, Namespace, fields
+from flask_restplus import Resource, Namespace, fields, reqparse
 from app.v1.resources.base import ProxySecureResource, secureHeader, queryParams
 from app.v1.use_cases.entities import ConfirmCitaMedicaUseCase, CreateBeneficiarioUseCase, CreateCitaMedicaUseCase, DeleteConsultaMedicaUseCase, GetCitaUseCase, GetCitasMedicasPersonaListUseCase, GetColaAtencionEspecialidadUseCase, GetConsultaMedicaUseCase, GetDiscapacidadListUseCase, GetEmpresaListUseCase, GetEspecialidadListUseCase, GetEstadoListUseCase, GetHistoriaMedicaUseCase, GetMedicoUseCase, GetMunicipioListUseCase,GetTipoNominaListUseCase, \
     GetTrabajadorUseCase, GetEstadoListUseCase, GetMunicipioListUseCase, GetPatologiaListUseCase, SaveBeneficiarioUseCase, DeleteBeneficiarioUseCase, SaveCitaMedicaUseCase, SaveTrabajadorUseCase, \
@@ -9,7 +9,7 @@ from app.v1.use_cases.entities import ConfirmCitaMedicaUseCase, CreateBeneficiar
     GetCitasCedulaEspecialidadFechaListUseCase, GetAreaListUseCase, CreateMedicoUseCase, SaveMedicoUseCase, DeleteMedicoUseCase, CreateEspecialidadUseCase,\
     SaveEspecialidadUseCase, GetEspecialidadUseCase, GetMedicoListUseCase, GetEstacionTrabajoListUseCase, EntryColaEsperaUseCase, GetSalaDeEsperaListUseCase,\
     GetProxCitaColaEsperaEspecialidadUseCase, GetColaResumenUseCase, GetColaEsperaEspecialidadUseCase, AttendCitaMedicaUseCase, EndCitaMedicaUseCase, TransferCitaMedicaUseCase, GetEstacionTrabajoUseCase, DeleteEspecialidadUseCase,\
-    CreateEstacionTrabajoUseCase, SaveEstacionTrabajoUseCase, DeleteEstacionTrabajoUseCase, CreateSalaDeEsperaUseCase, SaveSalaDeEsperaUseCase, DeleteSalaDeEsperaUseCase
+    CreateEstacionTrabajoUseCase, SaveEstacionTrabajoUseCase, DeleteEstacionTrabajoUseCase, CreateSalaDeEsperaUseCase, SaveSalaDeEsperaUseCase, DeleteSalaDeEsperaUseCase, GetMedicoByParamsListUseCase
 
 from flask.globals import request    
 import json 
@@ -1032,6 +1032,22 @@ class OneMedicoResource(ProxySecureResource):
         query_params = {'cedula': cedulamed}
         data = GetMedicoUseCase().execute(security_credentials,query_params)
         return  {'ok': 1, 'data': data}, 200
+
+
+@entities_ns.route('/medico/params/<params>')
+@entities_ns.param('params', 'Parametros de Busqueda')
+@v1_api.expect(secureHeader)
+class ParamsMedicoResource(ProxySecureResource):
+
+    @entities_ns.doc('Get Medico by Params')
+    @v1_api.marshal_with(GetMedicoListStruct) 
+    @jwt_required    
+    def get(self, params):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        query_params = eval(params)
+        data = GetMedicoByParamsListUseCase().execute(security_credentials,query_params)
+        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
 
 
 @entities_ns.route('/medico/<cedula>')
