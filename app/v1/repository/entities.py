@@ -183,7 +183,7 @@ class EstacionTrabajoRepository(SinergiaRepository):
             estacion.nombre = payload['nombre']
             estacion.direccionip = payload['direccionip']
             estacion.dispositivobiostar = payload['dispositivobiostar']
-            db.session.session.add(estacion)
+            db.session.add(estacion)
             db.session.commit() 
         else:
             #No se proporciono la direccion ip de la estacion
