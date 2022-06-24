@@ -113,9 +113,15 @@ UsuarioActStruct = v1_api.model('UsuarioActStruct', {
     'name': fields.String()
 })
 
+SalaDeEsperaEspecialidadStruct = v1_api.model('SalaDeEsperaEspecialidadStruct', { 
+    'codigoespecialidad' : fields.String(), 
+    'nombre' : fields.String()
+})
+
 SalaDeEsperaStruct = v1_api.model('SalaDeEsperaStruct', { 
     'idsala' : fields.Integer(), 
-    'nombre' : fields.String()
+    'nombre' : fields.String(),
+    'especialidades': fields.List(fields.Nested(SalaDeEsperaEspecialidadStruct))
 })
 
 CreateSalaDeEsperaStruct = v1_api.model('CreateSalaDeEsperaStruct', { 
@@ -127,7 +133,7 @@ UpdateSalaDeEsperaStruct = v1_api.model('UpdateSalaDeEsperaStruct', {
     'nombre' : fields.String()
 })
 
-GetSalaDeEsperaListStruct = v1_api.model('GetSalaDeEsperaListResult', { 
+GetSalaDeEsperaListStruct = v1_api.model('GetSalaDeEsperaListStruct', { 
     'ok' : fields.Integer(description='Ok Result'), 
     'count' : fields.Integer(description='Count Row'), 
     'total' : fields.Integer(description='Total Row'), 
@@ -274,6 +280,7 @@ EspecialidadStruct = v1_api.model('EspecialidadStruct', {
     'autogestionada' : fields.Boolean(), 
     'cantidadmaximapacientes' : fields.Integer(),
     'colaactiva': fields.Boolean(),
+    'saladeespera': fields.Nested(SalaDeEsperaStruct,attribute='saladeespera'),
     'medicos': fields.List(fields.Nested(MedicoEspecStruct))
 
 })
@@ -290,7 +297,8 @@ UpdateEspecialidadStruct = v1_api.model('UpdateEspecialidadStruct', {
     'nombre' : fields.String(), 
     'diasdeatencion' : fields.String(), 
     'autogestionada' : fields.Boolean(), 
-    'cantidadmaximapacientes' : fields.Integer()
+    'cantidadmaximapacientes' : fields.Integer(),
+    'idsala' : fields.Integer()
 })
 
 GetEspecialidadStruct = v1_api.model('GetEspecialidadResult', { 
@@ -840,6 +848,7 @@ class DiscapacidadResource(ProxySecureResource):
 class SalaDeEsperaResource(ProxySecureResource): 
 
     @entities_ns.doc('Sala De Espera')
+    @v1_api.marshal_with(GetSalaDeEsperaListStruct) 
     @jwt_required    
     def get(self):
         security_credentials = self.checkCredentials()

@@ -621,10 +621,8 @@ class DiscapacidadRepository(SinergiaRepository):
 class SalaDeEsperaRepository(SinergiaRepository):
     def getAll(self):
         try:
-            table_df = pd.read_sql_query('select * from hospitalario.saladeespera',con=db.engine)
-            table_df = table_df.fillna('')
-            result = table_df.to_dict('records')
-            return result
+            salasdeespera = SalaDeEspera.query.all()
+            return salasdeespera
         except exc.DatabaseError as err:
             # pass exception to function
             error_description = '%s' % (err)
@@ -707,6 +705,7 @@ class EspecialidadRepository(SinergiaRepository):
             especialidad.diasdeatencion = payload['diasdeatencion']
             especialidad.autogestionada = payload['autogestionada']
             especialidad.cantidadmaximapacientes = payload['cantidadmaximapacientes']
+            especialidad.idsala = payload['idsala']
             especialidad.colaactiva = True
           
             db.session.add(especialidad)
@@ -1159,6 +1158,7 @@ class CitaRepository(SinergiaRepository):
         cita.consultamedica.tratamiento = payload['tratamiento']
         cita.consultamedica.examenes = payload['examenes']
         cita.consultamedica.fecha = datetime.now().date()
+        cita.consulta.estado = CITA_CONCLUIDA
 
         db.session.add(cita)
         db.session.commit()   
