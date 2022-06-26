@@ -96,6 +96,10 @@ class PacienteConCitaException(SinergiaException):
     def __init__(self, text=None):
         super(PacienteConCitaException, self).__init__(code='CIT006',text = text)
 
+class ColaEspecialidadDetenidaException(SinergiaException):
+    def __init__(self, text=None):
+        super(ColaEspecialidadDetenidaException, self).__init__(code='ESP001',text = text)
+
 
 
 

@@ -14,7 +14,7 @@ from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError
 from app.exceptions.base import DataNotFoundException, CitaFechaInvalidaException, CitaFechaSinCupoException, CryptoPOSException, ConnectionException,NotImplementedException,DatabaseException,\
                                 IntegrityException, ParametersNotFoundException, CitaException, CitaConConsultaException, CitaPersonaEquivocadaException, PacienteConCitaException, DeleteDataException,\
-                                DataAlreadyRegisteredException                                    
+                                DataAlreadyRegisteredException, ColaEspecialidadDetenidaException
 from .base import SinergiaRepository
 
 import pandas as pd
@@ -1125,6 +1125,9 @@ class CitaRepository(SinergiaRepository):
         if cita is None:
             raise DataNotFoundException()
 
+        if cita.especialidad.colaactiva == False:
+            raise ColaEspecialidadDetenidaException()
+
         medico = Medico.query.filter(Medico.cedulamedico == cedulamedico).first()
         if medico is None:
             raise DataNotFoundException()
@@ -1158,7 +1161,7 @@ class CitaRepository(SinergiaRepository):
         cita.consultamedica.tratamiento = payload['tratamiento']
         cita.consultamedica.examenes = payload['examenes']
         cita.consultamedica.fecha = datetime.now().date()
-        cita.consulta.estado = CITA_CONCLUIDA
+        cita.consultamedica.estado = CITA_CONCLUIDA
 
         db.session.add(cita)
         db.session.commit()   
