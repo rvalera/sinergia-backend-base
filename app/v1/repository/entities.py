@@ -619,6 +619,15 @@ class DiscapacidadRepository(SinergiaRepository):
 
 
 class SalaDeEsperaRepository(SinergiaRepository):
+
+    def get_especialidades(self,payload):
+        especialidades_list = []
+        if 'especialidades' in payload:
+            ids_especialidades = payload['especialidades']
+            especialidades_list = Especialidad.query.filter(Especialidad.codigoespecialidad.in_(ids_especialidades)).all()
+        return especialidades_list
+
+
     def getAll(self):
         try:
             salasdeespera = SalaDeEspera.query.all()
@@ -631,6 +640,12 @@ class SalaDeEsperaRepository(SinergiaRepository):
     def new(self,payload):
         salaespera = SalaDeEspera()
         salaespera.nombre = payload['nombre']
+
+        #Se procesan las Especialidades de la Sala
+        especialidades = self.get_especialidades(payload) 
+        if len(especialidades):
+            salaespera.especialidades = [p for p in especialidades] 
+
         db.session.add(salaespera)
         db.session.commit()            
     
@@ -644,6 +659,14 @@ class SalaDeEsperaRepository(SinergiaRepository):
                 raise DataNotFoundException()
 
             salaespera.nombre = payload['nombre']
+
+            #Se procesan las Especialidades de la Sala
+            especialidades = self.get_especialidades(payload) 
+            if len(especialidades) > 0:
+                salaespera.especialidades = [p for p in especialidades] 
+            else:
+                salaespera.especialidades = []
+                
             db.session.add(salaespera)
             db.session.commit()            
         else:
@@ -729,6 +752,22 @@ class EspecialidadRepository(SinergiaRepository):
             especialidad.cantidadmaximapacientes = payload['cantidadmaximapacientes']
             especialidad.idsala = payload['idsala']
             
+            db.session.add(especialidad)
+            db.session.commit()            
+        else:
+            #No se proporciono el codigo, es obligatorio 
+            raise ParametersNotFoundException()
+
+    def change_queue_status(self,payload):
+        codigoespecialidad = payload['codigoespecialidad'] if 'codigoespecialidad' in payload else None
+        if codigoespecialidad:
+            #Se chequea que la especialidad exista previamente 
+            especialidad = Especialidad.query.filter(Especialidad.codigoespecialidad == codigoespecialidad).first()
+            if especialidad is None:
+                #Se arroja excepcion, la especialidad no esta creado
+                raise DataNotFoundException()
+
+            especialidad.colaactiva = payload['colaactiva']
             db.session.add(especialidad)
             db.session.commit()            
         else:
@@ -868,7 +907,19 @@ class MedicoRepository(SinergiaRepository):
     
     def getByParams(self, params):
         try:
-            medicos = Medico.query.all()
+            query_str = 'Medico.query'
+            filter_keys = params.keys()
+            if len(filter_keys)>0:
+                for filter_key in filter_keys:
+                    filter_value = params[filter_key]
+                    if filter_key == 'cedula':
+                        query_str = query_str + f'.filter(Medico.cedula.ilike("%{filter_value}%"))'
+                    elif filter_key == 'nombre': 
+                        query_str = query_str + f'.filter(Medico.nombres.ilike("%{filter_value}%"))'
+                    elif filter_key == 'apellido':
+                        query_str = query_str + f'.filter(Medico.apellidos.ilike("%{filter_value}%"))'
+            query_str = query_str + '.order_by(Medico.cedula.asc()).all()'
+            medicos = eval(query_str)  
             return medicos
         except exc.DatabaseError as err:
             # pass exception to function

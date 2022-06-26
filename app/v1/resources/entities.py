@@ -9,7 +9,7 @@ from app.v1.use_cases.entities import ConfirmCitaMedicaUseCase, CreateBeneficiar
     GetCitasCedulaEspecialidadFechaListUseCase, GetAreaListUseCase, CreateMedicoUseCase, SaveMedicoUseCase, DeleteMedicoUseCase, CreateEspecialidadUseCase,\
     SaveEspecialidadUseCase, GetEspecialidadUseCase, GetMedicoListUseCase, GetEstacionTrabajoListUseCase, EntryColaEsperaUseCase, GetSalaDeEsperaListUseCase,\
     GetProxCitaColaEsperaEspecialidadUseCase, GetColaResumenUseCase, GetColaEsperaEspecialidadUseCase, AttendCitaMedicaUseCase, EndCitaMedicaUseCase, TransferCitaMedicaUseCase, GetEstacionTrabajoUseCase, DeleteEspecialidadUseCase,\
-    CreateEstacionTrabajoUseCase, SaveEstacionTrabajoUseCase, DeleteEstacionTrabajoUseCase, CreateSalaDeEsperaUseCase, SaveSalaDeEsperaUseCase, DeleteSalaDeEsperaUseCase, GetMedicoByParamsListUseCase
+    CreateEstacionTrabajoUseCase, SaveEstacionTrabajoUseCase, DeleteEstacionTrabajoUseCase, CreateSalaDeEsperaUseCase, SaveSalaDeEsperaUseCase, DeleteSalaDeEsperaUseCase, GetMedicoByParamsListUseCase, SaveEspecialidadEstadoColaUseCase
 
 from flask.globals import request    
 import json 
@@ -125,12 +125,14 @@ SalaDeEsperaStruct = v1_api.model('SalaDeEsperaStruct', {
 })
 
 CreateSalaDeEsperaStruct = v1_api.model('CreateSalaDeEsperaStruct', { 
-    'nombre' : fields.String()
+    'nombre' : fields.String(),
+    'especialidades' : fields.List(fields.String()), #Listado de Ids de Especialidades
 })
 
 UpdateSalaDeEsperaStruct = v1_api.model('UpdateSalaDeEsperaStruct', { 
     'idsala' : fields.Integer(), 
-    'nombre' : fields.String()
+    'nombre' : fields.String(),
+    'especialidades' : fields.List(fields.String()), #Listado de Ids de Especialidades
 })
 
 GetSalaDeEsperaListStruct = v1_api.model('GetSalaDeEsperaListStruct', { 
@@ -299,6 +301,11 @@ UpdateEspecialidadStruct = v1_api.model('UpdateEspecialidadStruct', {
     'autogestionada' : fields.Boolean(), 
     'cantidadmaximapacientes' : fields.Integer(),
     'idsala' : fields.Integer()
+})
+
+UpdateEspecialidadEstadoColaStruct = v1_api.model('UpdateEspecialidadEstadoColaStruct', { 
+    'codigoespecialidad' : fields.String(), 
+    'colaactiva' : fields.Boolean()
 })
 
 GetEspecialidadStruct = v1_api.model('GetEspecialidadResult', { 
@@ -921,6 +928,21 @@ class EspecialidadResource(ProxySecureResource):
         #security_credentials = {'username': 'prueba'}
         payload = request.json        
         SaveEspecialidadUseCase().execute(security_credentials,payload)
+        return  {'ok':1} , 200
+
+
+@entities_ns.route('/especialidad/estadocola')
+@v1_api.expect(secureHeader)
+class EspecialidadEstadoColaResource(ProxySecureResource): 
+
+    @entities_ns.doc('Update Especialidad Estado Cola')
+    @v1_api.expect(UpdateEspecialidadEstadoColaStruct)    
+    @jwt_required    
+    def put(self):
+        security_credentials = self.checkCredentials()
+        #security_credentials = {'username': 'prueba'}
+        payload = request.json        
+        SaveEspecialidadEstadoColaUseCase().execute(security_credentials,payload)
         return  {'ok':1} , 200
 
 

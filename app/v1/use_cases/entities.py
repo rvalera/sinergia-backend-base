@@ -75,6 +75,10 @@ class SaveEspecialidadUseCase(object):
     def execute(self,security_credentials,payload):
         EspecialidadRepository(username=security_credentials['username']).save(payload)
 
+class SaveEspecialidadEstadoColaUseCase(object):
+    def execute(self,security_credentials,payload):
+        EspecialidadRepository(username=security_credentials['username']).change_queue_status(payload)
+
 class DeleteEspecialidadUseCase(object):
     def execute(self,security_credentials,query_params):
         EspecialidadRepository(username=security_credentials['username']).delete(query_params['codigoespecialidad'])
