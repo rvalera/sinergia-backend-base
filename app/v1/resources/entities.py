@@ -1427,5 +1427,4 @@ class CarnetizacionStatusResource(ProxySecureResource):
         query_params = {}
         data = CarnetizacionStatusUseCase().execute(security_credentials,query_params)
         data['ok'] = 1
-        print( json.dumps(data, ident=4 ) )
         return  data, 200
