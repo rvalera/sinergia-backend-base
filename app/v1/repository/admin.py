@@ -76,7 +76,7 @@ class MemberRepository(SinergiaRepository):
                         conditions.append("s.\"name\"  like '%{username}%' ")
 
                     if 'cedula' in filter_conditions:
-                        conditions.append("pe.cedula  LIKE '%{cedula}%' ")
+                        conditions.append("pe.id_number  LIKE '%{cedula}%' ")
 
                     if 'first_name' in filter_conditions:
                         conditions.append("pe.first_name LIKE '%{first_name}%' ")
