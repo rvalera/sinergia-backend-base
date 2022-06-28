@@ -1589,7 +1589,7 @@ order by nombre
         try:
             table_df = pd.read_sql_query(sql,con=db.engine)
             rows = table_df.to_dict('records')
-
+            print(rows)    
             return  { 'data' : rows, 'count' : len(rows), 'total' : len(rows), }
         except exc.DatabaseError as err:
             # pass exception to function
