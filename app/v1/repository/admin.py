@@ -73,10 +73,10 @@ class MemberRepository(SinergiaRepository):
                     conditions = []         
 
                     if 'username' in filter_conditions:
-                        conditions.append("s.\"name\"  like '%{username}%' ")
+                        conditions.append("s.\"name\"  LIKE  '%{username}%' ")
 
                     if 'cedula' in filter_conditions:
-                        conditions.append("pe.id_number  LIKE '%{cedula}%' ")
+                        conditions.append("pe.id_number LIKE '%{cedula}%' ")
 
                     if 'first_name' in filter_conditions:
                         conditions.append("pe.first_name LIKE '%{first_name}%' ")
@@ -122,6 +122,7 @@ class MemberRepository(SinergiaRepository):
         parameters['limits_offset'] = ' LIMIT %s OFFSET %s ' % (limit,offset)
 
         sql = sql.format(**parameters)
+        print(sql)
 
         try:
 
