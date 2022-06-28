@@ -3,7 +3,7 @@ Created on 17 dic. 2019
 
 @author: ramon
 '''
-from app.v1.repository.entities import EmpresaRepository, HistoriaMedicaRepository, TipoNominaRepository, TrabajadorRepository, EstadoRepository, MunicipioRepository, \
+from app.v1.repository.entities import CarnetizacionRepository, EmpresaRepository, HistoriaMedicaRepository, TipoNominaRepository, TrabajadorRepository, EstadoRepository, MunicipioRepository, \
     PatologiaRepository, BeneficiarioRepository, EspecialidadRepository, CitaRepository, DiscapacidadRepository, PersonaRepository, VisitaRepository, ConsultaMedicaRepository, \
     AreaRepository, MedicoRepository, EstacionTrabajoRepository, ColaEsperaRepository, SalaDeEsperaRepository
 
@@ -250,3 +250,7 @@ class GetConsultaMedicaUseCase(object):
 class DeleteConsultaMedicaUseCase(object):
     def execute(self,security_credentials,query_params):
         ConsultaMedicaRepository(username=security_credentials['username']).delete(query_params['id'])
+
+class CarnetizacionStatusUseCase(object):
+    def execute(self,security_credentials,query_params):
+        CarnetizacionRepository(username=security_credentials['username']).get(query_params)

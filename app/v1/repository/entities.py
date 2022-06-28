@@ -1557,3 +1557,42 @@ class ColaEsperaRepository(SinergiaRepository):
         if proxima_cita is None:
             raise DataNotFoundException()
         return proxima_cita
+
+class CarnetizacionRepository(SinergiaRepository):
+    def get(self,query_params):
+        sql = '''
+select q1.codigoempresa, e.nombre, q1.total,
+	case 
+	      when q2.carnetizados is NULL then 0
+	      else  q2.carnetizados
+	end	carnetizados,
+	round(
+	(case 
+	      when q2.carnetizados is NULL then 0
+	      else  q2.carnetizados::float
+	end / q1.total::float )::numeric ,2) * 100 as cumplimiento 
+from 
+(select t.codigoempresa,count(distinct cedula) total  
+from hospitalario.trabajador t 
+group by t.codigoempresa) q1
+left join 
+( select t.codigoempresa, count(distinct t.cedula) carnetizados
+from hospitalario.carnetizacionlog c  
+join hospitalario.trabajador t 
+on c.cedula = t.cedula
+group by t.codigoempresa) q2 
+on q1.codigoempresa = q2.codigoempresa 
+join hospitalario.empresa e 
+on e.codigo = q1.codigoempresa 
+order by nombre
+        '''
+        try:
+            table_df = pd.read_sql_query(sql,con=db.engine)
+            rows = table_df.to_dict('records')
+
+            return  { 'data' : rows}
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+

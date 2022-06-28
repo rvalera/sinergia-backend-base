@@ -2,7 +2,7 @@ from app.v1 import v1_api
 from flask_jwt_extended.view_decorators import jwt_required
 from flask_restplus import Resource, Namespace, fields, reqparse
 from app.v1.resources.base import ProxySecureResource, secureHeader, queryParams
-from app.v1.use_cases.entities import ConfirmCitaMedicaUseCase, CreateBeneficiarioUseCase, CreateCitaMedicaUseCase, DeleteConsultaMedicaUseCase, GetCitaUseCase, GetCitasMedicasPersonaListUseCase, GetColaAtencionEspecialidadUseCase, GetConsultaMedicaUseCase, GetDiscapacidadListUseCase, GetEmpresaListUseCase, GetEspecialidadListUseCase, GetEstadoListUseCase, GetHistoriaMedicaUseCase, GetMedicoUseCase, GetMunicipioListUseCase,GetTipoNominaListUseCase, \
+from app.v1.use_cases.entities import CarnetizacionStatusUseCase, ConfirmCitaMedicaUseCase, CreateBeneficiarioUseCase, CreateCitaMedicaUseCase, DeleteConsultaMedicaUseCase, GetCitaUseCase, GetCitasMedicasPersonaListUseCase, GetColaAtencionEspecialidadUseCase, GetConsultaMedicaUseCase, GetDiscapacidadListUseCase, GetEmpresaListUseCase, GetEspecialidadListUseCase, GetEstadoListUseCase, GetHistoriaMedicaUseCase, GetMedicoUseCase, GetMunicipioListUseCase,GetTipoNominaListUseCase, \
     GetTrabajadorUseCase, GetEstadoListUseCase, GetMunicipioListUseCase, GetPatologiaListUseCase, SaveBeneficiarioUseCase, DeleteBeneficiarioUseCase, SaveCitaMedicaUseCase, SaveTrabajadorUseCase, \
     GetCitasMedicasListUseCase, GetCitasDisponiblesListUseCase, DeleteCitaMedicaUseCase, GetPersonaUseCase, GetVisitasListUseCase, CreateVisitaUseCase, \
     CreateConsultaMedicaUseCase, SaveConsultaMedicaUseCase, GetConsultasMedicasPersonaListUseCase, GetProximasCitasMedicasPersonaListUseCase, GetCitaMedicaUseCase, \
@@ -1415,3 +1415,16 @@ class DeleteConsultaResource(ProxySecureResource):
         query_params = {'id': id}
         DeleteConsultaMedicaUseCase().execute(security_credentials,query_params)
         return  {'ok':1} , 200
+
+@entities_ns.route('/carnetizacion')
+@v1_api.expect(secureHeader)
+class CarnetizacionStatusResource(ProxySecureResource):
+
+    @entities_ns.doc('Get Status Carnetizacion Process')
+    @v1_api.marshal_with(GetVisitaListStruct) 
+    @jwt_required    
+    def get(self,fecha):
+        security_credentials = self.checkCredentials()
+        query_params = {}
+        data = CarnetizacionStatusUseCase().execute(security_credentials,query_params)
+        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
