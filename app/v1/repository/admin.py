@@ -95,7 +95,7 @@ class MemberRepository(SinergiaRepository):
                                 filter_conditions['rolname'] = (filter_conditions['rolname'][0])
                                 conditions.append("r.name = '{rolname}' ")
                     
-                    if (len(conditions) > 0): 
+                    if len(conditions) > 0: 
                         if len(conditions) > 1:
                             where_clausule = 'WHERE ' + ' AND '.join(conditions)
                             where_clausule = where_clausule.format(**filter_conditions)
@@ -104,6 +104,8 @@ class MemberRepository(SinergiaRepository):
                             where_clausule = where_clausule.format(**filter_conditions)
 
                         parameters['conditions'] = where_clausule
+                    else:
+                        parameters['conditions'] = ''
 
             # Definiendo order
             if 'order' in query_params:
