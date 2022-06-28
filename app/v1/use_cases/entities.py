@@ -253,4 +253,4 @@ class DeleteConsultaMedicaUseCase(object):
 
 class CarnetizacionStatusUseCase(object):
     def execute(self,security_credentials,query_params):
-        CarnetizacionRepository(username=security_credentials['username']).get(query_params)
+        return CarnetizacionRepository(username=security_credentials['username']).get(query_params)
