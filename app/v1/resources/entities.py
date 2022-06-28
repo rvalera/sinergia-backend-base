@@ -1421,10 +1421,11 @@ class DeleteConsultaResource(ProxySecureResource):
 class CarnetizacionStatusResource(ProxySecureResource):
 
     @entities_ns.doc('Get Status Carnetizacion Process')
-    @v1_api.marshal_with(GetVisitaListStruct) 
     @jwt_required    
     def get(self,fecha):
         security_credentials = self.checkCredentials()
         query_params = {}
         data = CarnetizacionStatusUseCase().execute(security_credentials,query_params)
-        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+        data['ok'] = 1
+        print( json.dumps(data, ident=4 ) )
+        return  data, 200
