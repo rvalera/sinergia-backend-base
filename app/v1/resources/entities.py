@@ -1420,7 +1420,7 @@ class DeleteConsultaResource(ProxySecureResource):
 @v1_api.expect(secureHeader)
 class CarnetizacionStatusResource(ProxySecureResource):
 
-    @entities_ns.doc('Get Status Carnetizacion Process')
+    @entities_ns.doc('Get StatusSer Carnetizacion Process')
     @jwt_required    
     def get(self,fecha):
         security_credentials = self.checkCredentials()
