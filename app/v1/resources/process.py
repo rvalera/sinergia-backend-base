@@ -11,9 +11,66 @@ from app.v1.resources.base import ProxySecureResource, secureHeader,queryParams
 # from app.v1.use_cases.process import GetManualMarkingUseCase, GetDetailManualMarkingUseCase, NewManualMarkingUseCase, SaveManualMarkingUseCase, DeleteManualMarkingUseCase, \
 #     GetDailyMarkingDetailUseCase
 from flask.globals import request    
-import json 
+import json
+
+from app.v1.use_cases.process import GetBiostarDeviceListUseCase, GrantAccessBiostarUseCase, ReadRFIDCardUseCase 
 
 process_ns = v1_api.namespace('process', description='Process Services')
+
+@process_ns.route('/biostar/card/<id_biostar_device>')
+@process_ns.param('id_biostar_device', 'Biostar Device ID')
+@v1_api.expect(secureHeader)
+class  BiostarCardResource(ProxySecureResource):
+
+    @process_ns.doc('Read RFID Card')
+    @jwt_required
+    def get(self,id_biostar_device):
+        security_credentials = self.checkCredentials()
+        # data = ReadRFIDCardUseCase().execute(id_biostar_device)
+        str_data = ''' 
+        { 
+            "nombre" : "value"
+        }
+        '''
+        data = json.loads(str_data)
+        return  { 'ok': 1, 'data' : data } , 200
+
+@process_ns.route('/biostar/access/grant')
+@v1_api.expect(secureHeader)
+class GrantAccessBiostarResource(ProxySecureResource): 
+
+    @process_ns.doc('Grant Access to Biostar')
+    @jwt_required
+    def post(self):
+        payload = request.json        
+        security_credentials = self.checkCredentials()
+        # data = GrantAccessBiostarUseCase().execute(payload)
+        str_data = ''' 
+        { 
+            "nombre" : "value"
+        }
+        '''
+        data = json.loads(str_data)
+        return  {'ok': 1, 'data' : data}, 200
+
+@process_ns.route('/biostar/device')
+@v1_api.expect(secureHeader)
+class GetBiostarDeviceListResource(ProxySecureResource): 
+
+    @process_ns.doc('Get Biostar Devices List')
+    @jwt_required
+    def get(self):
+        security_credentials = self.checkCredentials()
+        # data = GetBiostarDeviceListUseCase().execute()
+        str_data = ''' 
+        { 
+            "nombre" : "value"
+        }
+        '''
+        data = json.loads(str_data)
+        return  { 'ok': 1, 'data' : data } , 200
+
+
 
 # NewManualMarkingStruct = v1_api.model('NewManualMarkingStruct', { 
 #     'fecha' : fields.String(required=True,format='date'),   

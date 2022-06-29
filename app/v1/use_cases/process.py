@@ -6,6 +6,22 @@ Created on 17 dic. 2019
 # from app.v1.repository.process import DailyMarkingRepository,OvertimeEventRepository,AbsenceEventRepository,JustificationAbsenceRepository,\
 #     BatchJustificationAbsenceRepository,BatchOvertimeRepository,ManualMarkingRepository
 
+from app.v1.repository.process import BiostarRepository
+
+
+class GetBiostarDeviceListUseCase(object):
+    def execute(self):
+        return BiostarRepository().get_biostar_devices()
+
+class GrantAccessBiostarUseCase(object):
+    def execute(self,payload):
+        return BiostarRepository().grant_access(payload)
+
+class ReadRFIDCardUseCase(object):
+    def execute(self,id_biostar_device):
+        return BiostarRepository().read_card(id_biostar_device)
+
+
 # class GetDailyMarkingListUseCase(object):
 #     def execute(self,security_credentials,query_params):
 #         return DailyMarkingRepository(username=security_credentials['username']).get(query_params)

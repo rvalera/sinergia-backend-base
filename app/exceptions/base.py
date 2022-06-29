@@ -18,6 +18,10 @@ class CryptoPOSException(SinergiaException):
     def __init__(self, text=None):
         super(CryptoPOSException, self).__init__(code='EPOS001',text = text)
 
+class BiostartException(SinergiaException):
+    def __init__(self, text=None):
+        super(BiostartException, self).__init__(code='BIOS001',text = text)
+
 class ProxyCredentialsNotFound(SinergiaException):
     def __init__(self,text=None):
         super(ProxyCredentialsNotFound, self).__init__(code='ESIN002',text = text)    
