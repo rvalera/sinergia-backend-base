@@ -17,6 +17,33 @@ from app.v1.use_cases.process import GetBiostarDeviceListUseCase, GrantAccessBio
 
 process_ns = v1_api.namespace('process', description='Process Services')
 
+@process_ns.route('/biostar/card')
+@v1_api.expect(secureHeader)
+class  BiostarCardListResource(ProxySecureResource):
+
+    @process_ns.doc('Read RFID Card List Enrolled in Biostar')
+    @jwt_required
+    def get(self):
+        security_credentials = self.checkCredentials()
+        str_data = ''' 
+        [ 
+            {
+            "name" : "CARD1", 
+            "cardid": "4600272105" 
+            },
+            {
+            "name" : "CARD2", 
+            "cardid": "4600272106" 
+            },
+            {
+            "name" : "CARD3", 
+            "cardid": "4600272107" 
+            }
+        ]
+        '''
+        data = json.loads(str_data)
+        return  { 'ok': 1, 'data' : data, "count": len(data), "total": len(data) }, 200
+
 @process_ns.route('/biostar/card/<id_biostar_device>')
 @process_ns.param('id_biostar_device', 'Biostar Device ID')
 @v1_api.expect(secureHeader)
@@ -28,13 +55,25 @@ class  BiostarCardResource(ProxySecureResource):
         security_credentials = self.checkCredentials()
         # data = ReadRFIDCardUseCase().execute(id_biostar_device)
         str_data = ''' 
-        { 
-            "nombre" : "value"
-        }
+            {
+            "codigo" : 200, 
+            "card_id": "4600272105",
+            "message": "Success"
+            }
         '''
         data = json.loads(str_data)
         return  { 'ok': 1, 'data' : data } , 200
 
+
+
+# {
+#   "user_id": "27027161",
+#   "name": "Marie Curie",
+#   "id_card1": "68801245811",
+#   "id_card2": "72801245852",
+#   "start_datetime": "2022-06-28T00:00:00.00Z",
+#   "expiry_datetime": "2022-06-29T00:00:00.00Z"
+# }
 @process_ns.route('/biostar/access/grant')
 @v1_api.expect(secureHeader)
 class GrantAccessBiostarResource(ProxySecureResource): 
@@ -46,9 +85,13 @@ class GrantAccessBiostarResource(ProxySecureResource):
         security_credentials = self.checkCredentials()
         # data = GrantAccessBiostarUseCase().execute(payload)
         str_data = ''' 
-        { 
-            "nombre" : "value"
-        }
+            {
+                "codigo": 200,
+                "id": "27027161",
+                "tarjeta asignada1": "68801245811",
+                "tarjeta asignada2": "72801245852",
+                "message": "Success"
+            }
         '''
         data = json.loads(str_data)
         return  {'ok': 1, 'data' : data}, 200
@@ -63,9 +106,22 @@ class GetBiostarDeviceListResource(ProxySecureResource):
         security_credentials = self.checkCredentials()
         # data = GetBiostarDeviceListUseCase().execute()
         str_data = ''' 
-        { 
-            "nombre" : "value"
+{
+    "codigo": 200,
+    "total": "1",
+    "lista": [
+        {
+            "id": "544207733",
+            "name": "BioEntry W2 544207733 (192.168.1.18)",
+            "device_type_id": {
+                "id": "13",
+                "name": "BioEntry W2"
+            },
+            "status": "0"
         }
+    ],
+    "message": "Success"
+}
         '''
         data = json.loads(str_data)
         return  { 'ok': 1, 'data' : data } , 200
