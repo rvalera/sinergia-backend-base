@@ -293,7 +293,7 @@ class EstacionTrabajo(db.Model):
     idestaciontrabajo = Column(Integer(), primary_key=True)
     nombre = Column(String(100)) 
     direccionip = Column(String(100)) 
-    dispositivobiostar = Column(String(20)) 
+    dispositivobiostar = Column(String(50)) 
 
 
 class Medico(Persona):
