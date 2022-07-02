@@ -188,8 +188,8 @@ class ConfirmCitaMedicaUseCase(object):
         CitaRepository(username=security_credentials['username']).confirm(payload)
 
 class AttendCitaMedicaUseCase(object):
-    def execute(self,security_credentials,payload):
-        CitaRepository(username=security_credentials['username']).attend(payload)
+    def execute(self,security_credentials,data):
+        CitaRepository(username=security_credentials['username']).attend(data)
 
 class EndCitaMedicaUseCase(object):
     def execute(self,security_credentials,payload):

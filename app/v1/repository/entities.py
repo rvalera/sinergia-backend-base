@@ -1181,7 +1181,15 @@ class CitaRepository(SinergiaRepository):
         db.session.commit()   
 
 
-    def attend(self,payload):         
+    def attend(self,data):         
+        payload = data['payload'] if 'payload' in data else None
+        direccionip = data['direccionip'] if 'direccionip' in data else None
+
+        consultorio = None
+        estaciontrabajo = EstacionTrabajo.query.filter(EstacionTrabajo.direccionip == direccionip).first()
+        if estaciontrabajo:
+            consultorio = estaciontrabajo.nombre
+
         idcita = payload['idcita'] if 'idcita' in payload else None
         cedulamedico = payload['cedulamedico'] if 'cedulamedico' in payload else None
 
@@ -1203,7 +1211,7 @@ class CitaRepository(SinergiaRepository):
         consulta.cedula = cita.cedula
         consulta.cedulamedico = cedulamedico
         consulta.idcita = cita.id
-        consulta.consultorio = None #TODO AQUI VA EL CONSULTORIO
+        consulta.consultorio = consultorio
         consulta.estado = CITA_EN_ATENCION
 
         db.session.add(cita)

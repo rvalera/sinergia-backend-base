@@ -601,7 +601,7 @@ class AreaResource(ProxySecureResource):
         return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
 
 
-@entities_ns.route('/estaciontrabajo/ipaddress')
+@entities_ns.route('/estaciontrabajo/direccionip')
 @v1_api.expect(secureHeader)
 class OneEstacionTrabajoResource(ProxySecureResource):
 
@@ -1159,8 +1159,10 @@ class CitaAttendResource(ProxySecureResource):
     def put(self):
         security_credentials = self.checkCredentials()
         #security_credentials = {'username': 'prueba'}
-        payload = request.json        
-        AttendCitaMedicaUseCase().execute(security_credentials,payload)
+        payload = request.json  
+        direccionip = request.remote_addr
+        data = {'payload':payload, 'direccionip':direccionip}
+        AttendCitaMedicaUseCase().execute(security_credentials,data)
         return  {'ok':1} , 200
 
 
