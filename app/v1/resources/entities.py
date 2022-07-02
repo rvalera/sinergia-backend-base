@@ -601,7 +601,7 @@ class AreaResource(ProxySecureResource):
         return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
 
 
-@entities_ns.route('/estaciontrabajo/name')
+@entities_ns.route('/estaciontrabajo/ipaddress')
 @v1_api.expect(secureHeader)
 class OneEstacionTrabajoResource(ProxySecureResource):
 
@@ -611,9 +611,8 @@ class OneEstacionTrabajoResource(ProxySecureResource):
     def get(self):
         security_credentials = self.checkCredentials()
         #security_credentials = {'username': 'prueba'}
-        #nombre = request.headers['Accept']
-        nombre = '127.0.0.1'
-        query_params = {'nombre': nombre}
+        direccionip = request.remote_addr
+        query_params = {'direccionip': direccionip}
         data = GetEstacionTrabajoUseCase().execute(security_credentials,query_params)
         return  {'ok': 1, 'data': data}, 200
 

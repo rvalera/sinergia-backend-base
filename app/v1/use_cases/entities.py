@@ -37,7 +37,7 @@ class GetEstacionTrabajoListUseCase(object):
 
 class GetEstacionTrabajoUseCase(object):
     def execute(self,security_credentials,query_params):
-        return EstacionTrabajoRepository(username=security_credentials['username']).getByName(query_params['nombre'])
+        return EstacionTrabajoRepository(username=security_credentials['username']).getByIpAddress(query_params['direccionip'])
 
 class GetPatologiaListUseCase(object):
     def execute(self,security_credentials):

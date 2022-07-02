@@ -161,7 +161,20 @@ class EstacionTrabajoRepository(SinergiaRepository):
         try:
             estaciontrabajo = EstacionTrabajo.query.filter(EstacionTrabajo.nombre == nombre).first()
             if estaciontrabajo is None:
-                #Se arroja excepcion, el Medico ya esta creado
+                #Se arroja excepcion, no existe la estacion
+                raise DataNotFoundException()     
+                  
+            return estaciontrabajo
+        except exc.DatabaseError as err:
+            # pass exception to function
+            error_description = '%s' % (err)
+            raise DatabaseException(text=error_description)
+
+    def getByIpAddress(self, direccionip):
+        try:
+            estaciontrabajo = EstacionTrabajo.query.filter(EstacionTrabajo.direccionip == direccionip).first()
+            if estaciontrabajo is None:
+                #Se arroja excepcion, no existe la estacion
                 raise DataNotFoundException()     
                   
             return estaciontrabajo
