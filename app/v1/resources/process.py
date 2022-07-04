@@ -65,7 +65,6 @@ class  BiostarCardResource(ProxySecureResource):
         return  { 'ok': 1, 'data' : data } , 200
 
 
-
 # {
 #   "user_id": "27027161",
 #   "name": "Marie Curie",
@@ -77,19 +76,19 @@ class  BiostarCardResource(ProxySecureResource):
 @process_ns.route('/biostar/access/grant')
 @v1_api.expect(secureHeader)
 class GrantAccessBiostarResource(ProxySecureResource): 
-
     @process_ns.doc('Grant Access to Biostar')
     @jwt_required
     def post(self):
         payload = request.json        
         security_credentials = self.checkCredentials()
         # data = GrantAccessBiostarUseCase().execute(payload)
+
         str_data = ''' 
             {
                 "codigo": 200,
                 "id": "27027161",
-                "tarjeta asignada1": "68801245811",
-                "tarjeta asignada2": "72801245852",
+                "tarjeta_asignada1": "68801245811",
+                "tarjeta_asignada2": "72801245852",
                 "message": "Success"
             }
         '''
