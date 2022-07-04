@@ -37,7 +37,7 @@ class GetEstacionTrabajoListUseCase(object):
 
 class GetEstacionTrabajoUseCase(object):
     def execute(self,security_credentials,query_params):
-        return EstacionTrabajoRepository(username=security_credentials['username']).getByName(query_params['nombre'])
+        return EstacionTrabajoRepository(username=security_credentials['username']).getByIpAddress(query_params['direccionip'])
 
 class GetPatologiaListUseCase(object):
     def execute(self,security_credentials):
@@ -188,8 +188,8 @@ class ConfirmCitaMedicaUseCase(object):
         CitaRepository(username=security_credentials['username']).confirm(payload)
 
 class AttendCitaMedicaUseCase(object):
-    def execute(self,security_credentials,payload):
-        CitaRepository(username=security_credentials['username']).attend(payload)
+    def execute(self,security_credentials,data):
+        CitaRepository(username=security_credentials['username']).attend(data)
 
 class EndCitaMedicaUseCase(object):
     def execute(self,security_credentials,payload):
