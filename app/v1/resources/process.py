@@ -82,7 +82,6 @@ class GrantAccessBiostarResource(ProxySecureResource):
         payload = request.json        
         security_credentials = self.checkCredentials()
         # data = GrantAccessBiostarUseCase().execute(payload)
-
         str_data = ''' 
             {
                 "codigo": 200,
