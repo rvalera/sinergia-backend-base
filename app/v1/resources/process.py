@@ -17,6 +17,16 @@ from app.v1.use_cases.process import GetBiostarDeviceListUseCase, GrantAccessBio
 
 process_ns = v1_api.namespace('process', description='Process Services')
 
+GrantAccesBiostarStruct = v1_api.model('GrantAccesBiostarStruct', { 
+    'user_id' : fields.String(), 
+    'name' : fields.String(),
+    'id_card1' : fields.String(),
+    'id_card2' : fields.String(),
+    'start_datetime' : fields.String(),
+    'expiry_datetime' : fields.String()
+})
+
+
 @process_ns.route('/biostar/card')
 @v1_api.expect(secureHeader)
 class  BiostarCardListResource(ProxySecureResource):
@@ -76,7 +86,9 @@ class  BiostarCardResource(ProxySecureResource):
 @process_ns.route('/biostar/access/grant')
 @v1_api.expect(secureHeader)
 class GrantAccessBiostarResource(ProxySecureResource): 
+
     @process_ns.doc('Grant Access to Biostar')
+    @process_ns.expect(GrantAccesBiostarStruct)
     @jwt_required
     def post(self):
         payload = request.json        
