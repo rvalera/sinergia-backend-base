@@ -3,9 +3,12 @@ Created on 17 dic. 2019
 
 @author: ramon
 '''
+from app.tools.utils import generate_alphanumeric_password
+import datetime
+from app.v1.models.constant import AUTOREGISTER, MOBILE_USER, STATUS_ACTIVE, STATUS_PENDING
 from app.v1.models.security import SecurityElement, User, PersonExtension
 from app import redis_client, db
-from app.exceptions.base import UserCurrentPasswordException,UserRepeatedPasswordException
+from app.exceptions.base import DataAlreadyRegisteredException, DataNotFoundException, UserCurrentPasswordException,UserRepeatedPasswordException
 import json
 import requests
 from requests.auth import HTTPBasicAuth
@@ -84,16 +87,82 @@ class MemberRepository(SinergiaRepository):
 
 
     def resetPassword(self,payload):
+        # TODO: Reiniciar la contrasena mediante un enlace de reinicio de contrasena
         raise NotImplementedException()
     
     def changeOperationKey(self,payload):
+        # TODO: Cambiar la clave de operaciones especiales
         raise NotImplementedException()
 
     def resetOperationKey(self,payload):
+        # TODO: Reiniciar la clave de operaciones especiales
         raise NotImplementedException()
     
     def initCreate(self,data):
-        raise NotImplementedException()
+        # raise NotImplementedException()
+        user = self.getByEmail(data['email'])
+        if user:
+            raise DataAlreadyRegisteredException()
+        
+        # user_prov_passw = generate_alphanumeric_password()
+        user_prov_passw = '12345'
+
+        first_name =  data['first_name']
+        last_name =  data['last_name']
+    
+        person = PersonExtension()
+        person.email = data['email'].lower()
+        person.first_name = data['first_name']
+        person.last_name = data['last_name']
+        person.fullname = data['first_name'] + ' ' + data['last_name']
+        person.status = STATUS_ACTIVE
+        db.session.add(person)
+
+        user = User()
+        user.person_extension = person
+    
+        user.hash_password(user_prov_passw)
+        user.register_date = datetime.datetime.now() 
+        user.name = data['email'].lower()
+        user.status = STATUS_PENDING
+        user.register_mode= AUTOREGISTER
+        user.type = MOBILE_USER
+        
+        db.session.add(user)
+        db.session.commit()
+
+        # TODO: ENVIAR CORREO ELECTRONICO DE NOTIFICACION USANDO PLANTILLA
+
+        return user
+
 
     def finishCreate(self,data):
-        raise NotImplementedException()
+
+        user = self.getByEmail(data['username'])
+    
+        if user is not None:
+
+            print("Finishing Create User -> ")
+        
+            phone_number =  data['phone_number']
+            gender =  data['gender']
+            secondary_email =  data['secondary_email']
+            birth_date =  data['birth_date']
+            operation_key =  data['operation_key']
+            password = data['password']
+        
+            user.hash_password(password.encode('utf-8'))
+            user.hash_operation_key(operation_key.encode('utf-8'))
+            user.person_extension.phone_number = phone_number
+            user.person_extension.gender = gender
+            user.person_extension.secondary_email = secondary_email
+            user.person_extension.birth_date = birth_date
+            user.status = STATUS_ACTIVE
+
+            db.session.add(user)
+            db.session.commit()            
+        else:
+            raise DataNotFoundException()
+        
+        return user
+

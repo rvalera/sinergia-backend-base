@@ -1,104 +1,17 @@
 from app.v1 import v1_api
+from app.v1.models import security
+from app.v1.use_cases.entities import CreateContentTypeUseCase, CreateSiteUseCase, GetContenTypeListUseCase, GetContentBinaryUseCase, GetContentListBySiteUseCase, GetContentListByUserUseCase, GetContentListUseCase, GetEmpresaListUseCase, GetOneContentTypeUseCase, GetOneContentUseCase, GetOneSiteUseCase, GetSiteListUseCase, GetUserBalanceUseCase, PromoteContentUseCase, RefillBalanceUseCase, SiteAffiliationUseCase, SiteFollowUseCase, SiteImpressionsPaymentUseCase, SiteLoveUseCase, ViewImpressionUseCase, CreateContentUseCase
 from flask_jwt_extended.view_decorators import jwt_required
-from flask_restplus import Resource, Namespace, fields, reqparse
-from app.v1.resources.base import ProxySecureResource, secureHeader, queryParams
-from app.v1.use_cases.entities import CarnetizacionStatusUseCase, ConfirmCitaMedicaUseCase, CreateBeneficiarioUseCase, CreateCitaMedicaUseCase, DeleteConsultaMedicaUseCase, GetCitaUseCase, GetCitasMedicasPersonaListUseCase, GetColaAtencionEspecialidadUseCase, GetConsultaMedicaUseCase, GetDiscapacidadListUseCase, GetEmpresaListUseCase, GetEspecialidadListUseCase, GetEstadoListUseCase, GetHistoriaMedicaUseCase, GetMedicoUseCase, GetMunicipioListUseCase,GetTipoNominaListUseCase, \
-    GetTrabajadorUseCase, GetEstadoListUseCase, GetMunicipioListUseCase, GetPatologiaListUseCase, SaveBeneficiarioUseCase, DeleteBeneficiarioUseCase, SaveCitaMedicaUseCase, SaveTrabajadorUseCase, \
-    GetCitasMedicasListUseCase, GetCitasDisponiblesListUseCase, DeleteCitaMedicaUseCase, GetPersonaUseCase, GetVisitasListUseCase, CreateVisitaUseCase, \
-    CreateConsultaMedicaUseCase, SaveConsultaMedicaUseCase, GetConsultasMedicasPersonaListUseCase, GetProximasCitasMedicasPersonaListUseCase, GetCitaMedicaUseCase, \
-    GetCitasCedulaEspecialidadFechaListUseCase, GetAreaListUseCase, CreateMedicoUseCase, SaveMedicoUseCase, DeleteMedicoUseCase, CreateEspecialidadUseCase,\
-    SaveEspecialidadUseCase, GetEspecialidadUseCase, GetMedicoListUseCase, GetEstacionTrabajoListUseCase, EntryColaEsperaUseCase, GetSalaDeEsperaListUseCase,\
-    GetProxCitaColaEsperaEspecialidadUseCase, GetColaResumenUseCase, GetColaEsperaEspecialidadUseCase, AttendCitaMedicaUseCase, EndCitaMedicaUseCase, TransferCitaMedicaUseCase, GetEstacionTrabajoUseCase, DeleteEspecialidadUseCase,\
-    CreateEstacionTrabajoUseCase, SaveEstacionTrabajoUseCase, DeleteEstacionTrabajoUseCase, CreateSalaDeEsperaUseCase, SaveSalaDeEsperaUseCase, DeleteSalaDeEsperaUseCase, GetMedicoByParamsListUseCase, SaveEspecialidadEstadoColaUseCase
+from flask_restplus import Resource, Namespace, fields
+from flask_restplus import reqparse
+from app.v1.resources.base import ProxySecureResource, secureHeader, queryParams, publicHeader, uploadFilePublicHeader,uploadFileSecureHeader
 
+from flask import send_file
 from flask.globals import request    
 import json 
 
 entities_ns = v1_api.namespace('entities', description='Business Entities Services')
 
-EstadoStruct = v1_api.model('EstadoStruct', { 
-    'codigo' : fields.String(), 
-    'nombre' : fields.String(), 
-})
-
-MunicipioStruct = v1_api.model('MunicipioStruct', { 
-    'codigo' : fields.String(), 
-    'nombre' : fields.String(), 
-})
-
-PatologiaStruct = v1_api.model('PatologiaStruct', { 
-    'codigopatologia' : fields.String(), 
-    'nombre' : fields.String(), 
-})
-
-DiscapacidadStruct = v1_api.model('DiscapacidadStruct', { 
-    'codigodiscapacidad' : fields.String(), 
-    'nombre' : fields.String(), 
-})
-
-AreaStruct = v1_api.model('AreaStruct', { 
-    'id' : fields.Integer(), 
-    'nombre' : fields.String(), 
-})
-
-PersonaStruct = v1_api.model('PersonaStruct', { 
-    'cedula' : fields.String(), 
-    'nombres' : fields.String(),  
-    'apellidos' : fields.String(),  
-    'sexo' : fields.String(),  
-    'fechanacimiento' : fields.String(format='date-time'),   
-    'telefonocelular' : fields.String(),  
-    'telefonoresidencia' : fields.String(),  
-    'correo' : fields.String(),
-
-    'nacionalidad' : fields.String(), 
-    'sexo' : fields.String(),  
-    'nivel' : fields.String(),  
-    'profesion' : fields.String(),  
-
-    'estado': fields.Nested(EstadoStruct,attribute='estado'),
-    'municipio': fields.Nested(MunicipioStruct,attribute='municipio'),
-
-    'parroquia' : fields.String(), 
-    'sector' : fields.String(),  
-    'avenidacalle' : fields.String(),  
-    'edifcasa' : fields.String()
-}) 
-
-GetPersonaStruct = v1_api.model('GetPersonaResult', { 
-    'ok' : fields.Integer(description='Ok Result'), 
-    'data' : fields.Nested(PersonaStruct,attribute='data')
-})
-
-UpdatePersonaStruct = v1_api.model('UpdatePersonaStruct', { 
-    'cedula' : fields.String(), 
-})
-
-TipoCargoStruct = v1_api.model('TipoCargoStruct', { 
-    'codigo' : fields.String(), 
-    'nombre' : fields.String(), 
-})
-
-
-TipoNominaStruct = v1_api.model('TipoNominaStruct', { 
-    'codigo' : fields.String(), 
-    'nombre' : fields.String(), 
-})
-
-EstatusTrabajadorStruct = v1_api.model('EstatusTrabajadorStruct', { 
-    'codigo' : fields.String(), 
-    'nombre' : fields.String(), 
-})
-
-UbicacionLaboralStruct = v1_api.model('UbicacionLaboralStruct', { 
-    'codigo' : fields.String(), 
-    'nombre' : fields.String(), 
-})
-
-TipoTrabajadorStruct = v1_api.model('TipoTrabajadorStruct', { 
-    'codigo' : fields.String(), 
-    'nombre' : fields.String(), 
-})
 
 EmpresaStruct = v1_api.model('EmpresaStruct', { 
     'codigo' : fields.String(), 
@@ -109,459 +22,63 @@ UpdateEmpresaStruct = v1_api.model('UpdateEmpresaStruct', {
     'codigo' : fields.String(), 
 })
 
-UsuarioActStruct = v1_api.model('UsuarioActStruct', { 
-    'name': fields.String()
+CreateSiteStruct = v1_api.model('CreateSiteStruct', { 
+    'name' : fields.String(), 
+    'description' : fields.String(), 
 })
 
-SalaDeEsperaEspecialidadStruct = v1_api.model('SalaDeEsperaEspecialidadStruct', { 
-    'codigoespecialidad' : fields.String(), 
-    'nombre' : fields.String()
+SiteStruct = v1_api.model('SiteStruct', { 
+    'id' : fields.String(),     
+    'name' : fields.String(), 
+    'description' : fields.String(), 
+    'owner' : fields.String(), 
 })
 
-SalaDeEsperaStruct = v1_api.model('SalaDeEsperaStruct', { 
-    'idsala' : fields.Integer(), 
-    'nombre' : fields.String(),
-    'especialidades': fields.List(fields.Nested(SalaDeEsperaEspecialidadStruct))
-})
-
-CreateSalaDeEsperaStruct = v1_api.model('CreateSalaDeEsperaStruct', { 
-    'nombre' : fields.String(),
-    'especialidades' : fields.List(fields.String()), #Listado de Ids de Especialidades
-})
-
-UpdateSalaDeEsperaStruct = v1_api.model('UpdateSalaDeEsperaStruct', { 
-    'idsala' : fields.Integer(), 
-    'nombre' : fields.String(),
-    'especialidades' : fields.List(fields.String()), #Listado de Ids de Especialidades
-})
-
-GetSalaDeEsperaListStruct = v1_api.model('GetSalaDeEsperaListStruct', { 
+GetSiteListStruct = v1_api.model('GetSiteListStruct', { 
     'ok' : fields.Integer(description='Ok Result'), 
     'count' : fields.Integer(description='Count Row'), 
     'total' : fields.Integer(description='Total Row'), 
-    'data' : fields.Nested(SalaDeEsperaStruct,attribute='data')
-})
-
-HistoriaMedicaStruct = v1_api.model('HistoriaMedicaStruct', { 
-    'cedula' : fields.String(), 
-    'persona': fields.Nested(PersonaStruct,attribute='persona'),
-    'gruposanguineo' : fields.String(), 
-    'fecha' : fields.String(format='date-time'),
-    'patologias': fields.List(fields.Nested(PatologiaStruct)),
-    'discapacidades': fields.List(fields.Nested(DiscapacidadStruct))
-})
-
-BeneficiarioStruct = v1_api.model('BeneficiarioStruct', { 
-    'cedula' : fields.String(),
-    'vinculo' : fields.String(),
-    'nombres' : fields.String(),  
-    'apellidos' : fields.String(),  
-    'sexo' : fields.String(),  
-    'fechanacimiento' : fields.String(format='date-time'),
-    'historiamedica': fields.Nested(HistoriaMedicaStruct,attribute='historiamedica')
-})
-
-UpdateBeneficiarioStruct = v1_api.model('UpdateBeneficiarioStruct', { 
-    'cedula': fields.String(),
-    'nombres': fields.String(),
-    'apellidos': fields.String(),
-    'sexo': fields.String(),
-    'fechanacimiento': fields.String(),
-    'cedulatrabajador': fields.String(),
-    'vinculo': fields.String(),
-    'gruposanguineo': fields.String(),
-    'patologias' : fields.List(fields.String()), #Listado de Ids de Patologias
-    'discapacidades' : fields.List(fields.String()), #Listado de Ids de Discapacidades
+    'data' : fields.Nested(SiteStruct,attribute='data')
 }) 
 
-TrabajadorStruct = v1_api.model('TrabajadorStruct', { 
-    'cedula' : fields.String(), 
-    'nombres' : fields.String(),  
-    'apellidos' : fields.String(),  
-    'sexo' : fields.String(),  
-    'fechanacimiento' : fields.String(format='date-time'),   
-    'telefonocelular' : fields.String(),  
-    'telefonoresidencia' : fields.String(),  
-    'correo' : fields.String(),
-
-    'nacionalidad' : fields.String(), 
-    'sexo' : fields.String(),  
-    'suspendido' : fields.String(),  
-    'razonsuspension' : fields.String(),  
-    'nivel' : fields.String(),  
-    'profesion' : fields.String(),  
-    'personal': fields.String(),  
-    'tiponomina': fields.String(),  
-    'ubicacionlaboral': fields.String(),  
-    'cargo': fields.String(),  
-
-    'estado': fields.Nested(EstadoStruct,attribute='estado'),
-    'municipio': fields.Nested(MunicipioStruct,attribute='municipio'),
-
-    'parroquia' : fields.String(), 
-    'sector' : fields.String(),  
-    'avenidacalle' : fields.String(),  
-    'edifcasa' : fields.String(),  
-
-    'ingreso' : fields.String(format='date-time'),   
-    'jornada' : fields.String(),  
-
-    'situacion' : fields.String(), 
-    'condicion' : fields.String(),  
-    'camisa' : fields.String(),  
-    'pantalon' : fields.String(),  
-    'calzado' : fields.String(),  
-    'observaciones' : fields.String(),  
-
-    'ficha' : fields.String(),
-    'historiamedica': fields.Nested(HistoriaMedicaStruct,attribute='historiamedica'),  
-    'empresa': fields.Nested(EmpresaStruct,attribute='empresa'),  
-    'fechaactualizacion' : fields.DateTime(), 
-    'usuarioactualizacion': fields.Nested(UsuarioActStruct,attribute='usuarioactualizacion'),
-
-    'beneficiarios': fields.List(fields.Nested(BeneficiarioStruct))
-
+GetOneSiteStruct = v1_api.model('GetOneSiteStruct', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'data' : fields.Nested(SiteStruct,attribute='data')
 }) 
 
-UpdateTrabajadorStruct = v1_api.model('UpdateTrabajadorStruct', { 
-    'cedula' : fields.String(),   
-    'telefonocelular' : fields.String(),  
-    'telefonoresidencia' : fields.String(),  
-    'correo' : fields.String(),
-    'codigoestado': fields.String(), 
-    'codigomunicipio': fields.String(), 
-    'parroquia' : fields.String(), 
-    'sector' : fields.String(),  
-    'avenidacalle' : fields.String(),  
-    'edifcasa' : fields.String(),  
-    'camisa' : fields.String(),  
-    'pantalon' : fields.String(),  
-    'calzado' : fields.String(),  
-    'gruposanguineo': fields.String(),
-    'observaciones': fields.String(),
-    'patologias' : fields.List(fields.String()), #Listado de Ids de Patologias
-    'discapacidades' : fields.List(fields.String()), #Listado de Ids de Discapacidades
+RefillBalanceStruct = v1_api.model('RefillBalanceStruct', { 
+    'username' : fields.String(), 
+    'amount' : fields.Float(), 
+})
 
+BalanceCoinStruct = v1_api.model('BalanceCoinStruct', { 
+    'coin' : fields.String(), 
+    'free' : fields.String(), 
+})
+
+BalanceUserStruct = v1_api.model('BalanceUserStruct', { 
+    'username' : fields.String(), 
+    'address' : fields.String(), 
+    'balances' : fields.Nested(BalanceCoinStruct,attribute='balances')
+})
+
+GetOneBalanceUserStruct = v1_api.model('GetOneBalanceUserStruct', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'data' : fields.Nested(BalanceUserStruct,attribute='data')
 }) 
 
-GetTrabajadorListStruct = v1_api.model('GetTrabajadorListResult', { 
-    'ok' : fields.Integer(description='Ok Result'), 
-    'count' : fields.Integer(description='Count Row'), 
-    'total' : fields.Integer(description='Total Row'), 
-    'data' : fields.Nested(TrabajadorStruct,attribute='data')
-}) 
-
-GetTrabajadorStruct = v1_api.model('GetTrabajadorResult', { 
-    'ok' : fields.Integer(description='Ok Result'), 
-    'data' : fields.Nested(TrabajadorStruct,attribute='data')
+SiteIdStruct = v1_api.model('SiteIdStruct', { 
+    'id' : fields.String(),     
 })
 
-GetHistoriaMedicaStruct = v1_api.model('GetHistoriaMedicaResult', { 
-    'ok' : fields.Integer(description='Ok Result'), 
-    'data' : fields.Nested(HistoriaMedicaStruct,attribute='data')
+SiteImpressionsPaymentStruct = v1_api.model('SiteImpressionsPaymentStruct', { 
+    'id' : fields.String(),    
+    'amount' : fields.Integer(),      
 })
 
-
-MedicoEspecStruct = v1_api.model('MedicoEspecStruct', { 
-    'cedula' : fields.String(), 
-    'nombres' : fields.String(),  
-    'apellidos' : fields.String(),  
-    'sexo' : fields.String(),  
-    'fechanacimiento' : fields.String(format='date-time'),   
-    'telefonocelular' : fields.String(),  
-    'telefonoresidencia' : fields.String(),  
-    'correo' : fields.String(),
-    'nacionalidad' : fields.String(), 
-    'sexo' : fields.String()
-})
-
-EspecialidadStruct = v1_api.model('EspecialidadStruct', { 
-    'codigoespecialidad' : fields.String(), 
-    'nombre' : fields.String(), 
-    'diasdeatencion' : fields.String(), 
-    'autogestionada' : fields.Boolean(), 
-    'cantidadmaximapacientes' : fields.Integer(),
-    'colaactiva': fields.Boolean(),
-    'saladeespera': fields.Nested(SalaDeEsperaStruct,attribute='saladeespera'),
-    'medicos': fields.List(fields.Nested(MedicoEspecStruct))
-
-})
-
-GetEspecialidadListStruc = v1_api.model('GetEspecialidadListStruc', { 
-    'ok' : fields.Integer(description='Ok Result'), 
-    'count' : fields.Integer(description='Count Row'), 
-    'total' : fields.Integer(description='Total Row'), 
-    'data' : fields.Nested(EspecialidadStruct,attribute='data')
-}) 
-
-UpdateEspecialidadStruct = v1_api.model('UpdateEspecialidadStruct', { 
-    'codigoespecialidad' : fields.String(), 
-    'nombre' : fields.String(), 
-    'diasdeatencion' : fields.String(), 
-    'autogestionada' : fields.Boolean(), 
-    'cantidadmaximapacientes' : fields.Integer(),
-    'idsala' : fields.Integer()
-})
-
-UpdateEspecialidadEstadoColaStruct = v1_api.model('UpdateEspecialidadEstadoColaStruct', { 
-    'codigoespecialidad' : fields.String(), 
-    'colaactiva' : fields.Boolean()
-})
-
-GetEspecialidadStruct = v1_api.model('GetEspecialidadResult', { 
-    'ok' : fields.Integer(description='Ok Result'), 
-    'data' : fields.Nested(EspecialidadStruct,attribute='data')
-})
-
-
-MedicoStruct = v1_api.model('MedicoStruct', { 
-    'cedula' : fields.String(), 
-    'nombres' : fields.String(),  
-    'apellidos' : fields.String(),  
-    'sexo' : fields.String(),  
-    'fechanacimiento' : fields.String(format='date-time'),   
-    'telefonocelular' : fields.String(),  
-    'telefonoresidencia' : fields.String(),  
-    'correo' : fields.String(),
-
-    'nacionalidad' : fields.String(), 
-    'sexo' : fields.String(),  
-
-    'estado': fields.Nested(EstadoStruct,attribute='estado'),
-    'municipio': fields.Nested(MunicipioStruct,attribute='municipio'),
-
-    'parroquia' : fields.String(), 
-    'sector' : fields.String(),  
-    'avenidacalle' : fields.String(),  
-    'edifcasa' : fields.String(),
-
-    'especialidad': fields.Nested(EspecialidadStruct,attribute='especialidad'),
-    #'estaciontrabajo': fields.Nested(EstacionTrabajoStruct,attribute='estaciontrabajo'),
-})
-
-UpdateMedicoStruct = v1_api.model('UpdateMedicoStruct', { 
-    'cedula' : fields.String(), 
-    'nombres' : fields.String(),  
-    'apellidos' : fields.String(),  
-    'sexo' : fields.String(),  
-    'fechanacimiento' : fields.String(format='date-time'),   
-    'telefonocelular' : fields.String(),  
-    'telefonoresidencia' : fields.String(),  
-    'correo' : fields.String(),
-    'nacionalidad' : fields.String(), 
-    'sexo' : fields.String(),  
-    'codigoestado': fields.String(), 
-    'codigomunicipio': fields.String(), 
-    'parroquia' : fields.String(), 
-    'sector' : fields.String(),  
-    'avenidacalle' : fields.String(),  
-    'edifcasa' : fields.String(),
-    'codigoespecialidad' : fields.String()
-})
-
-GetMedicoStruct = v1_api.model('GetMedicoResult', { 
-    'ok' : fields.Integer(description='Ok Result'), 
-    'data' : fields.Nested(MedicoStruct,attribute='data')
-})
-
-GetMedicoListStruct = v1_api.model('GetMedicoListResult', { 
-    'ok' : fields.Integer(description='Ok Result'), 
-    'count' : fields.Integer(description='Count Row'), 
-    'total' : fields.Integer(description='Total Row'), 
-    'data' : fields.Nested(MedicoStruct,attribute='data')
-})
-
-
-CitaConsultaMedicaStruct = v1_api.model('CitaConsultaMedicaStruct', { 
-    'id' : fields.Integer(),
-    'historiamedica' : fields.Nested(HistoriaMedicaStruct,attribute='historiamedica'),
-    'medico' : fields.Nested(MedicoStruct,attribute='medico'),
-    'consultorio' : fields.String(),
-    'fecha' : fields.Date()
-})
-
-CitaStruct = v1_api.model('CitaStruct', { 
-    'id' : fields.String(), 
-    'persona': fields.Nested(PersonaStruct,attribute='persona'),
-    'especialidad': fields.Nested(EspecialidadStruct,attribute='especialidad'),
-    'fechadia' : fields.DateTime(), 
-    'fechacita' : fields.DateTime(), 
-    'fechaentradacola' : fields.DateTime(), 
-    'fechapasaconsulta' : fields.DateTime(), 
-    'fechafinconsulta' : fields.DateTime(), 
-    'idbiostar' : fields.String(),
-    'idbiostar2' : fields.String(),
-    'estado' : fields.String(),
-    'consultamedica': fields.Nested(CitaConsultaMedicaStruct,attribute='consultamedica'),
-}) 
-
-CreateCitaStruct = v1_api.model('CreateCitaStruct', { 
-    'cedula' : fields.String(),   
-    'codigoespecialidad' : fields.String(),  
-    'fechacita' : fields.String()
-})
-
-UpdateCitaStruct = v1_api.model('UpdateCitaStruct', { 
-    'idcita' : fields.Integer(),   
-    'codigoespecialidad' : fields.String(),  
-    'fechacita' : fields.String()
-})
-
-ConfirmCitaStruct = v1_api.model('ConfirmCitaStruct', { 
-    'idcita' : fields.Integer(),   
-    'idbiostar' : fields.String(),
-    'idbiostar2' : fields.String()
-})
-
-AttendCitaStruct = v1_api.model('AttendCitaStruct', { 
-    'idcita' : fields.Integer(),
-    'cedulamedico' : fields.String()
-})
-
-EndCitaStruct = v1_api.model('EndCitaStruct', { 
-    'idcita' : fields.Integer(),
-    'sintomas' : fields.String(),
-    'diagnostico' : fields.String(),
-    'tratamiento' : fields.String(),
-    'examenes' : fields.String()
-})
-
-TransferCitaStruct = v1_api.model('TransferCitaStruct', { 
-    'idcita' : fields.Integer(),   
-    'codigoespecialidad' : fields.String()
-})
-
-EntryColaStruct = v1_api.model('EntryColaStruct', { 
-    'idbiostar' : fields.String()
-})
-
-GetCitaStruct = v1_api.model('GetCitaStruct', { 
-    'ok' : fields.Integer(description='Ok Result'), 
-    'data' : fields.Nested(CitaStruct,attribute='data')
-})
-
-GetCitaListStruct = v1_api.model('GetCitaListResult', { 
-    'ok' : fields.Integer(description='Ok Result'), 
-    'count' : fields.Integer(description='Count Row'), 
-    'total' : fields.Integer(description='Total Row'), 
-    'data' : fields.Nested(CitaStruct,attribute='data')
-}) 
-    
-VisitaStruct = v1_api.model('VisitaStruct', { 
-    'id' : fields.Integer(), 
-    'area': fields.Nested(AreaStruct,attribute='area'),
-    'cedula' : fields.String(),
-    'nombre' : fields.String(),
-    'apellidos' : fields.String(),
-    'telefonocelular' : fields.String(),
-    'telefonofijo' : fields.String(),
-    'correo' : fields.String(),
-    'responsable' : fields.String(),
-    'fechavisita' : fields.DateTime()
-})
-
-CreateVisitaStruct = v1_api.model('CreateVisitaStruct', { 
-    'idarea' : fields.Integer(), 
-    'cedula' : fields.String(),
-    'nombre' : fields.String(),
-    'apellidos' : fields.String(),
-    'telefonocelular' : fields.String(),
-    'telefonofijo' : fields.String(),
-    'correo' : fields.String(),
-    'responsable' : fields.String()
-})
-
-GetVisitaListStruct = v1_api.model('GetVisitaListResult', { 
-    'ok' : fields.Integer(description='Ok Result'), 
-    'count' : fields.Integer(description='Count Row'), 
-    'total' : fields.Integer(description='Total Row'), 
-    'data' : fields.Nested(VisitaStruct,attribute='data')
-})
-
-
-EstacionTrabajoStruct = v1_api.model('EstacionTrabajoStruct', {     
-    'idestaciontrabajo' : fields.Integer(), 
-    'nombre' : fields.String(),
-    'direccionip' : fields.String(),
-    'dispositivobiostar' : fields.String()
-})
-
-CreateEstacionTrabajoStruct = v1_api.model('CreateEstacionTrabajoStruct', { 
-    'nombre' : fields.String(), 
-    'direccionip' : fields.String(),
-    'dispositivobiostar' : fields.String()
-})
-
-UpdateEstacionTrabajoStruct = v1_api.model('UpdateEstacionTrabajoStruct', { 
-    'idestaciontrabajo' : fields.Integer(), 
-    'nombre' : fields.String(), 
-    'direccionip' : fields.String(),
-    'dispositivobiostar' : fields.String()
-})
-
-GetEstacionTrabajoStruct = v1_api.model('GetEstacionTrabajoStruct', { 
-    'ok' : fields.Integer(description='Ok Result'), 
-    'data' : fields.Nested(EstacionTrabajoStruct,attribute='data')
-})
-
-
-ColaResumenStruct = v1_api.model('ColaResumenStruct', {     
-    'especialidad': fields.Nested(EspecialidadStruct,attribute='especialidad'),
-    'citas_en_cola': fields.List(fields.Nested(CitaStruct)),
-    'citas_en_atencion': fields.List(fields.Nested(CitaStruct))
-})
-
-
-GetColaResumenStruct = v1_api.model('GetColaResumenResult', { 
-    'ok' : fields.Integer(description='Ok Result'), 
-    'data' : fields.List(fields.Nested(ColaResumenStruct))
-})
-
-
-ConsultaMedicaStruct = v1_api.model('ConsultaMedicaStruct', { 
-    'id' : fields.Integer(),
-    'historiamedica' : fields.Nested(HistoriaMedicaStruct,attribute='historiamedica'),
-    'medico' : fields.Nested(MedicoStruct,attribute='medico'),
-    'cita' : fields.Nested(CitaStruct,attribute='cita'),
-    'sintomas' : fields.String(),
-    'diagnostico' : fields.String(),
-    'tratamiento' : fields.String(),
-    'examenes' : fields.String(),
-    'fecha' : fields.Date()
-})
-
-CreateConsultaMedicaStruct = v1_api.model('CreateConsultaMedicaStruct', { 
-    'cedula' : fields.String(),
-    'cedulamedico' : fields.String(),
-    'idcita' : fields.Integer(),
-    'sintomas' : fields.String(),
-    'diagnostico' : fields.String(),
-    'tratamiento' : fields.String(),
-    'examenes' : fields.String(),
-    'fecha' : fields.String()
-})
-
-UpdateConsultaMedicaStruct = v1_api.model('UpdateConsultaMedicaStruct', { 
-    #TODO Que se actualiza?
-    'id' : fields.Integer(),
-    'sintomas' : fields.String(),
-    'diagnostico' : fields.String(),
-    'tratamiento' : fields.String(),
-    'examenes' : fields.String()
-})
-
-
-GetConsultaMedicaListStruct = v1_api.model('GetConsultaMedicaListStruct', { 
-    'ok' : fields.Integer(description='Ok Result'), 
-    'count' : fields.Integer(description='Count Row'), 
-    'total' : fields.Integer(description='Total Row'), 
-    'data' : fields.Nested(ConsultaMedicaStruct,attribute='data')
-})
-
-
-GetConsultaMedicaStruct = v1_api.model('GetConsultaMedicaStruct', { 
-    'ok' : fields.Integer(description='Ok Result'), 
-    'data' : fields.Nested(ConsultaMedicaStruct,attribute='data')
+SiteAndContentStruct = v1_api.model('SiteAndContentStruct', { 
+    'site_id' : fields.String(),    
+    'content_id' : fields.String(),   
 })
 
 
@@ -576,856 +93,410 @@ class EmpresaResource(ProxySecureResource):
         data = GetEmpresaListUseCase().execute(security_credentials)
         return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
 
-
-@entities_ns.route('/tiponomina')
+@entities_ns.route('/site')
 @v1_api.expect(secureHeader)
-class TipoNominaResource(ProxySecureResource): 
+class SiteResource(ProxySecureResource): 
 
-    @entities_ns.doc('Tipo Nomina')
+    @entities_ns.doc('Site')
+    @v1_api.marshal_with(GetSiteListStruct)     
     @jwt_required    
     def get(self):
-        security_credentials = self.checkCredentials()
-        data = GetTipoNominaListUseCase().execute(security_credentials)
+        security_credentials = self.checkCredentials()        
+        # security_credentials = {'username' : 'ramon.valera@gmail.com'}
+        data = GetSiteListUseCase().execute(security_credentials)
         return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
 
-
-@entities_ns.route('/area')
-@v1_api.expect(secureHeader)
-class AreaResource(ProxySecureResource): 
-
-    @entities_ns.doc('Area')
-    @jwt_required    
-    def get(self):
-        security_credentials = self.checkCredentials()
-        data = GetAreaListUseCase().execute(security_credentials)
-        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
-
-
-@entities_ns.route('/estaciontrabajo/direccionip')
-@v1_api.expect(secureHeader)
-class OneEstacionTrabajoResource(ProxySecureResource):
-
-    @entities_ns.doc('Get Estacion de Trabajo')
-    @v1_api.marshal_with(GetEstacionTrabajoStruct) 
-    @jwt_required    
-    def get(self):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        direccionip = request.remote_addr
-        query_params = {'direccionip': direccionip}
-        data = GetEstacionTrabajoUseCase().execute(security_credentials,query_params)
-        return  {'ok': 1, 'data': data}, 200
-
-
-@entities_ns.route('/estaciontrabajo')
-@v1_api.expect(secureHeader)
-class EstacionTrabajoResource(ProxySecureResource): 
-
-    @entities_ns.doc('EstacionTrabajo')
-    @jwt_required    
-    def get(self):
-        security_credentials = self.checkCredentials()
-        data = GetEstacionTrabajoListUseCase().execute(security_credentials)
-        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
-
-    @entities_ns.doc('Create Estacion Trabajo')
-    @v1_api.expect(CreateEstacionTrabajoStruct)    
+    @entities_ns.doc('Create Site')
+    @v1_api.expect(CreateSiteStruct)    
     @jwt_required    
     def post(self):
         security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
+        # security_credentials = {'username' : 'ramon.valera@gmail.com'}
         payload = request.json        
-        CreateEstacionTrabajoUseCase().execute(security_credentials,payload)
-        return  {'ok':1} , 200
+        CreateSiteUseCase().execute(security_credentials,payload)
+        return  {'ok':1 } , 200
 
-    @entities_ns.doc('Update Estacion Trabajo')
-    @v1_api.expect(UpdateEstacionTrabajoStruct)    
+
+@entities_ns.route('/site/<id>')
+@entities_ns.param('id', 'Id Site')
+@v1_api.expect(secureHeader)
+class OneSiteResource(ProxySecureResource):
+
+    @entities_ns.doc('Get Site')
+    @v1_api.marshal_with(GetOneSiteStruct) 
+    @jwt_required    
+    def get(self,id):
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username' : 'ramon.valera@gmail.com'}
+        query_params = {'id': id}
+        data = GetOneSiteUseCase().execute(security_credentials,query_params)
+        return  {'ok' : 1, 'data': data}, 200
+
+@entities_ns.route('/site/affiliate')
+@v1_api.expect(secureHeader)
+class SiteAffiliationResource(ProxySecureResource): 
+
+    @entities_ns.doc('Affiliate Site')
+    @v1_api.expect(SiteIdStruct)    
     @jwt_required    
     def put(self):
         security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
+        # security_credentials = {'username' : 'avazquez@najoconsultores.com'}
         payload = request.json        
-        SaveEstacionTrabajoUseCase().execute(security_credentials,payload)
-        return  {'ok':1} , 200
+        SiteAffiliationUseCase().execute(security_credentials,payload)
+        return  {'ok':1 } , 200 
 
 
-@entities_ns.route('/estaciontrabajo/<idestaciontrabajo>')
-@entities_ns.param('idestaciontrabajo', 'Codigo de la Estacion Trabajo')
+@entities_ns.route('/site/follow')
 @v1_api.expect(secureHeader)
-class DeleteEstacionTrabajoResource(ProxySecureResource): 
-    @entities_ns.doc('Delete Estacion Trabajo')
-    @jwt_required
-    def delete(self,idestaciontrabajo):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {'idestaciontrabajo': idestaciontrabajo}
-        DeleteEstacionTrabajoUseCase().execute(security_credentials,query_params)
-        return  {'ok':1} , 200
+class FollowSiteResource(ProxySecureResource): 
 
-
-@entities_ns.route('/colaespera/entrada')
-@v1_api.expect(secureHeader)
-class ColaEntradaResource(ProxySecureResource): 
-
-    @entities_ns.doc('Entrada a Cola de Espera')
-    @v1_api.expect(EntryColaStruct)    
+    @entities_ns.doc('Follow Site')
+    @v1_api.expect(SiteIdStruct)    
     @jwt_required    
     def put(self):
         security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
+        # security_credentials = {'username' : 'ramonvalera28@gmail.com'}
         payload = request.json        
-        EntryColaEsperaUseCase().execute(security_credentials,payload)
-        return  {'ok':1} , 200
+        SiteFollowUseCase().execute(security_credentials,payload)
+        return  {'ok':1 } , 200
 
 
-@entities_ns.route('/colaespera/resumen/<idsala>')
-@entities_ns.param('idsala', 'Id Sala de Espera')
+@entities_ns.route('/site/love')
 @v1_api.expect(secureHeader)
-class ColaEsperaResource(ProxySecureResource):
+class LoveSiteResource(ProxySecureResource): 
 
-    @entities_ns.doc('Get Cola de Espera por Sala y Dia de Consulta')
-    @v1_api.marshal_with(GetColaResumenStruct) 
-    @jwt_required    
-    def get(self,idsala):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {
-            'idsala': idsala
-            }
-        data = GetColaResumenUseCase().execute(security_credentials,query_params)
-        return  {'ok': 1, 'data': data}, 200
-
-
-@entities_ns.route('/colaespera/enatencion/<codigoespecialidad>')
-@entities_ns.param('codigoespecialidad', 'Codigo de la Especialidad')
-@v1_api.expect(secureHeader)
-class ColaEsperaResource(ProxySecureResource):
-
-    @entities_ns.doc('Get Cola en Atencion por Especialidad')
-    @v1_api.marshal_with(GetColaResumenStruct) 
-    @jwt_required    
-    def get(self,codigoespecialidad):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {
-            'codigoespecialidad': codigoespecialidad
-            }
-        data = GetColaAtencionEspecialidadUseCase().execute(security_credentials,query_params)
-        return  {'ok': 1, 'data': data}, 200
-
-
-@entities_ns.route('/colaespera/enespera/<codigoespecialidad>')
-@entities_ns.param('codigoespecialidad', 'Codigo de la Especialidad')
-@v1_api.expect(secureHeader)
-class ColaEsperaResource(ProxySecureResource):
-
-    @entities_ns.doc('Get Cola en Espera por Especialidad')
-    @v1_api.marshal_with(GetColaResumenStruct) 
-    @jwt_required    
-    def get(self,codigoespecialidad):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {
-            'codigoespecialidad': codigoespecialidad
-            }
-        data = GetColaEsperaEspecialidadUseCase().execute(security_credentials,query_params)
-        return  {'ok': 1, 'data': data}, 200
-
-
-@entities_ns.route('/colaespera/proximacita/<codigoespecialidad>')
-@entities_ns.param('codigoespecialidad', 'Codigo de la Especialidad')
-@v1_api.expect(secureHeader)
-class ColaProximaCitaResource(ProxySecureResource):
-
-    @entities_ns.doc('Get Proxima Cita en Cola de Espera por Especialidad')
-    @v1_api.marshal_with(GetCitaStruct) 
-    @jwt_required    
-    def get(self,codigoespecialidad):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {
-            'codigoespecialidad': codigoespecialidad
-            }
-        data = GetProxCitaColaEsperaEspecialidadUseCase().execute(security_credentials,query_params)
-        return  {'ok': 1, 'data': data}, 200
-
-
-@entities_ns.route('/persona/<cedula>')
-@entities_ns.param('cedula', 'Cedula Persona')
-@v1_api.expect(secureHeader)
-class OnePersonaResource(ProxySecureResource):
-
-    @entities_ns.doc('Get Persona')
-    @v1_api.marshal_with(GetPersonaStruct) 
-    @jwt_required    
-    def get(self,cedula):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {'cedula': cedula}
-        data = GetPersonaUseCase().execute(security_credentials,query_params)
-        return  {'ok': 1, 'data': data}, 200
-
-
-@entities_ns.route('/trabajador/<cedula>')
-@entities_ns.param('cedula', 'Cedula Trabajador')
-@v1_api.expect(secureHeader)
-class OneTrabajadorResource(ProxySecureResource):
-
-    @entities_ns.doc('Get Trabajador')
-    @v1_api.marshal_with(GetTrabajadorStruct) 
-    @jwt_required    
-    def get(self,cedula):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {'cedula': cedula}
-        data = GetTrabajadorUseCase().execute(security_credentials,query_params)
-        return  {'ok': 1, 'data': data}, 200
-
-
-@entities_ns.route('/trabajador')
-@v1_api.expect(secureHeader)
-class TrabajadorResource(ProxySecureResource): 
-    
-    @entities_ns.doc('Update Trabajador')
-    @v1_api.expect(UpdateTrabajadorStruct)    
+    @entities_ns.doc('Love Site')
+    @v1_api.expect(SiteIdStruct)    
     @jwt_required    
     def put(self):
-        #security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username' : 'ramonvalera28@gmail.com'}
         payload = request.json        
-        SaveTrabajadorUseCase().execute(security_credentials,payload)
-        return  {'ok':1} , 200
+        SiteLoveUseCase().execute(security_credentials,payload)
+        return  {'ok':1 } , 200               
 
 
-@entities_ns.route('/estado')
+@entities_ns.route('/site/pay_impressions')
 @v1_api.expect(secureHeader)
-class EstadoResource(ProxySecureResource): 
+class SiteImpressionsPaymentResource(ProxySecureResource): 
 
-    @entities_ns.doc('Estado')
+    @entities_ns.doc('Pay Impressions in Site')
+    @v1_api.expect(SiteImpressionsPaymentStruct)    
     @jwt_required    
-    def get(self):
+    def put(self):
         security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        data = GetEstadoListUseCase().execute(security_credentials)
-        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+        # security_credentials = {'username' : 'avazquez@najoconsultores.com'}
+        payload = request.json        
+        SiteImpressionsPaymentUseCase().execute(security_credentials,payload)
+        return  {'ok':1 } , 200        
 
 
-@entities_ns.route('/municipio')
+@entities_ns.route('/site/view_impression')
 @v1_api.expect(secureHeader)
-class MunicipioResource(ProxySecureResource): 
+class ViewImpressionResource(ProxySecureResource): 
 
-    @entities_ns.doc('Municipio')
+    @entities_ns.doc('Pay Impressions in Site')
+    @v1_api.expect(SiteAndContentStruct)    
     @jwt_required    
-    def get(self):
+    def put(self):
         security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        data = GetMunicipioListUseCase().execute(security_credentials)
-        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+        # security_credentials = {'username' : 'ramonvalera28@gmail.com'}
+        payload = request.json        
+        ViewImpressionUseCase().execute(security_credentials,payload)
+        return  {'ok':1 } , 200
 
 
-@entities_ns.route('/patologia')
+@entities_ns.route('/site/promote_content')
 @v1_api.expect(secureHeader)
-class PatologiaResource(ProxySecureResource): 
+class PromoteContentResource(ProxySecureResource): 
 
-    @entities_ns.doc('Patologia')
+    @entities_ns.doc('Pay Impressions in Site')
+    @v1_api.expect(SiteAndContentStruct)    
     @jwt_required    
-    def get(self):
+    def put(self):
         security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        data = GetPatologiaListUseCase().execute(security_credentials)
-        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+        # security_credentials = {'username' : 'avazquez@najoconsultores'}
+        payload = request.json        
+        PromoteContentUseCase().execute(security_credentials,payload)
+        return  {'ok':1 } , 200
 
-
-@entities_ns.route('/discapacidad')
+@entities_ns.route('/balance/refill')
 @v1_api.expect(secureHeader)
-class DiscapacidadResource(ProxySecureResource): 
+class RefillResource(ProxySecureResource): 
 
-    @entities_ns.doc('Discapacidad')
+    @entities_ns.doc('Refill Balance')
+    @v1_api.expect(RefillBalanceStruct)    
     @jwt_required    
-    def get(self):
+    def put(self):
         security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        data = GetDiscapacidadListUseCase().execute(security_credentials)
-        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+        # security_credentials = {'username' : 'ramon.valera@gmail.com'}
+        payload = request.json        
+        RefillBalanceUseCase().execute(security_credentials,payload)
+        return  {'ok':1 } , 200
 
-
-@entities_ns.route('/saladeespera')
+@entities_ns.route('/balance/<username>')
+@entities_ns.param('username', 'User Name')
 @v1_api.expect(secureHeader)
-class SalaDeEsperaResource(ProxySecureResource): 
+class UserBalanceResource(ProxySecureResource):
 
-    @entities_ns.doc('Sala De Espera')
-    @v1_api.marshal_with(GetSalaDeEsperaListStruct) 
+    @entities_ns.doc('Get Balance')
+    @v1_api.marshal_with(GetOneBalanceUserStruct) 
     @jwt_required    
-    def get(self):
+    def get(self,username):
         security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        data = GetSalaDeEsperaListUseCase().execute(security_credentials)
-        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+        # security_credentials = {'username' : 'ramon.valera@gmail.com'}
+        query_params = {'username': username}
+        data = GetUserBalanceUseCase().execute(security_credentials,query_params)
+        return  {'ok' : 1, 'data': data}, 200
 
-    @entities_ns.doc('Create Sala De Espera')
-    @v1_api.expect(CreateSalaDeEsperaStruct)    
+
+ContentStruct = v1_api.model('ContentStruct', { 
+    'id' : fields.String(), 
+    'title' : fields.String(), 
+    'description' : fields.String(), 
+    'author' : fields.String(),
+    'keywords' : fields.String(),
+    'content_type' : fields.String(),
+    'site_id' : fields.String(),
+    'file_name' : fields.String(),
+	'created_time' : fields.String(),
+	'update_time' : fields.String(),
+    'binary_data' : fields.String(),
+    'owner' : fields.String()
+    # Customized Fields
+    # 'fields' : fields.Nested(ContentFieldStruct,attribute='fields')
+})
+
+GetContentListStruct = v1_api.model('GetContentListStruct', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'count' : fields.Integer(description='Count Row'), 
+    'total' : fields.Integer(description='Total Row'), 
+    'data' : fields.Nested(ContentStruct,attribute='data')
+}) 
+
+GetOneContentStruct = v1_api.model('GetOneContentStruct', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'data' : fields.Nested(ContentStruct,attribute='data')
+}) 
+
+
+ContentTypeFieldStruct = v1_api.model('ContentTypeFieldStruct', { 
+    'name' : fields.String(), 
+    'description' : fields.String(), 
+    'primitive_type' : fields.String(),
+})
+
+CreateContentTypeStruct = v1_api.model('CreateContentTypeStruct', { 
+    'name' : fields.String(), 
+    'description' : fields.String(), 
+    # Customized Fields
+    # 'fields' : fields.Nested(ContentTypeFieldStruct,attribute='fields')
+})
+
+ContentTypeStruct = v1_api.model('ContentTypeStruct', { 
+    'id' : fields.String(), 
+    'name' : fields.String(), 
+    'description' : fields.String(), 
+    # Customized Fields
+    # 'fields' : fields.Nested(ContentTypeFieldStruct,attribute='fields')
+})
+
+GetContentTypeListStruct = v1_api.model('GetContentTypeListStruct', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'count' : fields.Integer(description='Count Row'), 
+    'total' : fields.Integer(description='Total Row'), 
+    'data' : fields.Nested(ContentTypeStruct,attribute='data')
+}) 
+
+GetOneContentTypeStruct = v1_api.model('GetOneContentTypeStruct', { 
+    'ok' : fields.Integer(description='Ok Result'), 
+    'data' : fields.Nested(ContentTypeStruct,attribute='data')
+}) 
+
+ContentFieldStruct = v1_api.model('ContentFieldStruct', { 
+    'name' : fields.String(), 
+    'value' : fields.String()
+})
+
+CreateContentStruct = v1_api.model('CreateContentStruct', { 
+    'title' : fields.String(), 
+    'author' : fields.String(),
+    'description' : fields.String(), 
+    'keywords' : fields.String(),
+    'content_type_id' : fields.String(),
+    'site_id' : fields.String(),
+    'binary_data' : fields.String(),
+    'file_name' : fields.String(),
+    # Customized Fields
+    # 'fields' : fields.Nested(ContentFieldStruct,attribute='fields')
+})
+
+
+createContentHeader = v1_api.parser()
+createContentHeader.add_argument('title', required = True)
+createContentHeader.add_argument('author', required = True)
+createContentHeader.add_argument('description', required = True)
+createContentHeader.add_argument('keywords', required = True)
+createContentHeader.add_argument('content_type_id', required = True)
+createContentHeader.add_argument('site_id', required = True)
+
+@entities_ns.route('/content/create')
+@v1_api.expect(secureHeader)
+class CreateContentResource(ProxySecureResource): 
+
+    @entities_ns.doc('Create Content')
+    @v1_api.expect(CreateContentStruct)
     @jwt_required    
     def post(self):
         security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        payload = request.json        
-        CreateSalaDeEsperaUseCase().execute(security_credentials,payload)
-        return  {'ok':1} , 200
-
-    @entities_ns.doc('Update Sala De Espera')
-    @v1_api.expect(UpdateSalaDeEsperaStruct)    
-    @jwt_required    
-    def put(self):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        payload = request.json        
-        SaveSalaDeEsperaUseCase().execute(security_credentials,payload)
-        return  {'ok':1} , 200
-
-@entities_ns.route('/saladeespera/<idsala>')
-@entities_ns.param('idsala', 'Codigo de la Sala de Espera')
-@v1_api.expect(secureHeader)
-class DeleteSalaDeEsperaResource(ProxySecureResource): 
-    @entities_ns.doc('Delete Sala de Espera')
-    @jwt_required
-    def delete(self,idsala):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {'idsala': idsala}
-        DeleteSalaDeEsperaUseCase().execute(security_credentials,query_params)
-        return  {'ok':1} , 200
-
-
-@entities_ns.route('/especialidad')
-@v1_api.expect(secureHeader)
-class EspecialidadResource(ProxySecureResource): 
-
-    @entities_ns.doc('Especialidad')
-    @v1_api.marshal_with(GetEspecialidadListStruc) 
-    @jwt_required    
-    def get(self):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        data = GetEspecialidadListUseCase().execute(security_credentials)
-        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
-    
-    @entities_ns.doc('Create Especialidad')
-    @v1_api.expect(UpdateEspecialidadStruct)    
-    @jwt_required    
-    def post(self):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        payload = request.json        
-        CreateEspecialidadUseCase().execute(security_credentials,payload)
-        return  {'ok':1} , 200
-
-    @entities_ns.doc('Update Especialidad')
-    @v1_api.expect(UpdateEspecialidadStruct)    
-    @jwt_required    
-    def put(self):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        payload = request.json        
-        SaveEspecialidadUseCase().execute(security_credentials,payload)
-        return  {'ok':1} , 200
-
-
-@entities_ns.route('/especialidad/estadocola')
-@v1_api.expect(secureHeader)
-class EspecialidadEstadoColaResource(ProxySecureResource): 
-
-    @entities_ns.doc('Update Especialidad Estado Cola')
-    @v1_api.expect(UpdateEspecialidadEstadoColaStruct)    
-    @jwt_required    
-    def put(self):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        payload = request.json        
-        SaveEspecialidadEstadoColaUseCase().execute(security_credentials,payload)
-        return  {'ok':1} , 200
-
-
-@entities_ns.route('/especialidad/<codigoespecialidad>')
-@entities_ns.param('codigoespecialidad', 'Codigo de la Especialidad')
-@v1_api.expect(secureHeader)
-class DeleteEspecialidadResource(ProxySecureResource): 
-    @entities_ns.doc('Delete Especialidad')
-    @jwt_required
-    def delete(self,codigoespecialidad):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {'codigoespecialidad': codigoespecialidad}
-        DeleteEspecialidadUseCase().execute(security_credentials,query_params)
-        return  {'ok':1} , 200
-
-
-@entities_ns.route('/especialidad/<codigoespecialidad>')
-@entities_ns.param('codigoespecialidad', 'Codigo de la Especialidad')
-@v1_api.expect(secureHeader)
-class OneEspecialidadResource(ProxySecureResource):
-
-    @entities_ns.doc('Get Especialidad')
-    @v1_api.marshal_with(GetEspecialidadStruct) 
-    @jwt_required    
-    def get(self,codigoespecialidad):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {'codigoespecialidad': codigoespecialidad}
-        data = GetEspecialidadUseCase().execute(security_credentials,query_params)
-        return  {'ok': 1, 'data': data}, 200
-
-
-@entities_ns.route('/beneficiario')
-@v1_api.expect(secureHeader)
-class BeneficiarioResource(ProxySecureResource): 
-
-    @entities_ns.doc('Create Beneficiario')
-    @v1_api.expect(UpdateBeneficiarioStruct)    
-    @jwt_required    
-    def post(self):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        payload = request.json        
-        CreateBeneficiarioUseCase().execute(security_credentials,payload)
-        return  {'ok':1} , 200
-
-    @entities_ns.doc('Update Beneficiario')
-    @v1_api.expect(UpdateBeneficiarioStruct)    
-    @jwt_required    
-    def put(self):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        payload = request.json        
-        SaveBeneficiarioUseCase().execute(security_credentials,payload)
-        return  {'ok':1} , 200
-    
-
-@entities_ns.route('/beneficiario/<cedula>')
-@entities_ns.param('cedula', 'Cedula Trabajador')
-@v1_api.expect(secureHeader)
-class DeleteBeneficiarioResource(ProxySecureResource): 
-    @entities_ns.doc('Delete Beneficiario')
-    @jwt_required
-    def delete(self,cedula):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {'cedula': cedula}
-        DeleteBeneficiarioUseCase().execute(security_credentials,query_params)
-        return  {'ok':1} , 200
-
-
-@entities_ns.route('/medico')
-@v1_api.expect(secureHeader)
-class MedicoResource(ProxySecureResource): 
-
-    @entities_ns.doc('Medicos List')
-    @v1_api.marshal_with(GetMedicoListStruct) 
-    @jwt_required    
-    def get(self):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        data = GetMedicoListUseCase().execute(security_credentials)
-        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
-
-    @entities_ns.doc('Create Medico')
-    @v1_api.expect(UpdateMedicoStruct)    
-    @jwt_required    
-    def post(self):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        payload = request.json        
-        CreateMedicoUseCase().execute(security_credentials,payload)
-        return  {'ok':1} , 200
-
-    @entities_ns.doc('Update Medico')
-    @v1_api.expect(UpdateMedicoStruct)    
-    @jwt_required    
-    def put(self):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        payload = request.json        
-        SaveMedicoUseCase().execute(security_credentials,payload)
-        return  {'ok':1} , 200
-
-
-@entities_ns.route('/medico/<cedulamed>')
-@entities_ns.param('cedulamed', 'Cedula del Medico')
-@v1_api.expect(secureHeader)
-class OneMedicoResource(ProxySecureResource):
-
-    @entities_ns.doc('Get Medico')
-    @v1_api.marshal_with(GetMedicoStruct) 
-    @jwt_required    
-    def get(self,cedulamed):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {'cedula': cedulamed}
-        data = GetMedicoUseCase().execute(security_credentials,query_params)
-        return  {'ok': 1, 'data': data}, 200
-
-
-@entities_ns.route('/medico/params/<params>')
-@entities_ns.param('params', 'Parametros de Busqueda')
-@v1_api.expect(secureHeader)
-class ParamsMedicoResource(ProxySecureResource):
-
-    @entities_ns.doc('Get Medico by Params')
-    @v1_api.marshal_with(GetMedicoListStruct) 
-    @jwt_required    
-    def get(self, params):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = eval(params)
-        data = GetMedicoByParamsListUseCase().execute(security_credentials,query_params)
-        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
-
-
-@entities_ns.route('/medico/<cedula>')
-@entities_ns.param('cedula', 'Cedula del Medico')
-@v1_api.expect(secureHeader)
-class DeleteMedicoResource(ProxySecureResource): 
-    @entities_ns.doc('Delete Medico')
-    @jwt_required
-    def delete(self,cedula):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {'cedula': cedula}
-        DeleteMedicoUseCase().execute(security_credentials,query_params)
-        return  {'ok':1} , 200
-
-@entities_ns.route('/historiamedica/<cedula>')
-@entities_ns.param('cedula', 'Cedula Persona')
-@v1_api.expect(secureHeader)
-class OneHistoriaMedicaResource(ProxySecureResource):
-
-    @entities_ns.doc('Get Historia Medica')
-    @v1_api.marshal_with(GetHistoriaMedicaStruct) 
-    @jwt_required    
-    def get(self,cedula):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {'cedula': cedula}
-        data = GetHistoriaMedicaUseCase().execute(security_credentials,query_params)
-        return  {'ok': 1, 'data': data}, 200
-
-
-@entities_ns.route('/citamedica')
-@v1_api.expect(secureHeader)
-class CitaResource(ProxySecureResource): 
-
-    @entities_ns.doc('Create Cita Medica')
-    @v1_api.expect(CreateCitaStruct)    
-    @jwt_required    
-    def post(self):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        payload = request.json        
-        CreateCitaMedicaUseCase().execute(security_credentials,payload)
-        return  {'ok':1} , 200
-
-    @entities_ns.doc('Update Cita Medica')
-    @v1_api.expect(UpdateCitaStruct)    
-    @jwt_required    
-    def put(self):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        payload = request.json        
-        SaveCitaMedicaUseCase().execute(security_credentials,payload)
-        return  {'ok':1} , 200
-
-
-@entities_ns.route('/citamedica/confirmar')
-@v1_api.expect(secureHeader)
-class CitaConfirmResource(ProxySecureResource): 
-
-    @entities_ns.doc('Confirm Cita Medica')
-    @v1_api.expect(ConfirmCitaStruct)    
-    @jwt_required    
-    def put(self):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        payload = request.json        
-        ConfirmCitaMedicaUseCase().execute(security_credentials,payload)
-        return  {'ok':1} , 200
-
-
-@entities_ns.route('/citamedica/atender')
-@v1_api.expect(secureHeader)
-class CitaAttendResource(ProxySecureResource): 
-
-    @entities_ns.doc('Attend Cita Medica')
-    @v1_api.expect(AttendCitaStruct)    
-    @jwt_required    
-    def put(self):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
+        # security_credentials = {'username' : 'ramon.valera@gmail.com'}
         payload = request.json  
-        direccionip = request.remote_addr
-        data = {'payload':payload, 'direccionip':direccionip}
-        AttendCitaMedicaUseCase().execute(security_credentials,data)
-        return  {'ok':1} , 200
+        print(payload)
 
+        CreateContentUseCase().execute(security_credentials,payload)
 
-@entities_ns.route('/citamedica/finalizar')
+        return  {'ok':1 } , 200
+
+# @entities_ns.route('/content/create')
+# # @v1_api.expect(uploadFileSecureHeader)
+# @v1_api.expect(secureHeader)
+# class CreateContentResource(ProxySecureResource): 
+#     @entities_ns.doc('Create Content')
+#     @v1_api.expect(CreateContentTypeStruct)
+#     # @v1_api.expect(createContentHeader)
+#     @jwt_required    
+#     def post(self):
+#         security_credentials = self.checkCredentials()
+#         # security_credentials = {'username' : 'ramon.valera@gmail.com'}
+#         payload = {}
+#         args_payload = createContentHeader.parse_args()
+#         payload['title'] = args_payload['title']        
+#         payload['description'] = args_payload['description']        
+#         payload['author'] = args_payload['author']        
+#         payload['keywords'] = args_payload['keywords']        
+#         payload['content_type_id'] = args_payload['content_type_id']        
+#         payload['site_id'] = args_payload['site_id']        
+#         # Extract File 
+#         args = uploadFilePublicHeader.parse_args() # upload a file
+#         uploaded_file = args['file']
+#         CreateContentUseCase().execute(security_credentials,payload,uploaded_file)
+#         return  {'ok':1 } , 200
+
+@entities_ns.route('/content')
 @v1_api.expect(secureHeader)
-class CitaEndResource(ProxySecureResource): 
-
-    @entities_ns.doc('End Cita Medica')
-    @v1_api.expect(EndCitaStruct)    
-    @jwt_required    
-    def put(self):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        payload = request.json        
-        EndCitaMedicaUseCase().execute(security_credentials,payload)
-        return  {'ok':1} , 200
-
-
-@entities_ns.route('/citamedica/transferir')
-@v1_api.expect(secureHeader)
-class CitaTransferResource(ProxySecureResource): 
-
-    @entities_ns.doc('Transfer Cita Medica')
-    @v1_api.expect(TransferCitaStruct)    
-    @jwt_required    
-    def put(self):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        payload = request.json        
-        TransferCitaMedicaUseCase().execute(security_credentials,payload)
-        return  {'ok':1} , 200
-
-
-@entities_ns.route('/citamedica/<id>')
-@entities_ns.param('id', 'Id de la Cita Medica')
-@v1_api.expect(secureHeader)
-class OneCitaMedicaResource(ProxySecureResource):
-
-    @entities_ns.doc('Get Cita Medica')
-    @v1_api.marshal_with(GetCitaStruct) 
-    @jwt_required    
-    def get(self,id):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {'id': id}
-        data = GetCitaMedicaUseCase().execute(security_credentials,query_params)
-        return  {'ok': 1, 'data': data}, 200
-
-
-@entities_ns.route('/citamedica/<idcita>')
-@entities_ns.param('idcita', 'Id de la Cita Medica')
-@v1_api.expect(secureHeader)
-class DeleteCitaResource(ProxySecureResource): 
-    @entities_ns.doc('Delete Cita Medica')
-    @jwt_required
-    def delete(self,idcita):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {'idcita': idcita}
-        DeleteCitaMedicaUseCase().execute(security_credentials,query_params)
-        return  {'ok':1} , 200
-
-
-@entities_ns.route('/citamedica/cedula/<cedula>')
-@entities_ns.param('cedula', 'Cedula Persona')
-@v1_api.expect(secureHeader)
-class CitaPersonaListResource(ProxySecureResource):
-
-    @entities_ns.doc('Get Citas Medicas by Cedula')
-    @v1_api.marshal_with(GetCitaListStruct) 
-    @jwt_required    
-    def get(self,cedula):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {'cedula': cedula}
-        data = GetCitasMedicasPersonaListUseCase().execute(security_credentials, query_params)
-        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
-
-
-@entities_ns.route('/citamedica/proxima/cedula/<cedula>')
-@entities_ns.param('cedula', 'Cedula Persona')
-@v1_api.expect(secureHeader)
-class ProximasCitasPersonaListResource(ProxySecureResource):
-
-    @entities_ns.doc('Get Proximas Citas Medicas by Cedula')
-    @v1_api.marshal_with(GetCitaListStruct) 
-    @jwt_required
-    def get(self,cedula):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {'cedula': cedula}
-        data = GetProximasCitasMedicasPersonaListUseCase().execute(security_credentials, query_params)
-        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
-
-
-@entities_ns.route('/citamedica/fecha/<fecha>')
-@entities_ns.param('fecha', 'Fecha de las Citas Medicas')
-@v1_api.expect(secureHeader)
-class CitaFechaListResource(ProxySecureResource):
-
-    @entities_ns.doc('Get Citas Medicas by Date')
-    @v1_api.marshal_with(GetCitaListStruct) 
-    @jwt_required    
-    def get(self,fecha):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {'fechacita': fecha}
-        data = GetCitasMedicasListUseCase().execute(security_credentials,query_params)
-        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
-
-
-@entities_ns.route('/citamedica/disponible/<codigoespecialidad>/<fechainicio>/<fechafin>')
-@entities_ns.param('codigoespecialidad', 'Codigo de la Especialidad')
-@entities_ns.param('fechainicio', 'Fecha Inicio')
-@entities_ns.param('fechafin', 'Fecha Fin')
-@v1_api.expect(secureHeader)
-class CitaFechaDisponiblesListResource(ProxySecureResource):
-
-    @entities_ns.doc('Get Citas Medicas Disponibles by Especialidad y Rango de Fecha')
-    @jwt_required    
-    def get(self,codigoespecialidad, fechainicio, fechafin):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {
-            'codigoespecialidad': codigoespecialidad,
-            'fechainicio': fechainicio,
-            'fechafin': fechafin
-        }
-        data = GetCitasDisponiblesListUseCase().execute(security_credentials,query_params)
-        return  {'ok':1, 'data': data} , 200
-
-
-@entities_ns.route('/citamedica/<cedula>/<codigoespecialidad>/<fechacita>')
-@entities_ns.param('cedula', 'Cedula')
-@entities_ns.param('codigoespecialidad', 'Codigo de la Especialidad')
-@entities_ns.param('fechacita', 'Fecha Cita')
-@v1_api.expect(secureHeader)
-class CitaCedulaEspecialidadFechaListResource(ProxySecureResource):
-
-    @entities_ns.doc('Get Citas Medicas by Cedula, Especialidad y Fecha')
-    @jwt_required    
-    def get(self,cedula, codigoespecialidad, fechacita):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {
-            'cedula': cedula,
-            'codigoespecialidad': codigoespecialidad,
-            'fechacita': fechacita
-        }
-        data = GetCitasCedulaEspecialidadFechaListUseCase().execute(security_credentials,query_params)
-        return  {'ok':1, 'data': data} , 200
-
-
-@entities_ns.route('/visita')
-@v1_api.expect(secureHeader)
-class VisitaResource(ProxySecureResource): 
-
-    @entities_ns.doc('Create Visita')
-    @v1_api.expect(CreateVisitaStruct)    
-    @jwt_required    
-    def post(self):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        payload = request.json        
-        CreateVisitaUseCase().execute(security_credentials,payload)
-        return  {'ok':1} , 200
-
-        
-@entities_ns.route('/visita/fecha/<fecha>')
-@entities_ns.param('fecha', 'Fecha de las Visitas')
-@v1_api.expect(secureHeader)
-class VisitaFechaListResource(ProxySecureResource):
-
-    @entities_ns.doc('Get Visitas by Date')
-    @v1_api.marshal_with(GetVisitaListStruct) 
-    @jwt_required    
-    def get(self,fecha):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {'fechavisita': fecha}
-        data = GetVisitasListUseCase().execute(security_credentials,query_params)
-        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
-
-
-@entities_ns.route('/consultamedica')
-@v1_api.expect(secureHeader)
-class ConsultaMedicaResource(ProxySecureResource): 
-
-    @entities_ns.doc('Create Consulta Medica')
-    @v1_api.expect(CreateConsultaMedicaStruct)    
-    @jwt_required    
-    def post(self):
-        security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
-        payload = request.json        
-        CreateConsultaMedicaUseCase().execute(security_credentials,payload)
-        return  {'ok':1} , 200
-
-    @entities_ns.doc('Update Consulta Medica')
-    @v1_api.expect(UpdateConsultaMedicaStruct)    
-    @jwt_required    
-    def put(self):
-        security_credentials = self.checkCredentials()
-        security_credentials = {'username': 'prueba'}
-        payload = request.json        
-        SaveConsultaMedicaUseCase().execute(security_credentials,payload)
-        return  {'ok':1} , 200
-
-
-@entities_ns.route('/consultamedica/cedula/<cedula>')
-@entities_ns.param('cedula', 'Cedula del Paciente')
-@v1_api.expect(secureHeader)
-class ConsultaMedicaCedulaListResource(ProxySecureResource):
-
-    @entities_ns.doc('Get Consultas Medicas by Cedula')
-    @v1_api.marshal_with(GetConsultaMedicaListStruct) 
-    @jwt_required    
-    def get(self,cedula):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {'cedula': cedula}
-        data = GetConsultasMedicasPersonaListUseCase().execute(security_credentials,query_params)
-        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
-
-
-@entities_ns.route('/consultamedica/<id>')
-@entities_ns.param('id', 'Id de la Consulta Medica')
-@v1_api.expect(secureHeader)
-class OneConsultaMedicaResource(ProxySecureResource):
-
-    @entities_ns.doc('Get Consulta Medica')
-    @v1_api.marshal_with(GetConsultaMedicaStruct) 
-    @jwt_required    
-    def get(self,id):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {'id': id}
-        data = GetConsultaMedicaUseCase().execute(security_credentials,query_params)
-        return  {'ok': 1, 'data': data}, 200
-
-
-@entities_ns.route('/consultamedica/<id>')
-@entities_ns.param('id', 'Id de la Consulta Medica')
-@v1_api.expect(secureHeader)
-class DeleteConsultaResource(ProxySecureResource): 
-    @entities_ns.doc('Delete Consulta Medica')
-    @jwt_required
-    def delete(self,id):
-        security_credentials = self.checkCredentials()
-        #security_credentials = {'username': 'prueba'}
-        query_params = {'id': id}
-        DeleteConsultaMedicaUseCase().execute(security_credentials,query_params)
-        return  {'ok':1} , 200
-
-@entities_ns.route('/carnetizacion')
-@v1_api.expect(secureHeader)
-class CarnetizacionStatusResource(ProxySecureResource):
-
-    @entities_ns.doc('Get Status Carnetizacion Process')
+class ContentResource(ProxySecureResource):    
+    @entities_ns.doc('Content')
+    @v1_api.marshal_with(GetContentListStruct)     
     @jwt_required    
     def get(self):
+        security_credentials = self.checkCredentials()        
+        # security_credentials = {'username' : 'ramon.valera@gmail.com'}
+        data = GetContentListUseCase().execute(security_credentials)
+        # for d in data:
+        #     d['url_binary_data'] = '/entities/content/binary/%s' % d['binary_data']
+        print(data)
+        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+
+import io
+
+@entities_ns.route('/content/binary/<id>')
+@entities_ns.param('id', 'Id Content')
+# @v1_api.expect(publicHeader)
+# @v1_api.expect(secureHeader)
+class ContentBinaryResource(Resource):
+    @entities_ns.doc('Binary Content')
+    # @jwt_required    
+    def get(self,id):
+        # security_credentials = self.checkCredentials()        
+        security_credentials = {'username' : 'ramon.valera@gmail.com'}
+        query_params = { 'id': id }
+        (bites,file_name,mimetype) = GetContentBinaryUseCase().execute(security_credentials,query_params)
+        return send_file(io.BytesIO(bites),attachment_filename=file_name,mimetype=mimetype)
+
+
+@entities_ns.route('/content/<id>')
+@entities_ns.param('id', 'Id Content')
+@v1_api.expect(secureHeader)
+class OneContentResource(ProxySecureResource):
+
+    @entities_ns.doc('Get Content')
+    @v1_api.marshal_with(GetOneContentStruct) 
+    @jwt_required    
+    def get(self,id):
         security_credentials = self.checkCredentials()
-        query_params = {}
-        data = CarnetizacionStatusUseCase().execute(security_credentials,query_params)
-        data['ok'] = 1
-        return  data, 200
+        # security_credentials = {'username' : 'ramon.valera@gmail.com'}
+        query_params = {'id': id}
+        data = GetOneContentUseCase().execute(security_credentials,query_params)
+        return  {'ok' : 1, 'data': data}, 200
+
+@entities_ns.route('/content/user/<username>')
+@entities_ns.param('username', 'Username')
+@v1_api.expect(secureHeader)
+class GetContentByUserResource(ProxySecureResource):
+
+    @entities_ns.doc('Get Content by Username')
+    @v1_api.marshal_with(GetContentListStruct) 
+    @jwt_required    
+    def get(self,username):
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username' : 'ramon.valera@gmail.com'}
+        query_params = {'username': username}
+        data = GetContentListByUserUseCase().execute(security_credentials,query_params)
+        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+
+@entities_ns.route('/content/site/<site_id>')
+@entities_ns.param('site_id', 'Site Id')
+@v1_api.expect(secureHeader)
+class GetContentBySiteResource(ProxySecureResource):
+
+    @entities_ns.doc('Get Content by Site')
+    @v1_api.marshal_with(GetContentListStruct) 
+    @jwt_required    
+    def get(self,site_id):
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username' : 'ramon.valera@gmail.com'}
+        query_params = {'site_id': site_id}
+        data = GetContentListBySiteUseCase().execute(security_credentials,query_params)
+        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+
+
+@entities_ns.route('/content_type')
+@v1_api.expect(secureHeader)
+class ContentTypeResource(ProxySecureResource): 
+
+    @entities_ns.doc('Create Content Type')
+    @v1_api.expect(CreateContentTypeStruct)
+    @jwt_required    
+    def post(self):
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username' : 'ramon.valera@gmail.com'}
+        payload = request.json  
+        CreateContentTypeUseCase().execute(security_credentials,payload)
+        return  {'ok':1 } , 200
+
+    @entities_ns.doc('Content Type')
+    @v1_api.marshal_with(GetContentTypeListStruct)     
+    @jwt_required    
+    def get(self):
+        security_credentials = self.checkCredentials()        
+        # security_credentials = {'username' : 'ramon.valera@gmail.com'}
+        data = GetContenTypeListUseCase().execute(security_credentials)
+        return  {'ok':1,  "count": len(data), "total": len(data), 'data': data} , 200
+
+@entities_ns.route('/content_type/<id>')
+@entities_ns.param('id', 'Id Content Type')
+@v1_api.expect(secureHeader)
+# class OneContentTypeResource(Resource):
+# @v1_api.expect(publicHeader)
+class OneContentTypeResource(ProxySecureResource):
+
+    @entities_ns.doc('Get Content Type')
+    @v1_api.marshal_with(GetOneSiteStruct) 
+    @jwt_required    
+    def get(self,id):
+        security_credentials = self.checkCredentials()
+        # security_credentials = {'username' : 'ramon.valera@gmail.com'}
+        query_params = {'id': id}
+        data = GetOneContentTypeUseCase().execute(security_credentials,query_params)
+        return  {'ok' : 1, 'data': data}, 200

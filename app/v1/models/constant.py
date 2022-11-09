@@ -15,6 +15,7 @@ STATUS_REPLACED    = 'R' # Replaced
 
 #User Types
 CONSOLE_USER = 'C'
+MOBILE_USER = 'M'
 
 #User Source
 FROM_BACKOFFICE = 'B'

@@ -4,7 +4,7 @@ Created on 17 dic. 2019
 @author: ramon
 '''
 from app.v1.models.security import SecurityElement, User, PersonExtension, Rol, Privilege
-from app.v1.models.hr import Empresa, Persona, Trabajador
+from app.v1.models.hr import Empresa
 from app.v1.models.constant import *
 
 from app import redis_client, db
@@ -201,20 +201,6 @@ class MemberRepository(SinergiaRepository):
 
                 user.person_extension = PersonExtension()
 
-                if 'person_info' in payload['extra_info'] \
-                    and 'cedula' in payload['extra_info']['person_info'] :
-                    cedula = payload['extra_info']['person_info']['cedula']
-                    persona = Persona.query.filter(Persona.cedula == cedula).first()
-                    if not persona is None:
-                        #El Trabajador existe todos los datos del Usuario debe sacarse de esta tabla
-                        id_number = persona.cedula
-                        first_name =  persona.nombres
-                        last_name =  persona.apellidos
-                        phone_number =  persona.telefonocelular
-                        gender =  persona.sexo
-
-                        user.person_extension.cedula = cedula
-
                 # Actualizar la empresa si viniera en el Payload / Esto es Opcional
                 if 'empresa' in payload['extra_info'] \
                     and 'codigo' in payload['extra_info']['empresa'] :
@@ -274,19 +260,6 @@ class MemberRepository(SinergiaRepository):
                 phone_number =  payload['extra_info']['phone_number'] if 'phone_number' in payload['extra_info'] else ''
                 gender =  payload['extra_info']['gender'] if 'gender' in payload['extra_info'] else ''
                 email =  payload['extra_info']['email'] if 'email' in payload['extra_info'] else ''
-
-                if 'person_info' in payload['extra_info'] and 'cedula' in payload['extra_info']['person_info'] :
-                    cedula = payload['extra_info']['person_info']['cedula']
-                    persona = Persona.query.filter(Trabajador.cedula == cedula).first()
-                    if not persona is None:
-                        #El Trabajador existe todos los datos del Usuario debe sacarse de esta tabla
-                        id_number = persona.cedula
-                        first_name =  persona.nombres
-                        last_name =  persona.apellidos
-                        phone_number =  persona.telefonocelular
-                        gender =  persona.sexo
-
-                        user.person_extension.cedula = cedula
 
                 # Actualizar la empresa si viniera en el Payload / Esto es Opcional
                 if 'empresa' in payload['extra_info'] \

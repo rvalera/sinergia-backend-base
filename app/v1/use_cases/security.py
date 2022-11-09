@@ -56,4 +56,4 @@ class MemberInitSignUpUseCase(object):
 
 class MemberFinishRegisterUseCase(object):
     def execute(self,security_credentials,payload):
-        return MemberRepository(username=security_credentials['username'],password=security_credentials['password']).finishCreate(payload)
+        return MemberRepository(username=security_credentials['username']).finishCreate(payload)

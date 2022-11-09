@@ -3,6 +3,7 @@ Created on 17 dic. 2019
 
 @author: ramon
 '''
+from datetime import datetime
 from app import db
 from flask_sqlalchemy.model import Model
 from sqlalchemy import Table, Column, ForeignKey, Integer, String, Float, Boolean, DateTime, Text, Date
@@ -13,7 +14,6 @@ from itsdangerous import (TimedJSONWebSignatureSerializer
 import hashlib
 from app.v1.models.constant import STATUS_ACTIVE, configuration
 from app.v1.models.payment import Bank
-from app.v1.models.hr import Persona
 
 
 securityelement_rol_table = Table('securityelement_rol', db.Model.metadata,
@@ -88,14 +88,9 @@ class PersonExtension(db.Model):
     account_number = Column(String(50))
     status = Column(String(1))
 
-    #Modificacion realizada para recursos humanos
-    cedula = Column('cedula',Integer(), ForeignKey('hospitalario.persona.cedula'))
-    persona = relationship("Persona")
-
     #Modificacion realizada para asociar un usuario con la empresa / Es posible que el usuario no tenga empresa asociada
     empresa_id = Column('empresa_id',String(10), ForeignKey('hospitalario.empresa.codigo'))
     empresa = relationship("Empresa")
-
 
     __mapper_args__ = {
         'polymorphic_identity':'personextension'
@@ -178,3 +173,4 @@ class Device(SecurityElement):
     __mapper_args__ = {
         'polymorphic_identity':'device'
     }
+

@@ -17,9 +17,20 @@ class Config(object):
     
     REDIS_URL = configuration.get('REDIS','DATABASE_URI') 
 
+    MONGO_URI = configuration.get('MONGODB','DATABASE_URI') 
+
+    SUBSTRATE_URL = configuration.get('SUBSTRATE','URL') 
+    SUBSTRATE_MASTER_ACCOUNT = configuration.get('SUBSTRATE','MASTER_ACCOUNT') 
+
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
- 
+
+    MASTER_APP_ID = configuration.get('DOCFABRIC','MASTER_APP_ID') 
+
+    MAX_CONTENT_LENGTH = 16 * 1000 * 1000
+    UPLOAD_FOLDER = configuration.get('FLASK','UPLOAD_FOLDER') 
+    ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+
 #     def __init__(self):
 #         CONFIG_FILE = self.load_file()
 #         self.SQLALCHEMY_DATABASE_URI = CONFIG_FILE.get('db','DATABASE_URI')

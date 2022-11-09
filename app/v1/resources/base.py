@@ -163,6 +163,16 @@ queryParams.add_argument('filter',type=str,  help='{"stringParamName" : "stringP
 queryParams.add_argument('order',type=str, location='args', help='["field1","field2 ASC","field3 DESC"]')
 queryParams.add_argument('range',type=str, location='args', help='[low,high]')
 
+from werkzeug import FileStorage
+
+uploadFilePublicHeader = v1_api.parser()
+uploadFilePublicHeader.add_argument('Accept-Language', type=str,location='headers',help="en-US,en;q=0.5")
+uploadFilePublicHeader.add_argument('file', location='files', type=FileStorage, required=True)
+
+uploadFileSecureHeader = v1_api.parser()
+uploadFileSecureHeader.add_argument('Authorization', type=str,location='headers',help='Bearer Access Token',required=True)
+uploadFileSecureHeader.add_argument('Accept-Language', type=str,location='headers',help="en-US,en;q=0.5")
+uploadFileSecureHeader.add_argument('file', location='files', type=FileStorage, required=True)
 
 ACCESS_EXPIRES = 86400
 REFRESH_EXPIRES = 172800
@@ -223,7 +233,7 @@ class MemberLoginResource(Resource):
         #     payload['person_id'] = None            
         #     payload['person_extension_id'] = user.person_extension_id
 
-        payload['person_id'] = None            
+        payload['person_id'] = username
         payload['person_extension_id'] = user.person_extension_id
 
         redis_client.set(access_jti, json.dumps(payload), ex=int(ACCESS_EXPIRES * 1.2))
@@ -239,7 +249,6 @@ class MemberLoginResource(Resource):
                 'extra_info' : {
                     'username' : username,
                     'status' : securityElement.status,
-                    'roles' : [r.name for r in user.roles],
                 },
                 'access_token': access_token,
                 'refresh_token': refresh_token
@@ -309,7 +318,7 @@ class TokenRefreshResource(Resource):
             # person = GetMemberProfileUseCase().execute(payload,{})
             # payload['person_id'] = person['data']['id']
             # payload['person_extension_id'] = person['data']['person_extension_id']
-            payload['person_id'] = None            
+            payload['person_id'] = username            
             payload['person_extension_id'] = user.person_extension_id
         else:           
             error =  { 
@@ -350,16 +359,17 @@ class ProxySecureResource(Resource):
         cache_payload['password'] = password
 
         user = GetUserByNameUseCase().execute(cache_payload)
+        username = cache_payload['username']
+
         if user.status == STATUS_ACTIVE:
             # person = GetMemberProfileUseCase().execute(cache_payload,{})
             # cache_payload['person_id'] = person['data']['id']
             # cache_payload['person_extension_id'] = person['data']['person_extension_id']
-            cache_payload['person_id'] = None            
+            cache_payload['person_id'] = username            
             cache_payload['person_extension_id'] = user.person_extension_id
     
         cacheRepository.save(access_token_jti,cache_payload, expired_time = int(ACCESS_EXPIRES * 1.2))
 
-        username = cache_payload['username']
         userTokens = cacheRepository.getByKey(username)
         refresh_token_jti = userTokens['refresh_token'] 
         
@@ -382,7 +392,7 @@ class ProxySecureResource(Resource):
         # This is used for check if the Signup is Finished
         # if not ('person_id' in security_credentials and security_credentials['person_id'] is None):
         #     raise ProxyCredentialsNotFound()
-        if not ('person_extension_id' in security_credentials and security_credentials['person_extension_id'] is None):
+        if ('person_extension_id' in security_credentials) and  (security_credentials['person_extension_id'] is None):
             raise ProxyCredentialsNotFound()
         return security_credentials    
 
@@ -397,7 +407,7 @@ class MemberInitSignupResource(Resource):
     def post(self):
         payload = request.json
         data = MemberInitSignUpUseCase().execute(payload)
-        return  data, 200
+        return  { 'ok': 1 } , 200
         
 
 @member_ns.route('/signup/finish')
@@ -412,9 +422,10 @@ class MemberFinishSignupResource(ProxySecureResource):
         security_credentials = self.checkForFinishSignup()
         payload = request.json
         payload['id'] = security_credentials['id']        
+        payload['username'] = security_credentials['username']
         data = MemberFinishRegisterUseCase().execute(security_credentials, payload)
         self.syncronizePasswordCache(payload['password'])
-        return  data, 200
+        return  { 'ok': 1 } , 200
 
 
 @member_ns.route('/profile')
