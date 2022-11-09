@@ -1,14 +1,14 @@
 # SINERGIA - Backend para Blockchain
 
+Esta propuesta utiliza  [Python Substrate Interface Library](https://github.com/polkascan/py-substrate-interface)
+
+Esto es un Backend basado en Python y Subtrate Python Interface que permite interactuar mediante una interface de usuario basado en Swagger con una Blockchain basada en Substrate
 
 
 Features:
 -------
- - Expandable, understandable and nice project structure with namespaces and blueprints
- - Auth with JWT with refresh tokens and supporting multiple devices of the same user
- - Custom `ValidationExeption` and exeption handler for example
- - Tests for example
- - Database interaction with [Flask-SQLAlchemy](http://flask-sqlalchemy.pocoo.org/2.3/)
+ - Permite el almacenamiento de objetos en la Blockchain, esto es, Sitios, Contenido y Tipos de Contenido.
+ - Permite visualizar y desargar objetos almacenados en la Blockchain.
 
 ## Getting Started
 
