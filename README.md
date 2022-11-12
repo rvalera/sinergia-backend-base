@@ -1,6 +1,6 @@
 # SINERGIA - Backend para Blockchain
 
-Esta iniciativa se centra en la construccion de un conjunto de servicios web tipo REST desplegados en la forma de Swagger, para consumir y manipular funcionalidades proporcionados por la Blockchain de Substrate, utilizando para ello la interface de interoperabilidad substrate-interface-py de Polkascan, de esta manera, el objetivo es ofrecer un esquema amigable y sencillo para acceder a la logica de negocio que se encuentra en una Blockchain, con ello se presenta al programador un enfoque de desarrollo efectivo al momento de abordar aplicaciones de proposito general que utilicen Blockchain.
+SINERGA es una iniciativa centrada en la construccion de un conjunto de servicios web tipo REST desplegados en la forma de Swagger, para consumir y manipular funcionalidades proporcionados por la Blockchain de Substrate, utilizando para ello la interface de interoperabilidad substrate-interface-py de Polkascan, de esta manera, el objetivo es ofrecer un esquema amigable y sencillo para acceder a la logica de negocio que se encuentra en una Blockchain, con ello se presenta al programador un enfoque de desarrollo efectivo al momento de abordar aplicaciones de proposito general que utilicen Blockchain.
 
 Esta propuesta utiliza  [Python Substrate Interface Library](https://github.com/polkascan/py-substrate-interface)
 
